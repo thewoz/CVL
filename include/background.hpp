@@ -167,21 +167,21 @@ namespace cvl::background {
   void get(const std::vector<cv::Mat> & src, cv::Mat & dst, const std::string & algo) {
     
     if(algo.compare("LIGHTEST") == 0)
-      lightest(src, dst);
+      return lightest(src, dst);
       
     if(algo.compare("DARKEST") == 0)
-      darkest(src, dst);
+      return darkest(src, dst);
       
     if(algo.compare("MEDIAN") == 0)
-      median(src, dst);
+      return median(src, dst);
       
     if(algo.compare("AVG") == 0)
-      avg(src, dst);
+      return avg(src, dst);
       
     if(algo.compare("NONE") == 0)
-      dst.setTo(cv::Scalar(0,0,0));
+      return (void) dst.setTo(cv::Scalar(0,0,0));
       
-    fprintf(stderr, "error unknown type of baricenter evaluation criteria.\n");
+    fprintf(stderr, "error unknown type of background evaluation criteria '%s'.\n", algo.c_str());
     fprintf(stderr, "You can choose between:\n");
     fprintf(stderr, "    LIGHTEST, DARKEST, MEDIAN, AVG or NONE\n");
       
