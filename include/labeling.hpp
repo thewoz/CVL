@@ -68,7 +68,7 @@ namespace cvl::labeling {
     /*****************************************************************************/
     // allocMatrix
     /*****************************************************************************/
-    void allocMatrix(int ** matrixLabel, const cv::Size & size) {
+    void allocMatrix(int ** & matrixLabel, const cv::Size & size) {
       
       if(matrixLabel != NULL) freeMatrix(matrixLabel, size);
       
@@ -94,11 +94,14 @@ namespace cvl::labeling {
       
     }
     
+  
+  //void * aaa (int nRow, int nCol) { return malloc (sizeof(int[nRow][nCol])); }
+  //int(*matrix)[workImageSize.height] = (int(*)[])(aaa(workImageSize.width, workImageSize.height));
+
     /*****************************************************************************/
     // init
     /*****************************************************************************/
-    void init(const cv::Size & imgSize, cv::Size & workImageSize, int ** matrixLabel) {
-      
+    void init(const cv::Size & imgSize, cv::Size & workImageSize, int **  & matrixLabel) {
 
       if(matrixLabel == NULL){
         
