@@ -34,152 +34,145 @@
 
 #include <opencv2/opencv.hpp>
 
+#include <mpl/utils.hpp>
+#include <mpl/clustering.hpp>
+
 #include "blob.hpp"
 
 /*****************************************************************************/
 // namespace
 /*****************************************************************************/
 namespace cvl::clustering {
-  
-  /*****************************************************************************/
-  // namespace
-  /*****************************************************************************/
-  namespace utils {
-    
-    /*****************************************************************************/
-    //  asNN
-    /*****************************************************************************/
-    class asNN {
-      
-    private:
-      
-      std::vector<double> data;
-      
-      double max;
-      
-      bool squaredValue;
-      bool skipZero;
-      
-      asNN(){ };
-      
-    public:
-      
-      enum { SQUARED_VALUES, NO_SQUARED_VALUES };
-      enum { SKIP_ZERO, NO_SKIP_ZERO };
-      
-      /*****************************************************************************/
-      //  asNN
-      /*****************************************************************************/
-      asNN(uint32_t size, bool _squaredValue = NO_SQUARED_VALUES, bool _skipZero = NO_SKIP_ZERO) : squaredValue(_squaredValue), skipZero(_skipZero) { max = std::numeric_limits<double>::max(); data.resize(size, max); }
-      
-      /*****************************************************************************/
-      //  add
-      /*****************************************************************************/
-      inline void add(uint32_t index, double value){
-        
-        if(((skipZero && value !=0) || !skipZero) && value < data[index]) data[index] = value;
-        
-      }
-      
-      /*****************************************************************************/
-      //  getMedian
-      /*****************************************************************************/
-      double getMedian() {
-        
-        uint32_t haveLink = 0;
-        
-        for(uint32_t i=0; i<data.size(); ++i) if(data[i]!=max) ++haveLink;
-        
-        if(haveLink == 0) return -1;
-        
-        uint32_t halfSize = haveLink * 0.5;
-        
-        //std::nth_element(data.begin(), data.begin()+halfSize+2, data.end());
-        
-        std::sort(data.begin(), data.end());
-        
-        //for(uint32_t i=0; i<data.size(); ++i) printf("AAAA %e\n", data[i]);
-        
-        double median = 0;
-        
-        if((haveLink % 2) != 0) median = data[halfSize];
-        else if(squaredValue == NO_SQUARED_VALUES) median = (data[halfSize-1] + data[halfSize]) * 0.5;
-        else median = pow((sqrt(data[halfSize-1]) + sqrt(data[halfSize])) * 0.5, 2);
-        
-        //if(haveLink != data.size()){ for(uint32_t i=0; i<data.size(); ++i) printf("%e\n", data[i]); }
-        //for(uint32_t i=0; i<data.size(); ++i) printf("%e\n", data[i]);
-        
-        return median;
-        
-      }
-      
-    };
-    
-  }
-  
-  
+   
   /*****************************************************************************/
   // get
   /*****************************************************************************/
-  void get(asBlobs & cluster, double medianFactor, std::vector<asBlobs> & clusters){
+  void get(asBlobs & cluster, double factor, std::vector<asBlobs> & clusters) {
     
-    utils::asNN firstNN((uint32_t)cluster.size(), utils::asNN::SQUARED_VALUES);
-    
-    for(uint32_t i=0; i<cluster.size(); ++i){
-      
-      for(uint32_t j=i+1; j<cluster.size(); ++j){
-        
-        double tmpDist = cluster[i] - cluster[j];
-        
-        firstNN.add(i, tmpDist);
-        firstNN.add(j, tmpDist);
+    std::vector<std::vector<size_t>> clustersIndex = mpl::clustering::byNNDistance(cluster.blobs, factor);
 
+    clusters.clear();
+    
+    clusters.resize(clustersIndex.size());
+    
+    for(size_t i=0; i<clustersIndex.size(); ++i) {
+      for(size_t j=0; j<clustersIndex[i].size(); ++j)
+        clusters[i].add(cluster.blobs[clustersIndex[i][j]]);
+    }
+    
+    for(size_t i=0; i<clusters.size(); ++i) {
+      clusters[i].finalize();
+
+    }
+
+  /*****************************************************************************/
+   // follow
+   /*****************************************************************************/
+  cv::Point2d follow(asBlobs & cluster, double factor, const cv::Point2d & coords, std::vector<asBlobs> & clusters) {
+    
+    // Clusterizzo
+    cvl::clustering::get(cluster, factor, clusters);
+    
+    size_t nearIndex = 0;
+    double nearDist  = DBL_MAX;
+    
+    for(size_t i=0; i<clusters.size(); ++i) {
+      
+      double dist = cv::norm(coords - clusters[i].baricenter());
+      
+      if(dist < nearDist) {
+        nearDist = dist;
+        nearIndex = i;
       }
       
     }
     
-    double thresholdDist = firstNN.getMedian() * pow(medianFactor, 2);
-
-    std::vector<bool> isTaken(cluster.size(), false);
+    cluster = clusters[nearIndex];
     
-    clusters.clear();
-    
-    for(uint32_t i=0; i<cluster.size(); ++i){
-
-      if(!isTaken[i]){
-        
-        asBlobs tmpCluster;
-        
-        tmpCluster.add(cluster[i]);
-        
-        isTaken[i] = true;
-        
-        for(uint32_t j=0; j<tmpCluster.size(); ++j){
-          
-          for(uint32_t k=0; k<cluster.size(); ++k){
-            
-            if(!isTaken[k] && (tmpCluster[j] - cluster[k]) < thresholdDist){
-              
-              tmpCluster.add(cluster[i]);
-
-              isTaken[k] = true;
-            
-            }
-            
-          } // for k
-          
-        } // for j
-        
-        clusters.push_back(tmpCluster);
-        
-      }
-      
-    } // for i
+    return clusters[nearIndex].baricenter();
     
   }
-
+  
+  
 } /* namespace */
 
 
 #endif /* _H_CVL_CLUSTERING_H_ */
 
+
+ 
+//  /*****************************************************************************/
+//  // namespace
+//  /*****************************************************************************/
+//  namespace utils {
+//
+//    /*****************************************************************************/
+//    //  asNN
+//    /*****************************************************************************/
+//    class asNN {
+//
+//    private:
+//
+//      std::vector<double> data;
+//
+//      double max;
+//
+//      bool squaredValue;
+//      bool skipZero;
+//
+//      asNN(){ };
+//
+//    public:
+//
+//      enum { SQUARED_VALUES, NO_SQUARED_VALUES };
+//      enum { SKIP_ZERO, NO_SKIP_ZERO };
+//
+//      /*****************************************************************************/
+//      //  asNN
+//      /*****************************************************************************/
+//      asNN(uint32_t size, bool _squaredValue = NO_SQUARED_VALUES, bool _skipZero = NO_SKIP_ZERO) : squaredValue(_squaredValue), skipZero(_skipZero) { max = std::numeric_limits<double>::max(); data.resize(size, max); }
+//
+//      /*****************************************************************************/
+//      //  add
+//      /*****************************************************************************/
+//      inline void add(uint32_t index, double value){
+//
+//        if(((skipZero && value !=0) || !skipZero) && value < data[index]) data[index] = value;
+//
+//      }
+//
+//      /*****************************************************************************/
+//      //  getMedian
+//      /*****************************************************************************/
+//      double getMedian() {
+//
+//        uint32_t haveLink = 0;
+//
+//        for(uint32_t i=0; i<data.size(); ++i) if(data[i]!=max) ++haveLink;
+//
+//        if(haveLink == 0) return -1;
+//
+//        uint32_t halfSize = haveLink * 0.5;
+//
+//        //std::nth_element(data.begin(), data.begin()+halfSize+2, data.end());
+//
+//        std::sort(data.begin(), data.end());
+//
+//        //for(uint32_t i=0; i<data.size(); ++i) printf("AAAA %e\n", data[i]);
+//
+//        double median = 0;
+//
+//        if((haveLink % 2) != 0) median = data[halfSize];
+//        else if(squaredValue == NO_SQUARED_VALUES) median = (data[halfSize-1] + data[halfSize]) * 0.5;
+//        else median = pow((sqrt(data[halfSize-1]) + sqrt(data[halfSize])) * 0.5, 2);
+//
+//        //if(haveLink != data.size()){ for(uint32_t i=0; i<data.size(); ++i) printf("%e\n", data[i]); }
+//        //for(uint32_t i=0; i<data.size(); ++i) printf("%e\n", data[i]);
+//
+//        return median;
+//
+//      }
+//
+//    };
+//
+//  }

@@ -160,11 +160,25 @@ namespace cvl::background {
     
   }
   
+  /*****************************************************************************/
+   // fixed
+   /*****************************************************************************/
+   void fixed(const cv::Mat & src, cv::Mat & dst, uchar value) {
+     
+      for(int y=0; y<src.rows; ++y){
+           for(int x=0; x<src.cols; ++x){
+             if(src.at<uchar>(y,x) >= value) dst.at<uchar>(y,x) = src.at<uchar>(y,x);
+           }
+         }
+
+   }
   
   /*****************************************************************************/
   // get
   /*****************************************************************************/
-  void get(const std::vector<cv::Mat> & src, cv::Mat & dst, const std::string & algo) {
+  void get(const std::vector<cv::Mat> & src, cv::Mat & dst, const std::string & algo, uchar value = 0) {
+    
+    uint32_t index = src.size() * 0.5;
     
     if(algo.compare("LIGHTEST") == 0)
       return lightest(src, dst);
@@ -179,11 +193,14 @@ namespace cvl::background {
       return avg(src, dst);
       
     if(algo.compare("NONE") == 0)
-      return (void) dst.setTo(cv::Scalar(0,0,0));
+      return (void) src[index].copyTo(dst);
+    
+    if(algo.compare("FIXED") == 0)
+      return fixed(src[index], dst, value);
       
     fprintf(stderr, "error unknown type of background evaluation criteria '%s'.\n", algo.c_str());
     fprintf(stderr, "You can choose between:\n");
-    fprintf(stderr, "    LIGHTEST, DARKEST, MEDIAN, AVG or NONE\n");
+    fprintf(stderr, "    LIGHTEST, DARKEST, MEDIAN, AVG, FIXED or NONE\n");
       
     exit(EXIT_FAILURE);
     

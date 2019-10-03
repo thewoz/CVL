@@ -55,20 +55,20 @@ public:
   //***************************************************************************************************//
   // init
   //***************************************************************************************************//
-  void init(uint32_t _deflickerWindows, uint32_t _deflickerTime, uint32_t _deflickerMatrixSize, char * maskPath, bool _invert) {
+  void init(std::vector<cv::Mat> & images, uint32_t _deflickerWindows, uint32_t _deflickerTime, uint32_t _deflickerMatrixSize, std::string maskPath, bool _invert) {
 
-    inited = true;
-    
+    for(uint32_t i=0; i<deflickerWindows; ++i)
+      imageList[i] = images[i].clone();
+        
     invert = _invert;
     
-    if(maskPath != NULL){
+    if(maskPath.empty()){
       
       mpl::io::expandPath(maskPath);
 
-      // FIX
-      //mask = cv::open(maskPath, cv::IMREAD_GRAYSCALE);
+      mask = cv::open(maskPath, cv::IMREAD_GRAYSCALE);
       
-    } else { /*mask = ; */ }
+    } else { mask = cv::Mat(imageList[0].size(), CV_8UC1, cv::Scalar(255,255,255)); }
     
     deflickerWindows = _deflickerWindows;
 
@@ -92,6 +92,8 @@ public:
   
     halfDeflickerTime = (uint32_t)(deflickerTime * 0.5);
 
+    inited = true;
+
   }
 
   
@@ -99,40 +101,40 @@ public:
   //***************************************************************************************************//
   // initImages
   //***************************************************************************************************//
-  void initImages(std::vector<cv::Mat> & images) {
-
-    if(!inited){
-      fprintf(stderr, "asDeflickering class must be initializaetd\n");
-      exit(EXIT_FAILURE);
-    }
-
-    for(uint32_t i=0; i<deflickerWindows; ++i)
-      imageList[i] = images[i].clone();
-
-    deflicker(images);
-
-  }
+//  void initImages(std::vector<cv::Mat> & images) {
+//
+//    if(!inited){
+//      fprintf(stderr, "asDeflickering class must be initializaetd\n");
+//      exit(EXIT_FAILURE);
+//    }
+//
+//    for(uint32_t i=0; i<deflickerWindows; ++i)
+//      imageList[i] = images[i].clone();
+//
+//    deflicker(images);
+//
+//  }
 
 
 
   //***************************************************************************************************//
   // addImage
   //***************************************************************************************************//
-  void addImage(cv::Mat & image) {
-      
-    if(!inited){
-      fprintf(stderr, "asDeflickering class must be initializaetd\n");
-      exit(EXIT_FAILURE);
-    }
-
-    /* shift the others */
-    for(uint32_t j=1; j<deflickerWindows; ++j)
-      imageList[j-1] = imageList[j];
-      
-    /* load the new one */
-    imageList[deflickerWindows-1] = image.clone();
-
-  }
+//  void addImage(cv::Mat & image) {
+//
+//    if(!inited){
+//      fprintf(stderr, "asDeflickering class must be initializaetd\n");
+//      exit(EXIT_FAILURE);
+//    }
+//
+//    /* shift the others */
+//    for(uint32_t j=1; j<deflickerWindows; ++j)
+//      imageList[j-1] = imageList[j];
+//
+//    /* load the new one */
+//    imageList[deflickerWindows-1] = image.clone();
+//
+//  }
 
 
 
