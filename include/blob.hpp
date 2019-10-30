@@ -101,18 +101,20 @@ public:
     
     size   = cv::Size(xMax - xMin + 1, yMax - yMin + 1);
     
+    baricenter = cvl::baricenter::get(pixels, "GEOMETRIC");
+
   }
   
   /*****************************************************************************/
   // computeBaricenter
   /*****************************************************************************/
-  cv::Point2d computeBaricenter(const std::string & algo = "GEOMETRIC") {
-    
-    baricenter = cvl::baricenter::get(pixels, algo);
-    
-    return baricenter;
-    
-  }
+//  cv::Point2d computeBaricenter(const std::string & algo = "GEOMETRIC") {
+//    
+//    baricenter = cvl::baricenter::get(pixels, algo);
+//    
+//    return baricenter;
+//    
+//  }
   
   /*****************************************************************************/
   // draw
@@ -183,7 +185,7 @@ public:
   /*****************************************************************************/
   // draw
   /*****************************************************************************/
-  void drawLabel(cv::Mat & dst, const cv::Vec3b & color = cv::Vec3b(255,255,0)) const {
+  void drawLabel(cv::Mat & dst, const cv::Vec3b & color = cv::Yellow) const {
     
     cv::drawNumber(dst, label, cv::Point2i(baricenter.x + size.width  * 0.5, baricenter.y + size.height * 0.5), color);
     
@@ -367,6 +369,8 @@ public:
   
   std::vector<asBlob> blobs;
   
+  cv::Point2d baricenter;
+  
   /*****************************************************************************/
   //  operator []
   /*****************************************************************************/
@@ -380,23 +384,19 @@ public:
   /*****************************************************************************/
   // add
   /*****************************************************************************/
-  void add(asBlob & blob) { blobs.push_back(blob); }
+  void add(const asBlob & blob) { blobs.push_back(blob); }
   
-  /*****************************************************************************/
-  // baricenter
-  /*****************************************************************************/
-  cv::Point2d baricenter() {
+  void finalize() {
     
-    cv::Point2d coord(0,0);
+    baricenter = cv::Point2d(0,0);
     
     for(uint32_t i=0; i<blobs.size(); ++i)
-      coord += blobs[i].baricenter;
+      baricenter += blobs[i].baricenter;
     
-    coord /= blobs.size();
-    
-    return coord;
-    
+    baricenter /= (double) blobs.size();
+            
   }
+  
   
   /*****************************************************************************/
   // draw
@@ -440,7 +440,7 @@ public:
   /*****************************************************************************/
   // drawBaricenters
   /*****************************************************************************/
-  void drawBaricenters(cv::Mat & dst, const cv::Vec3b & color = cv::Vec3b(255,0,0)) {
+  void drawBaricenters(cv::Mat & dst, const cv::Vec3b & color = cv::Red) {
     
     if(dst.channels() !=3)
          mpl::log::error("The destination image is not a three channel image.\n");
@@ -453,13 +453,13 @@ public:
   /*****************************************************************************/
   // drawLabels
   /*****************************************************************************/
-  void drawLabels(cv::Mat & dst, const cv::Vec3b & color = cv::Vec3b(255,255,0)) {
+  void drawLabels(cv::Mat & dst, const cv::Vec3b & color = cv::Yellow) {
     
     if(dst.channels() !=3)
          mpl::log::error("The destination image is not a three channel image.\n");
     
     for(uint32_t i=0; i<blobs.size(); ++i)
-      blobs[i].drawLabel(dst);
+      blobs[i].drawLabel(dst, color);
     
   }
   

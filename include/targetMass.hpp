@@ -56,7 +56,7 @@ public:
     // per ogni blocb disegno un cerchio intorno al baricentro
     for(uint32_t i=0; i<blobs.size(); ++i) {
     
-      blobs[i].computeBaricenter("GEOMETRIC");
+      //blobs[i].computeBaricenter("GEOMETRIC");
       
       //if(blobs[i].pixels.size() < 36)
         cv::circle(dst, cv::Point(blobs[i].baricenter.x, blobs[i].baricenter.y), value, color, -1);

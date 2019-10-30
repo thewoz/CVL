@@ -45,22 +45,23 @@
 namespace cvl::clustering {
    
   /*****************************************************************************/
-  // get
+  // NN
   /*****************************************************************************/
-  void get(asBlobs & cluster, double factor, std::vector<asBlobs> & clusters) {
+  void NN(const asBlobs & cluster, std::vector<asBlobs> & clusters, double factor = 1) {
     
     std::vector<std::vector<size_t>> clustersIndex = mpl::clustering::byNNDistance(cluster.blobs, factor);
-
+    
     clusters.clear();
     
     clusters.resize(clustersIndex.size());
     
     for(size_t i=0; i<clustersIndex.size(); ++i) {
-      for(size_t j=0; j<clustersIndex[i].size(); ++j)
+      
+      for(size_t j=0; j<clustersIndex[i].size(); ++j) {
         clusters[i].add(cluster.blobs[clustersIndex[i][j]]);
-    }
-    
-    for(size_t i=0; i<clusters.size(); ++i) {
+        clusters[i][j].finalize();
+      }
+      
       clusters[i].finalize();
 
     }
@@ -68,19 +69,19 @@ namespace cvl::clustering {
   }
 
   /*****************************************************************************/
-   // follow
+   // followNN
    /*****************************************************************************/
-  cv::Point2d follow(asBlobs & cluster, double factor, const cv::Point2d & coords, std::vector<asBlobs> & clusters) {
+  cv::Point2d followNN(asBlobs & cluster, const cv::Point2d & coords, std::vector<asBlobs> & clusters, double factor = 1) {
     
     // Clusterizzo
-    cvl::clustering::get(cluster, factor, clusters);
+    cvl::clustering::NN(cluster, clusters, factor);
     
     size_t nearIndex = 0;
     double nearDist  = DBL_MAX;
     
     for(size_t i=0; i<clusters.size(); ++i) {
       
-      double dist = cv::norm(coords - clusters[i].baricenter());
+      double dist = cv::norm(coords - clusters[i].baricenter);
       
       if(dist < nearDist) {
         nearDist = dist;
@@ -91,7 +92,7 @@ namespace cvl::clustering {
     
     cluster = clusters[nearIndex];
     
-    return clusters[nearIndex].baricenter();
+    return clusters[nearIndex].baricenter;
     
   }
   
