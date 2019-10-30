@@ -34,12 +34,12 @@
 #include <opencv2/opencv.hpp>
 
 /*****************************************************************************/
-// namespace
+// namespace cvl::denoising
 /*****************************************************************************/
 namespace cvl::denoising {
   
   /*****************************************************************************/
-  // namespace
+  // namespace utils
   /*****************************************************************************/
   namespace utils {
     
@@ -77,7 +77,7 @@ namespace cvl::denoising {
       
     }
     
-  } /* namescape */
+  } /* namescape utils */
   
   
   /*****************************************************************************/
@@ -247,6 +247,6 @@ namespace cvl::denoising {
       
   }
 
-} /* namespace */
+} /* namespace cvl::denoising */
 
 #endif /* _H_CVL_DENOISING_H_ */

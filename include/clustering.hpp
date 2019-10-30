@@ -40,7 +40,7 @@
 #include "blob.hpp"
 
 /*****************************************************************************/
-// namespace
+// namespace cvl::clustering
 /*****************************************************************************/
 namespace cvl::clustering {
    
@@ -69,9 +69,9 @@ namespace cvl::clustering {
   }
 
   /*****************************************************************************/
-   // followNN
+   // follow
    /*****************************************************************************/
-  cv::Point2d followNN(asBlobs & cluster, const cv::Point2d & coords, std::vector<asBlobs> & clusters, double factor = 1) {
+  cv::Point2d follow(asBlobs & cluster, const cv::Point2d & coords, std::vector<asBlobs> & clusters, double factor = 1) {
     
     // Clusterizzo
     cvl::clustering::NN(cluster, clusters, factor);
@@ -97,85 +97,7 @@ namespace cvl::clustering {
   }
   
   
-} /* namespace */
+} /* namespace cvl::clustering */
 
 
 #endif /* _H_CVL_CLUSTERING_H_ */
-
-
- 
-//  /*****************************************************************************/
-//  // namespace
-//  /*****************************************************************************/
-//  namespace utils {
-//
-//    /*****************************************************************************/
-//    //  asNN
-//    /*****************************************************************************/
-//    class asNN {
-//
-//    private:
-//
-//      std::vector<double> data;
-//
-//      double max;
-//
-//      bool squaredValue;
-//      bool skipZero;
-//
-//      asNN(){ };
-//
-//    public:
-//
-//      enum { SQUARED_VALUES, NO_SQUARED_VALUES };
-//      enum { SKIP_ZERO, NO_SKIP_ZERO };
-//
-//      /*****************************************************************************/
-//      //  asNN
-//      /*****************************************************************************/
-//      asNN(uint32_t size, bool _squaredValue = NO_SQUARED_VALUES, bool _skipZero = NO_SKIP_ZERO) : squaredValue(_squaredValue), skipZero(_skipZero) { max = std::numeric_limits<double>::max(); data.resize(size, max); }
-//
-//      /*****************************************************************************/
-//      //  add
-//      /*****************************************************************************/
-//      inline void add(uint32_t index, double value){
-//
-//        if(((skipZero && value !=0) || !skipZero) && value < data[index]) data[index] = value;
-//
-//      }
-//
-//      /*****************************************************************************/
-//      //  getMedian
-//      /*****************************************************************************/
-//      double getMedian() {
-//
-//        uint32_t haveLink = 0;
-//
-//        for(uint32_t i=0; i<data.size(); ++i) if(data[i]!=max) ++haveLink;
-//
-//        if(haveLink == 0) return -1;
-//
-//        uint32_t halfSize = haveLink * 0.5;
-//
-//        //std::nth_element(data.begin(), data.begin()+halfSize+2, data.end());
-//
-//        std::sort(data.begin(), data.end());
-//
-//        //for(uint32_t i=0; i<data.size(); ++i) printf("AAAA %e\n", data[i]);
-//
-//        double median = 0;
-//
-//        if((haveLink % 2) != 0) median = data[halfSize];
-//        else if(squaredValue == NO_SQUARED_VALUES) median = (data[halfSize-1] + data[halfSize]) * 0.5;
-//        else median = pow((sqrt(data[halfSize-1]) + sqrt(data[halfSize])) * 0.5, 2);
-//
-//        //if(haveLink != data.size()){ for(uint32_t i=0; i<data.size(); ++i) printf("%e\n", data[i]); }
-//        //for(uint32_t i=0; i<data.size(); ++i) printf("%e\n", data[i]);
-//
-//        return median;
-//
-//      }
-//
-//    };
-//
-//  }

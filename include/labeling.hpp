@@ -40,12 +40,12 @@
 #define MERGE_MASS_LABEL(a,b) { labelMass[b] += labelMass[a]; labelMass[a] = -b; }
 
 /*****************************************************************************/
-// namespace
+// namespace cvl::labeling
 /*****************************************************************************/
 namespace cvl::labeling {
 
   /*****************************************************************************/
-  // namespace
+  // namespace utils
   /*****************************************************************************/
   namespace utils {
 
@@ -93,10 +93,7 @@ namespace cvl::labeling {
       }
       
     }
-    
   
-  //void * aaa (int nRow, int nCol) { return malloc (sizeof(int[nRow][nCol])); }
-  //int(*matrix)[workImageSize.height] = (int(*)[])(aaa(workImageSize.width, workImageSize.height));
 
     /*****************************************************************************/
     // init
@@ -132,7 +129,6 @@ namespace cvl::labeling {
       
     }
     
-    
     /*****************************************************************************/
     // findRoot
     /*****************************************************************************/
@@ -146,13 +142,13 @@ namespace cvl::labeling {
     }
     
     
-  } /* namespace */
+  } /* namespace utils */
   
   
   /*****************************************************************************/
   // get
   /*****************************************************************************/
-  void get(cv::Mat & src, const std::string & neighboursType, int minClusterMass, std::vector<asBlob> & blobs, const cv::Mat & original, const cv::Point & offset = cv::Point(0,0)) {
+  void get(cv::Mat & src, const std::string & neighboursType, size_t minClusterMass, std::vector<asBlob> & blobs, const cv::Mat & original, const cv::Point & offset = cv::Point(0,0)) {
     
     bool eight_connectivity = true;
     
@@ -306,53 +302,7 @@ namespace cvl::labeling {
     
   }
   
-  
-  
-/*****************************************************************************/
-// labeling
-/*****************************************************************************/
-//class labeling {
-//
-//  private:
-//
-//    std::vector<int> labelMass;
-//
-//    int ** matrixLabel;
-//
-//    int height;
-//
-//    int width;
-//
-//    int label;
-//
-//    int neighbors[4];
-//
-//    int neighbors_found;
-//
-//    bool eight_connectivity;
-//
-//  public:
-//
-//    /*****************************************************************************/
-//    // labeling
-//    /*****************************************************************************/
-//    labeling() { matrixLabel = NULL; };
-//
-//    /*****************************************************************************/
-//    // ~asLabeling
-//    /*****************************************************************************/
-//    ~labeling() { freeMatrix(); };
-//
-//
-//
-//
-//  private:
-//
-//
-//
-//};
-//
-} /* namespace */
+} /* namespace cvl::labeling */
 
 
 #endif /* _H_CVL_LABELING_H_ */

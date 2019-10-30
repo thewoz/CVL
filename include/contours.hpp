@@ -46,6 +46,8 @@ namespace cvl::contours {
   /*****************************************************************************/
   void get(const cv::Mat & image, bool mode, std::vector<cv::Point> & contours, const cv::Point & offset = cv::Point(0,0)) {
     
+    if(image.channels() != 1)
+      mpl::log::error("The destination image must have one channel image.\n");
     //  cv::Point offset_i;
     
     //  offset_i.x = offset.x - 1;

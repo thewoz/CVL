@@ -36,6 +36,8 @@
 
 #include <mpl/log.hpp>
 
+#include <cvl/contours.hpp>
+
 #include "baricenter.hpp"
 
 
@@ -43,7 +45,7 @@
 /*****************************************************************************/
 // asBlob
 /*****************************************************************************/
-class asBlob {
+ class asBlob {
   
 public:
   
@@ -104,17 +106,6 @@ public:
     baricenter = cvl::baricenter::get(pixels, "GEOMETRIC");
 
   }
-  
-  /*****************************************************************************/
-  // computeBaricenter
-  /*****************************************************************************/
-//  cv::Point2d computeBaricenter(const std::string & algo = "GEOMETRIC") {
-//    
-//    baricenter = cvl::baricenter::get(pixels, algo);
-//    
-//    return baricenter;
-//    
-//  }
   
   /*****************************************************************************/
   // draw
@@ -187,7 +178,7 @@ public:
   /*****************************************************************************/
   void drawLabel(cv::Mat & dst, const cv::Vec3b & color = cv::Yellow) const {
     
-    cv::drawNumber(dst, label, cv::Point2i(baricenter.x + size.width  * 0.5, baricenter.y + size.height * 0.5), color);
+    cv::drawNumber(dst, label, cv::Point2i(baricenter.x + size.width * 0.5, baricenter.y + size.height * 0.5), color);
     
   }
 
@@ -445,9 +436,10 @@ public:
     if(dst.channels() !=3)
          mpl::log::error("The destination image is not a three channel image.\n");
     
-    for(uint32_t i=0; i<blobs.size(); ++i)
-      dst.at<cv::Vec3b>(blobs[i].baricenter) = color;
-          
+    for(uint32_t i=0; i<blobs.size(); ++i) {
+      printf("%e %e \n", blobs[i].baricenter.x, blobs[i].baricenter.y);
+      dst.at<cv::Vec3b>(cv::Point2i(blobs[i].baricenter.x, blobs[i].baricenter.y)) = color;
+    }
   }
   
   /*****************************************************************************/
@@ -463,18 +455,29 @@ public:
     
   }
   
-//  void drawContorus(cv::Mat & dst, const cv::Vec3b & color = cv::Vec3b(0,0,255)) {
-//    
-//    // Vettore con i pixels del contorno
-//    std::vector<cv::Point> contours;
-//    
-//    // Mi trovo il contorni
-//    cvl::contours::get(resultsImage, cvl::contours::INTERNAL, contours);
-//    
-//    for(uint32_t k=0; k<contours.size(); ++k)
-//      finalImg.at<cv::Vec3b>(contours[k]) = color;
-//    
-//  }
+  /*****************************************************************************/
+  // drawContours
+  /*****************************************************************************/
+  void drawContours(cv::Mat & dst, const cv::Vec3b & color = cv::Blue) {
+    
+    if(dst.channels() !=3)
+      mpl::log::error("The destination image is not a three channel image.\n");
+    
+    cv::Mat mask = cv::Mat::zeros(dst.size(), CV_8UC1);
+    
+    for(uint32_t i=0; i<blobs.size(); ++i)
+      blobs[i].drawMask(mask);
+        
+    // Vettore con i pixels del contorno
+    std::vector<cv::Point> contours;
+    
+    // Mi trovo il contorni
+    cvl::contours::get(mask, cvl::contours::INTERNAL, contours);
+    
+    for(uint32_t k=0; k<contours.size(); ++k)
+      dst.at<cv::Vec3b>(contours[k]) = color;
+    
+  }
   
   /*****************************************************************************/
   // save
