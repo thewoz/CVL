@@ -437,9 +437,9 @@ public:
          mpl::log::error("The destination image is not a three channel image.\n");
     
     for(uint32_t i=0; i<blobs.size(); ++i) {
-      printf("%e %e \n", blobs[i].baricenter.x, blobs[i].baricenter.y);
       dst.at<cv::Vec3b>(cv::Point2i(blobs[i].baricenter.x, blobs[i].baricenter.y)) = color;
     }
+    
   }
   
   /*****************************************************************************/
