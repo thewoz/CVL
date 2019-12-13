@@ -482,7 +482,7 @@ public:
   /*****************************************************************************/
   // save
   /*****************************************************************************/
-  void save(FILE * output, uint32_t frame) {
+  void save(FILE * output, int32_t frame) {
     
     for(uint32_t i=0; i<blobs.size(); ++i)
       fprintf(output, "%04d %.4f %.4f %0d\n", frame, blobs[i].baricenter.x, blobs[i].baricenter.y, i);
