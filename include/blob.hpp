@@ -75,6 +75,11 @@ public:
   /*****************************************************************************/
   void add(uint32_t x, uint32_t y, uint32_t i) { pixels.push_back(cv::Point3i(x,y,i)); }
   
+   /*****************************************************************************/
+   // mass
+   /*****************************************************************************/
+   size_t mass() const { return pixels.size(); }
+   
   /*****************************************************************************/
   // finalize
   /*****************************************************************************/
@@ -482,10 +487,10 @@ public:
   /*****************************************************************************/
   // save
   /*****************************************************************************/
-  void save(FILE * output, int32_t frame) {
+  void save(FILE * output, int32_t camera, int32_t frame) {
     
     for(uint32_t i=0; i<blobs.size(); ++i)
-      fprintf(output, "%04d %.4f %.4f %0d\n", frame, blobs[i].baricenter.x, blobs[i].baricenter.y, i);
+      fprintf(output, "%d %04d %04d %.4f %.4f %03lu\n", camera, frame, blobs[i].label, blobs[i].baricenter.x, blobs[i].baricenter.y, blobs[i].mass());
     
   }
   
