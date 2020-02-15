@@ -37,6 +37,77 @@
 // namespace
 /*****************************************************************************/
 namespace cvl::enhance {
+  
+  /*****************************************************************************/
+  // namespace
+  /*****************************************************************************/
+  namespace utils {
+    
+    /*****************************************************************************/
+    // auto_alpha_beta
+    /*****************************************************************************/
+    void auto_alpha_beta(const cv::Mat & image, float clipHistPercent, float & alpha, float & beta) {
+      
+      cv::Mat hist;
+      
+      // Get image max value
+      int histSize = -1;
+      if(image.depth() == CV_8U)  histSize = 256;
+      if(image.depth() == CV_16U) histSize = 65536;
+
+      if(histSize == -1) {
+        fprintf(stderr, "error auto_alpha_beta() image depth not supported\n");
+        abort();
+      }
+      
+      float range[2]; range[0] = 0; range[1] = histSize;
+      const float * histRange = { range };
+            
+      double minimo, massimo;
+      
+      CV_Assert(clipHistPercent>=0);
+      
+      if(clipHistPercent == 0) {
+        
+        // keep full available range
+        cv::minMaxLoc(image, &minimo, &massimo);
+        
+      } else {
+        
+        cv::calcHist(&image, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
+        
+        // calculate cumulative distribution from the histogram
+        std::vector<float> accumulator(histSize);
+        accumulator[0] = hist.at<float>(0);
+        
+        for(int i = 1; i < histSize; i++)
+          accumulator[i] = accumulator[i - 1] + hist.at<float>(i);
+        
+        // locate points that cuts at required value
+        float maximum = accumulator.back();
+        clipHistPercent *= (maximum / 100.0); //make percent as absolute
+        clipHistPercent /= 2.0; // left and right wings
+                                // locate left cut
+        minimo = 0;
+        while(accumulator[minimo] < clipHistPercent)
+          minimo++;
+        
+        // locate right cut
+        massimo = histSize - 1;
+        while (accumulator[massimo] >= (maximum - clipHistPercent))
+          massimo--;
+        
+      }
+      
+      // current range
+      float inputRange = massimo - minimo;
+      
+      alpha = (histSize - 1) / inputRange;   // alpha expands current range to histsize range
+      beta = -minimo * alpha;             // beta shifts current range so that minGray will go to 0
+      
+    }
+    
+  }
 
   /*****************************************************************************/
   // histogramEqualization
@@ -56,9 +127,55 @@ namespace cvl::enhance {
   }
 
   /*****************************************************************************/
+  // autoContrast
+  /*****************************************************************************/
+  void autoContrast(cv::Mat & image, float clipHistPercent) {
+    
+    if(image.channels() != 1) {
+      fprintf(stderr, "error autoContrast() works only with one channel image\n");
+      abort();
+    }
+
+    float alpha, beta;
+                    
+    utils::auto_alpha_beta(image, clipHistPercent, alpha, beta);
+    
+    if(image.depth() == CV_8U) {
+    
+      for(int y = 0; y < image.rows; ++y) {
+        for(int x = 0; x < image.cols; ++x) {
+          image.at<uchar>(y,x) = cv::saturate_cast<uchar>(alpha*(image.at<uchar>(y,x)) + beta);
+          }
+        }
+
+    }
+    
+    if(image.depth() == CV_16U) {
+      
+      for(int y = 0; y < image.rows; ++y) {
+        for(int x = 0; x < image.cols; ++x) {
+          image.at<ushort>(y,x) = cv::saturate_cast<ushort>(alpha*(image.at<ushort>(y,x)) + beta);
+        }
+      }
+      
+    }
+                    
+  }
+  
+  /*****************************************************************************/
+  // autoContrast
+  /*****************************************************************************/
+  void autoContrast(std::vector<cv::Mat> & images, float clipHistPercent) {
+    
+    for(uint32_t i=0; i<images.size(); ++i)
+      autoContrast(images[i], clipHistPercent);
+    
+  }
+  
+  /*****************************************************************************/
   // unsharpMask
   /*****************************************************************************/
-  void unsharpMask(cv::Mat & src, uint32_t size = 3, double sigma = 1, double threshold = 5, double amount = 3) {
+  void unsharpMask(cv::Mat & src, double size = 3, double sigma = 1, double threshold = 5, double amount = 3) {
     
     #if(1)
     
@@ -109,15 +226,63 @@ namespace cvl::enhance {
   /*****************************************************************************/
   // unsharpMask
   /*****************************************************************************/
-  void unsharpMask(std::vector<cv::Mat> & images, uint32_t size = 3, double sigma = 1, double threshold = 5, double amount = 1) {
+  void unsharpMask(std::vector<cv::Mat> & images, double size = 3, double sigma = 1, double threshold = 5, double amount = 1) {
     
     for(unsigned int i=0; i<images.size(); ++i)
       unsharpMask(images[i], size, sigma, threshold, amount);
     
   }
   
-  //TODO: fare generale
-
+  /*****************************************************************************/
+  // get
+  /*****************************************************************************/
+  void get(cv::Mat & src, const std::string & algo, double param1, double param2,  double param3, double param4) {
+    
+    if(algo.compare("UNSHARPMASK") == 0) {
+      return unsharpMask(src, param1, param2, param3, param4);
+    }
+    
+    if(algo.compare("AUTO_CONTRAST") == 0) {
+      return autoContrast(src, param1);
+    }
+    
+    if(algo.compare("EQUALIZE_HISTOGRAM") == 0) {
+      return histogramEqualization(src);
+    }
+    
+    fprintf(stderr, "error unknown type of enhance evaluation criteria.\n");
+    fprintf(stderr, "You can choose between:\n");
+    fprintf(stderr, "      UNSHARPMASK, AUTO_CONTRAST or EQUALIZE_HISTOGRAM\n");
+    
+    exit(EXIT_FAILURE);
+    
+  }
+  
+  /*****************************************************************************/
+  // get
+  /*****************************************************************************/
+  void get(std::vector<cv::Mat> & src, const std::string & algo, double param1, double param2,  double param3, double param4) {
+    
+    if(algo.compare("UNSHARPMASK") == 0) {
+      return unsharpMask(src, param1, param2, param3, param4);
+    }
+    
+    if(algo.compare("AUTO_CONTRAST") == 0) {
+      return autoContrast(src, param1);
+    }
+    
+    if(algo.compare("EQUALIZE_HISTOGRAM") == 0) {
+      return histogramEqualization(src);
+    }
+    
+    fprintf(stderr, "error unknown type of enhance evaluation criteria.\n");
+    fprintf(stderr, "You can choose between:\n");
+    fprintf(stderr, "      UNSHARPMASK, AUTO_CONTRAST or EQUALIZE_HISTOGRAM\n");
+    
+    exit(EXIT_FAILURE);
+    
+  }
+  
 } /* namespace */
 
 #endif /* _H_CVL_ENHANCE_H_ */
