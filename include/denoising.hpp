@@ -208,21 +208,25 @@ namespace cvl::denoising {
     if(algo.compare("GAUSSIAN") == 0) {
       for(size_t i=0; i<time; ++i)
         gaussian(src, size);
+      return;
     }
     
     if(algo.compare("MEDIAN") == 0) {
       for(size_t i=0; i<time; ++i)
         cvl::denoising::median(src, size);
+      return;
     }
       
     if(algo.compare("MORPHOLOGY") == 0) {
       for(size_t i=0; i<time; ++i)
         morphology(src, size);
+      return;
     }
       
     if(algo.compare("LOWLIGHTFILTER") == 0) {
       for(size_t i=0; i<time; i++)
         lowlightFilter(src,param);
+      return;
     }
       
     if(algo.compare("STARFLAG") == 0) {
@@ -236,10 +240,12 @@ namespace cvl::denoising {
         starflag(src, workImage, size, denoiseMatrix);
       
       free(denoiseMatrix);
+
+      return;
       
     }
     
-    fprintf(stderr, "error unknown type of denoising evaluation criteria.\n");
+    fprintf(stderr, "error unknown type of denoising evaluation criteria '%s'.\n", algo.c_str());
     fprintf(stderr, "You can choose between:\n");
     fprintf(stderr, "      GAUSSIAN, MEDIAN, MORPHOLOGY, LOWLIGHTFILTER or STARFLAG\n");
     
