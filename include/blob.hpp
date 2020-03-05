@@ -487,10 +487,13 @@ public:
   /*****************************************************************************/
   // save
   /*****************************************************************************/
-  void save(FILE * output, int32_t camera, int32_t frame) {
+  void save(FILE * outputPoints, int32_t camera, int32_t frame, FILE * outputFrame = NULL) {
     
     for(uint32_t i=0; i<blobs.size(); ++i)
-      fprintf(output, "%d %04d %04d %.4f %.4f %03lu\n", camera, frame, blobs[i].label, blobs[i].baricenter.x, blobs[i].baricenter.y, blobs[i].mass());
+      fprintf(outputPoints, "%d %04d %04d %.4f %.4f %03lu\n", camera, frame, blobs[i].label, blobs[i].baricenter.x, blobs[i].baricenter.y, blobs[i].mass());
+
+    if(outputFrame != NULL)
+      fprintf(outputFrame, "%d %04d %04lu\n", camera, frame, blobs.size());
     
   }
   
