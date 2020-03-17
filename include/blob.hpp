@@ -83,7 +83,7 @@ public:
   /*****************************************************************************/
   // finalize
   /*****************************************************************************/
-  void finalize() {
+  void finalize(int32_t _label = -1) {
     
     uint32_t xMin = UINT_MAX; uint32_t xMax = 0;
     uint32_t yMin = UINT_MAX; uint32_t yMax = 0;
@@ -109,6 +109,8 @@ public:
     size   = cv::Size(xMax - xMin + 1, yMax - yMin + 1);
     
     baricenter = cvl::baricenter::get(pixels, "GEOMETRIC");
+    
+    if(_label != -1) label = _label;
 
   }
   
@@ -382,6 +384,9 @@ public:
   /*****************************************************************************/
   void add(const asBlob & blob) { blobs.push_back(blob); }
   
+  /*****************************************************************************/
+  // finalize
+  /*****************************************************************************/
   void finalize() {
     
     baricenter = cv::Point2d(0,0);
