@@ -59,7 +59,7 @@ namespace cvl::clustering {
       
       for(size_t j=0; j<clustersIndex[i].size(); ++j) {
         clusters[i].add(cluster.blobs[clustersIndex[i][j]]);
-        clusters[i][j].label = j;
+        clusters[i][j].label = (int)j;
         clusters[i][j].finalize(); //NOTE: non sono sicuro che serva
       }
       
