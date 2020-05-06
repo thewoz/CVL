@@ -59,8 +59,8 @@ namespace cvl::clustering {
       
       for(size_t j=0; j<clustersIndex[i].size(); ++j) {
         clusters[i].add(cluster.blobs[clustersIndex[i][j]]);
-        clusters[i][j].label = (int)j;
-        clusters[i][j].finalize(); //NOTE: non sono sicuro che serva
+        clusters[i][j].label = (int)j; //NOTE: non sono sicuro che serva visto che poi chiamo finalize
+        clusters[i][j].finalize();     //NOTE: non sono sicuro che serva visto che dovrebbe essere stato fatto prima
       }
       
       // Mi calcolo in baricentro del cluster

@@ -267,19 +267,19 @@ public:
 //
 //  }
   
-  /*****************************************************************************/
+  //****************************************************************************/
   // operator <
-  /*****************************************************************************/
-//  inline bool operator < (const asBlob & blob) const {
-//
-//    if(baricenter.y < blob.baricenter.y) return true;
-//    else if(baricenter.y > blob.baricenter.y) return false;
-//    else if(baricenter.x < blob.baricenter.x) return true;
-//    else return false;
-//
-//    return false;
-//
-//  }
+  //****************************************************************************/
+  inline bool operator < (const asBlob & blob) const {
+
+    if(baricenter.y < blob.baricenter.y) return true;
+    else if(baricenter.y > blob.baricenter.y) return false;
+    else if(baricenter.x < blob.baricenter.x) return true;
+    else return false;
+
+    return false;
+
+  }
   
   /*****************************************************************************/
   // getContour
@@ -384,18 +384,27 @@ public:
   /*****************************************************************************/
   void add(const asBlob & blob) { blobs.push_back(blob); }
   
-  /*****************************************************************************/
+  //****************************************************************************/
   // finalize
-  /*****************************************************************************/
+  //****************************************************************************/
   void finalize() {
-    
+
+    // ordino i punti
+    std::sort(blobs.begin(), blobs.end());
+
     baricenter = cv::Point2d(0,0);
-    
-    for(uint32_t i=0; i<blobs.size(); ++i)
+
+    // mi calcolo il baricentro e rinomino i label dei punti
+    for(uint32_t i=0; i<blobs.size(); ++i) {
+
       baricenter += blobs[i].baricenter;
-    
+
+      blobs[i].label = i;
+
+    }
+
     baricenter /= (double) blobs.size();
-            
+
   }
   
   
