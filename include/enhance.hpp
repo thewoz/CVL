@@ -46,26 +46,20 @@ namespace cvl::enhance {
     /*****************************************************************************/
     // auto_alpha_beta
     /*****************************************************************************/
+    // https://answers.opencv.org/question/75510/how-to-make-auto-adjustmentsbrightness-and-contrast-for-image-android-opencv-image-correction
     void auto_alpha_beta(const cv::Mat & image, float clipHistPercent, float & alpha, float & beta) {
       
-      cv::Mat hist;
+      double minimo, massimo;
       
       // Get image max value
       int histSize = -1;
       if(image.depth() == CV_8U)  histSize = 256;
       if(image.depth() == CV_16U) histSize = 65536;
-
+      
       if(histSize == -1) {
         fprintf(stderr, "error auto_alpha_beta() image depth not supported\n");
         abort();
       }
-      
-      float range[2]; range[0] = 0; range[1] = histSize;
-      const float * histRange = { range };
-            
-      double minimo, massimo;
-      
-      CV_Assert(clipHistPercent>=0);
       
       if(clipHistPercent == 0) {
         
@@ -73,6 +67,11 @@ namespace cvl::enhance {
         cv::minMaxLoc(image, &minimo, &massimo);
         
       } else {
+        
+        cv::Mat hist;
+        
+        float range[2]; range[0] = 0; range[1] = histSize;
+        const float * histRange = { range };
         
         cv::calcHist(&image, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
         
@@ -107,7 +106,7 @@ namespace cvl::enhance {
       
     }
     
-  }
+  } /* utils */
 
   /*****************************************************************************/
   // histogramEqualization
@@ -140,11 +139,12 @@ namespace cvl::enhance {
                     
     utils::auto_alpha_beta(image, clipHistPercent, alpha, beta);
     
+    // si potrebbe chiamare direttamente convertScaleAbs()
     if(image.depth() == CV_8U) {
     
       for(int y = 0; y < image.rows; ++y) {
         for(int x = 0; x < image.cols; ++x) {
-          image.at<uchar>(y,x) = cv::saturate_cast<uchar>(alpha*(image.at<uchar>(y,x)) + beta);
+          image.at<uchar>(y,x) = cv::saturate_cast<uchar>(alpha*image.at<uchar>(y,x) + beta);
           }
         }
 
@@ -154,7 +154,7 @@ namespace cvl::enhance {
       
       for(int y = 0; y < image.rows; ++y) {
         for(int x = 0; x < image.cols; ++x) {
-          image.at<ushort>(y,x) = cv::saturate_cast<ushort>(alpha*(image.at<ushort>(y,x)) + beta);
+          image.at<ushort>(y,x) = cv::saturate_cast<ushort>(alpha*image.at<ushort>(y,x) + beta);
         }
       }
       
@@ -233,10 +233,36 @@ namespace cvl::enhance {
     
   }
   
+  
+  
+  /*****************************************************************************/
+  // clahe
+  /*****************************************************************************/
+  void clahe(cv::Mat & src, float clipLimit) {
+    
+    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
+    
+    clahe->setClipLimit(clipLimit);
+    //clahe->setTilesGridSize();
+
+    cv::Mat dst;
+    clahe->apply(src, dst);
+    
+    dst.copyTo(src);
+
+  }
+  
+  void clahe(std::vector<cv::Mat> & images,  float clipLimit) {
+    
+    for(unsigned int i=0; i<images.size(); ++i)
+      clahe(images[i], clipLimit);
+    
+  }
+  
   /*****************************************************************************/
   // get
   /*****************************************************************************/
-  void get(cv::Mat & src, const std::string & algo, double param1, double param2,  double param3, double param4) {
+  void get(cv::Mat & src, const std::string & algo, double param1, double param2 = 1,  double param3 = 5, double param4 = 1) {
     
     if(algo.compare("UNSHARPMASK") == 0) {
       return unsharpMask(src, param1, param2, param3, param4);
@@ -250,9 +276,13 @@ namespace cvl::enhance {
       return histogramEqualization(src);
     }
     
+    if(algo.compare("CLAHE") == 0) {
+      return clahe(src, param1);
+    }
+    
     fprintf(stderr, "error unknown type of enhance evaluation criteria.\n");
     fprintf(stderr, "You can choose between:\n");
-    fprintf(stderr, "      UNSHARPMASK, AUTO_CONTRAST or EQUALIZE_HISTOGRAM\n");
+    fprintf(stderr, "      UNSHARPMASK, AUTO_CONTRAST, CLAHE or EQUALIZE_HISTOGRAM\n");
     
     exit(EXIT_FAILURE);
     
@@ -261,7 +291,7 @@ namespace cvl::enhance {
   /*****************************************************************************/
   // get
   /*****************************************************************************/
-  void get(std::vector<cv::Mat> & src, const std::string & algo, double param1, double param2,  double param3, double param4) {
+  void get(std::vector<cv::Mat> & src, const std::string & algo, double param1, double param2 = 1,  double param3 = 5, double param4 = 1) {
     
     if(algo.compare("UNSHARPMASK") == 0) {
       return unsharpMask(src, param1, param2, param3, param4);
@@ -275,10 +305,14 @@ namespace cvl::enhance {
       return histogramEqualization(src);
     }
     
+    if(algo.compare("CLAHE") == 0) {
+      return clahe(src, param1);
+    }
+    
     fprintf(stderr, "error unknown type of enhance evaluation criteria.\n");
     fprintf(stderr, "You can choose between:\n");
-    fprintf(stderr, "      UNSHARPMASK, AUTO_CONTRAST or EQUALIZE_HISTOGRAM\n");
-    
+    fprintf(stderr, "      UNSHARPMASK, AUTO_CONTRAST, CLAHE or EQUALIZE_HISTOGRAM\n");
+
     exit(EXIT_FAILURE);
     
   }
