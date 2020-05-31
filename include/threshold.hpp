@@ -122,9 +122,9 @@ namespace cvl::threshold {
   /*****************************************************************************/
   // adaptive
   /*****************************************************************************/
-  double adaptive(cv::Mat & src, const cv::Mat & mask, int adaptiveMethod = cv::ADAPTIVE_THRESH_MEAN_C, int blockSize = 11, double C = 4) {
+  double adaptive(cv::Mat & src, const cv::Mat & mask, int adaptiveMethod = cv::ADAPTIVE_THRESH_MEAN_C, int thresholdType = cv::THRESH_BINARY_INV, int blockSize = 11, double C = 4) {
 
-    cv::adaptiveThreshold(src, src, 255, adaptiveMethod, cv::THRESH_BINARY_INV, blockSize, C);
+    cv::adaptiveThreshold(src, src, 255, adaptiveMethod, thresholdType, blockSize, C);
   
     if(!mask.empty())
       cv::bitwise_and(src, mask, src);
@@ -196,7 +196,7 @@ namespace cvl::threshold {
     
     if(algo.compare("ADAPTIVE") == 0) {
 
-      return adaptive(src, mask, cv::ADAPTIVE_THRESH_MEAN_C, param1, param2);
+      return adaptive(src, mask, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY, param1, param2);
     }
     
     fprintf(stderr, "error unknown type of threshold evaluation criteria.\n");
