@@ -193,7 +193,7 @@ namespace cvl::blobsplitting {
     for(uint32_t i=0; i<blobs.size(); ++i) {
       
       // se e' piu' grande della massa di entrata lo provo a dividere
-      if(blobs[i].pixels.size() > enterMass){
+      if(blobs[i].pixels.size() > enterMass) {
         
         std::vector<asBlob> blobsFound;
         

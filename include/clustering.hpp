@@ -55,15 +55,14 @@ namespace cvl::clustering {
     
     clusters.resize(clustersIndex.size());
     
+    // per ogni cluster trovato
     for(size_t i=0; i<clustersIndex.size(); ++i) {
       
-      for(size_t j=0; j<clustersIndex[i].size(); ++j) {
+      // aggiungo al cluster il blob
+      for(size_t j=0; j<clustersIndex[i].size(); ++j)
         clusters[i].add(cluster.blobs[clustersIndex[i][j]]);
-        clusters[i][j].label = (int)j; //NOTE: non sono sicuro che serva visto che poi chiamo finalize
-        clusters[i][j].finalize();     //NOTE: non sono sicuro che serva visto che dovrebbe essere stato fatto prima
-      }
       
-      // Mi calcolo in baricentro del cluster
+      // Mi calcolo in baricentro del cluster e rinomino i balob dentro il cluster
       clusters[i].finalize();
 
     }
@@ -81,12 +80,15 @@ namespace cvl::clustering {
     size_t nearIndex = 0;
     double nearDist  = DBL_MAX;
     
+    // ciclo su tutti i cluster trovati
     for(size_t i=0; i<clusters.size(); ++i) {
       
+      // mi calcolo la distanza tra il cluster vecchio e quelli nuovi
       double dist = cv::norm(coords - clusters[i].baricenter);
       
+      // mi prendo il piu vicino a quelo vecchio
       if(dist < nearDist) {
-        nearDist = dist;
+        nearDist  = dist;
         nearIndex = i;
       }
       
