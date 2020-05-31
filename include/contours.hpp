@@ -53,9 +53,9 @@ namespace cvl::contours {
     //  offset_i.x = offset.x - 1;
     //  offset_i.y = offset.y - 1;
     
-    cv::Mat workImg = cv::Mat::zeros(image.rows + 2, image.cols + 2, CV_8UC1);
+   // cv::Mat workImg = cv::Mat::zeros(image.rows + 2, image.cols + 2, CV_8UC1);
     
-    image.copyTo(workImg(cv::Rect(1, 1, image.cols, image.rows)));
+   // image.copyTo(workImg(cv::Rect(1, 1, image.cols, image.rows)));
     
     // drawMask(image, offset_i);
     
@@ -63,29 +63,29 @@ namespace cvl::contours {
     
     if(mode == EXTERNAL){
       
-      for(int32_t y=0; y<workImg.rows; ++y) {
+      for(int32_t y=0; y<image.rows; ++y) {
         
-        for(int32_t x=0; x<workImg.cols; ++x) {
+        for(int32_t x=0; x<image.cols; ++x) {
           
           // con !0 faccio l'esterno con ==0 l'interno
-          if(workImg.at<uchar>(y,x) != 0) continue;
+          if(image.at<uchar>(y,x) != 0) continue;
           
-          if((y-1) >= 0 && workImg.at<uchar>(y-1,x) != 0){
+          if((y-1) >= 0 && image.at<uchar>(y-1,x) != 0){
             contours.push_back(cv::Point(x,y));
             continue;
           }
           
-          if((y+1) >= 0 && workImg.at<uchar>(y+1,x) != 0){
+          if((y+1) < image.rows && image.at<uchar>(y+1,x) != 0){
             contours.push_back(cv::Point(x,y));
             continue;
           }
           
-          if((x+1) >= 0 && workImg.at<uchar>(y,x+1) != 0){
+          if((x+1) < image.cols && image.at<uchar>(y,x+1) != 0){
             contours.push_back(cv::Point(x,y));
             continue;
           }
           
-          if((x-1) >= 0 && workImg.at<uchar>(y,x-1) != 0){
+          if((x-1) >= 0 && image.at<uchar>(y,x-1) != 0){
             contours.push_back(cv::Point(x,y));
             continue;
           }
@@ -98,29 +98,29 @@ namespace cvl::contours {
     
     if(mode == INTERNAL){
       
-      for(int32_t y=0; y<workImg.rows; ++y) {
+      for(int32_t y=0; y<image.rows; ++y) {
         
-        for(int32_t x=0; x<workImg.cols; ++x) {
+        for(int32_t x=0; x<image.cols; ++x) {
           
           // con !0 faccio l'esterno con ==0 l'interno
-          if(workImg.at<uchar>(y,x) == 0) continue;
+          if(image.at<uchar>(y,x) == 0) continue;
           
-          if((y-1) >= 0 && workImg.at<uchar>(y-1,x) == 0){
+          if((y-1) >= 0 && image.at<uchar>(y-1,x) == 0){
             contours.push_back(cv::Point(x,y));
             continue;
           }
           
-          if((y+1) >= 0 && workImg.at<uchar>(y+1,x) == 0){
+          if((y+1) < image.rows && image.at<uchar>(y+1,x) == 0){
             contours.push_back(cv::Point(x,y));
             continue;
           }
           
-          if((x+1) >= 0 && workImg.at<uchar>(y,x+1) == 0){
+          if((x+1) < image.cols && image.at<uchar>(y,x+1) == 0){
             contours.push_back(cv::Point(x,y));
             continue;
           }
           
-          if((x-1) >= 0 && workImg.at<uchar>(y,x-1) == 0){
+          if((x-1) >= 0 && image.at<uchar>(y,x-1) == 0){
             contours.push_back(cv::Point(x,y));
             continue;
           }
@@ -131,10 +131,10 @@ namespace cvl::contours {
       
     }
     
-    for(uint32_t i=0; i<contours.size(); ++i){
-      contours[i].x -= 1;
-      contours[i].y -= 1;
-    }
+//    for(uint32_t i=0; i<contours.size(); ++i){
+//      contours[i].x -= 1;
+//      contours[i].y -= 1;
+//    }
     
   }
   
