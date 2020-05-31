@@ -48,6 +48,8 @@
  class asBlob {
   
 public:
+   
+  static std::string baricenterType;
   
   enum { EXTERNAL_CONTOUR, INTERNAL_CONTOUR };
   
@@ -108,7 +110,7 @@ public:
     
     size   = cv::Size(xMax - xMin + 1, yMax - yMin + 1);
     
-    baricenter = cvl::baricenter::get(pixels, "GEOMETRIC");
+    baricenter = cvl::baricenter::get(pixels, baricenterType);
     
     if(_label != -1) label = _label;
 
@@ -118,7 +120,7 @@ public:
   // draw
   /*****************************************************************************/
   void draw(cv::Mat & dst, const cv::Vec3b & color, const cv::Point & offset = cv::Point(0,0)) const {
-    
+        
     if(dst.channels() == 1) {
       
       for(uint32_t i=0; i<pixels.size(); i++)
@@ -272,7 +274,7 @@ public:
   //****************************************************************************/
   inline bool operator < (const asBlob & blob) const {
 
-    if(baricenter.y < blob.baricenter.y) return true;
+         if(baricenter.y < blob.baricenter.y) return true;
     else if(baricenter.y > blob.baricenter.y) return false;
     else if(baricenter.x < blob.baricenter.x) return true;
     else return false;
@@ -397,6 +399,8 @@ public:
     // mi calcolo il baricentro e rinomino i label dei punti
     for(uint32_t i=0; i<blobs.size(); ++i) {
 
+      //blobs[i].finalize();
+      
       baricenter += blobs[i].baricenter;
 
       blobs[i].label = i;
@@ -416,6 +420,8 @@ public:
    if(dst.channels() != 1 && dst.channels() !=3)
         mpl::log::error("The destination image is not a one or three channel image.\n");
     
+    dst.setTo(0);
+    
     for(uint32_t i=0; i<blobs.size(); ++i)
       blobs[i].draw(dst, color);
     
@@ -425,7 +431,9 @@ public:
   // draw
   /*****************************************************************************/
   void draw(cv::Mat & dst) const {
-    
+
+    dst.setTo(0);
+
     if(dst.channels() != 1 && dst.channels() !=3)
          mpl::log::error("The destination image is not a one or three channel image.\n");
        
@@ -442,6 +450,8 @@ public:
     if(dst.channels() != 1)
          mpl::log::error("The destination image is not a one channel image.\n");
        
+    dst.setTo(0);
+    
     for(uint32_t i=0; i<blobs.size(); ++i)
       blobs[i].drawMask(dst);
     
@@ -491,7 +501,7 @@ public:
     std::vector<cv::Point> contours;
     
     // Mi trovo il contorni
-    cvl::contours::get(mask, cvl::contours::INTERNAL, contours);
+    cvl::contours::get(mask, cvl::contours::EXTERNAL, contours);
     
     for(uint32_t k=0; k<contours.size(); ++k)
       dst.at<cv::Vec3b>(contours[k]) = color;
@@ -516,6 +526,9 @@ public:
   }
   
 };
+
+std::string asBlob::baricenterType = "GEOMETRIC";
+
 
 #endif /* _H_CVL_BLOBS_H_ */
 
