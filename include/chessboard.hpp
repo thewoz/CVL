@@ -52,7 +52,7 @@ namespace cvl::chessboard {
     bool patternfound = false;
     
     // Se devo trovare la scacchiera
-    if(!mode.compare("checkboard")) {
+    if(!mode.compare("checkerboard")) {
       
       // chessBoard flags
       int chessBoardFlags = cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_NORMALIZE_IMAGE;
@@ -87,8 +87,8 @@ namespace cvl::chessboard {
       
     }
   
-    // Se devo cercare i cerchi
-    if(mode.compare("circles")) {
+    
+    if(!mode.compare("circles")) {
       
       cv::SimpleBlobDetector::Params params;
       
@@ -125,7 +125,7 @@ namespace cvl::chessboard {
       
     }
     
-    fprintf(stderr, "operational mode in cobbs::checkbort not found\n");
+    fprintf(stderr, "operational mode in not found\n");
     
     abort();
         
