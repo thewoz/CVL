@@ -185,9 +185,9 @@ public:
   /*****************************************************************************/
   // draw
   /*****************************************************************************/
-  void drawLabel(cv::Mat & dst, const cv::Vec3b & color = cv::Yellow) const {
+  void drawLabel(cv::Mat & dst, const cv::Vec3b & color = cv::Yellow, int scaleFactor = 1) const {
     
-    cv::drawNumber(dst, label, cv::Point2i(baricenter.x + size.width * 0.5, baricenter.y + size.height * 0.5), color);
+    cv::drawNumber(dst, label, cv::Point2i((baricenter.x*scaleFactor) + size.width * 0.5, (baricenter.y*scaleFactor) + size.height * 0.5), color);
     
   }
 
@@ -460,13 +460,13 @@ public:
   /*****************************************************************************/
   // drawBaricenters
   /*****************************************************************************/
-  void drawBaricenters(cv::Mat & dst, const cv::Vec3b & color = cv::Red) {
+  void drawBaricenters(cv::Mat & dst, const cv::Vec3b & color = cv::Red, int scaleFactor = 1) {
     
     if(dst.channels() !=3)
          mpl::log::error("The destination image is not a three channel image.\n");
     
     for(uint32_t i=0; i<blobs.size(); ++i) {
-      dst.at<cv::Vec3b>(cv::Point2i(blobs[i].baricenter.x, blobs[i].baricenter.y)) = color;
+      dst.at<cv::Vec3b>(cv::Point2i(blobs[i].baricenter.x*scaleFactor, blobs[i].baricenter.y*scaleFactor)) = color;
     }
     
   }
@@ -474,13 +474,13 @@ public:
   /*****************************************************************************/
   // drawLabels
   /*****************************************************************************/
-  void drawLabels(cv::Mat & dst, const cv::Vec3b & color = cv::Yellow) {
+  void drawLabels(cv::Mat & dst, const cv::Vec3b & color = cv::Yellow, int scaleFactor = 1) {
     
     if(dst.channels() !=3)
          mpl::log::error("The destination image is not a three channel image.\n");
     
     for(uint32_t i=0; i<blobs.size(); ++i)
-      blobs[i].drawLabel(dst, color);
+      blobs[i].drawLabel(dst, color, scaleFactor);
     
   }
   
