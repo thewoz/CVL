@@ -142,7 +142,7 @@ namespace cvl::labeling {
   /*****************************************************************************/
   // get
   /*****************************************************************************/
-  void get(cv::Mat & src, const std::string & neighboursType, size_t minClusterMass, std::vector<asBlob> & blobs, const cv::Mat & original, const cv::Point & offset = cv::Point(0,0)) {
+  void get(cv::Mat & src, const std::string & neighboursType, size_t minClusterMass, std::vector<blob_t> & blobs, const cv::Mat & original, const cv::Point & offset = cv::Point(0,0)) {
     
     bool eight_connectivity = true;
     
@@ -279,7 +279,7 @@ namespace cvl::labeling {
       
       if(blobsIter->second.size() < minClusterMass) continue;
       
-      asBlob blob;
+      blob_t blob;
       
       for(size_t i=0; i<blobsIter->second.size(); ++i)
         blob.add(blobsIter->second[i].x+offset.x, blobsIter->second[i].y+offset.y, original.at<uchar>(blobsIter->second[i].y+offset.y, blobsIter->second[i].x+offset.x));

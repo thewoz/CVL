@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef asTargetMass_h
-#define asTargetMass_h
+#ifndef _H_CVL_TARGET_MASS_H_
+#define _H_CVL_TARGET_MASS_H_
 
 #include <cstdlib>
 #include <cstdio>
@@ -42,7 +42,7 @@ namespace cvl::targetmass {
   /*****************************************************************************/
   // fixed
   /*****************************************************************************/
-  void fixed(std::vector<asBlob> & blobs, cv::Mat & dst, int radius) {
+  void fixed(std::vector<blob_t> & blobs, cv::Mat & dst, int radius) {
   
     dst.setTo(cv::Scalar(0,0,0));
     
@@ -60,9 +60,9 @@ namespace cvl::targetmass {
   /*****************************************************************************/
    // erode
    /*****************************************************************************/
-   void erode(std::vector<asBlob> & blobs, const cv::Mat & src, size_t targetMass, size_t minMass = 1, const std::string & labelingNeighboursType = "NEXT_NEAREST_NEIGHBOURS") {
+   void erode(std::vector<blob_t> & blobs, const cv::Mat & src, size_t targetMass, size_t minMass = 1, const std::string & labelingNeighboursType = "NEXT_NEAREST_NEIGHBOURS") {
   
-     std::vector<asBlob> tmpBlobs;
+     std::vector<blob_t> tmpBlobs;
      
      // provo a dividere ogni blob
      for(uint32_t i=0; i<blobs.size(); ++i) {
@@ -97,7 +97,7 @@ namespace cvl::targetmass {
          }
                   
          // vettore di blobs in appoggio
-         std::vector<asBlob> tmpBlobs;
+         std::vector<blob_t> tmpBlobs;
          
          // labbello
          cvl::labeling::get(thrsImg, labelingNeighboursType, minMass, tmpBlobs, src, blobs[i].offset);
@@ -122,15 +122,15 @@ namespace cvl::targetmass {
     /*****************************************************************************/
      // try2split
      /*****************************************************************************/
-     void try2split(asBlob & blob, const cv::Mat & src, std::vector<asBlob> & blobsFound, size_t targetMass, bool toDark, size_t minMass = 1, const std::string & labelingNeighboursType = "NEXT_NEAREST_NEIGHBOURS") {
+     void try2split(blob_t & blob, const cv::Mat & src, std::vector<blob_t> & blobsFound, size_t targetMass, bool toDark, size_t minMass = 1, const std::string & labelingNeighboursType = "NEXT_NEAREST_NEIGHBOURS") {
                   
        // vettore che contiene i vari blob che vanno divisi
-       std::vector<asBlob> blobsToSplit;
+       std::vector<blob_t> blobsToSplit;
        
        blobsToSplit.push_back(blob);
        
        // vettore con i blob temporanei trovati a ogni passo
-       std::vector<asBlob> tmpBlobs;
+       std::vector<blob_t> tmpBlobs;
        
        // immagini di appoggio
        cv::Mat blobImg = cv::Mat(blob.size, CV_8UC1);
@@ -157,7 +157,7 @@ namespace cvl::targetmass {
          // dimenzione imagine disegno il blob
          blobsToSplit[i].draw(blobImg, blob.offset);
          
-         asBlob checkPoint = blobsToSplit[i];
+         blob_t checkPoint = blobsToSplit[i];
          
          bool toAdd = false;
          
@@ -215,10 +215,10 @@ namespace cvl::targetmass {
   /*****************************************************************************/
   // split
   /*****************************************************************************/
-  void split(std::vector<asBlob> & blobs, const cv::Mat & src, size_t targetMass, bool toDark, size_t minMass = 1, const std::string & labelingNeighboursType = "NEXT_NEAREST_NEIGHBOURS") {
+  void split(std::vector<blob_t> & blobs, const cv::Mat & src, size_t targetMass, bool toDark, size_t minMass = 1, const std::string & labelingNeighboursType = "NEXT_NEAREST_NEIGHBOURS") {
         
     // vettore di appoggio con il risultato finale
-    std::vector<asBlob> foundedBlobs;
+    std::vector<blob_t> foundedBlobs;
     
     // provo a dividere ogni blob
     for(uint32_t i=0; i<blobs.size(); ++i) {
@@ -226,7 +226,7 @@ namespace cvl::targetmass {
       // se e' piu' grande della massa di entrata lo provo a dividere
       if(blobs[i].pixels.size() > targetMass){
         
-        std::vector<asBlob> tmpBlobs;
+        std::vector<blob_t> tmpBlobs;
 
         // provo a splittarlo
         utils::try2split(blobs[i], src, tmpBlobs, targetMass, toDark, minMass, labelingNeighboursType);
@@ -257,4 +257,4 @@ namespace cvl::targetmass {
 } /* namespace cvl::targetmass */
 
 
-#endif /* asTargetMass_h */
+#endif /* _H_CVL_TARGET_MASS_H_ */

@@ -34,12 +34,15 @@
 
 #include "baricenter.hpp"
 
-
+/*****************************************************************************/
+// namespace
+/*****************************************************************************/
+namespace cvl {
 
 /*****************************************************************************/
-// asBlob
+// blob_t
 /*****************************************************************************/
- class asBlob {
+ class blob_t {
   
 public:
    
@@ -62,9 +65,9 @@ public:
   cv::Point offset;
   
   /*****************************************************************************/
-  // asBlob
+  // blob_t
   /*****************************************************************************/
-  asBlob() { pixels.clear(); label = -1; }
+   blob_t() { pixels.clear(); label = -1; }
   
   /*****************************************************************************/
   // add
@@ -266,7 +269,7 @@ public:
   //****************************************************************************/
   // operator <
   //****************************************************************************/
-  inline bool operator < (const asBlob & blob) const {
+  inline bool operator < (const blob_t & blob) const {
 
          if(baricenter.y < blob.baricenter.y) return true;
     else if(baricenter.y > blob.baricenter.y) return false;
@@ -342,7 +345,7 @@ public:
 /*****************************************************************************/
 // operator -
 /*****************************************************************************/
-double operator - (const asBlob & A, const asBlob & B) {
+double operator - (const blob_t & A, const blob_t & B) {
 
   return cv::sqrt(((A.baricenter.x-B.baricenter.x)*(A.baricenter.x-B.baricenter.x)) + ((A.baricenter.y-B.baricenter.y)*(A.baricenter.y-B.baricenter.y)));
 
@@ -355,20 +358,20 @@ double operator - (const asBlob & A, const asBlob & B) {
 
 
 /*****************************************************************************/
-// asBlobs
+// blobs_t
 /*****************************************************************************/
-class asBlobs {
+class blobs_t {
   
 public:
   
-  std::vector<asBlob> blobs;
+  std::vector<blob_t> blobs;
   
   cv::Point2d baricenter;
   
   /*****************************************************************************/
   //  operator []
   /*****************************************************************************/
-  asBlob & operator [] (size_t index) { return blobs[index]; }
+  blob_t & operator [] (size_t index) { return blobs[index]; }
   
   /*****************************************************************************/
   // size
@@ -378,7 +381,7 @@ public:
   /*****************************************************************************/
   // add
   /*****************************************************************************/
-  void add(const asBlob & blob) { blobs.push_back(blob); }
+  void add(const blob_t & blob) { blobs.push_back(blob); }
   
   //****************************************************************************/
   // finalize
@@ -521,8 +524,10 @@ public:
   
 };
 
-std::string asBlob::baricenterType = "GEOMETRIC";
+std::string blob_t::baricenterType = "GEOMETRIC";
 
+} /* namespace */
+  
 
 #endif /* _H_CVL_BLOBS_H_ */
 

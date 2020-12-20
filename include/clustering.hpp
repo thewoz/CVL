@@ -41,7 +41,7 @@ namespace cvl::clustering {
   /*****************************************************************************/
   // NN
   /*****************************************************************************/
-  void NN(const asBlobs & cluster, std::vector<asBlobs> & clusters, double factor = 1) {
+  void NN(const blobs_t & cluster, std::vector<blobs_t> & clusters, double factor = 1) {
     
     std::vector<std::vector<size_t>> clustersIndex = mpl::clustering::byNNDistance(cluster.blobs, factor);
     
@@ -66,7 +66,7 @@ namespace cvl::clustering {
   /*****************************************************************************/
    // follow
    /*****************************************************************************/
-  cv::Point2d follow(asBlobs & cluster, const cv::Point2d & coords, std::vector<asBlobs> & clusters, double factor = 1) {
+  cv::Point2d follow(blobs_t & cluster, const cv::Point2d & coords, std::vector<blobs_t> & clusters, double factor = 1) {
     
     // Clusterizzo
     cvl::clustering::NN(cluster, clusters, factor);
