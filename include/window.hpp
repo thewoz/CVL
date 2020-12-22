@@ -39,7 +39,7 @@ namespace cvl {
   //****************************************************************************/
   class window_t {
   
-  private:
+  protected:
     
     std::string name;
     
@@ -49,20 +49,19 @@ namespace cvl {
     int screenPosX;
     int screenPosY;
 
-    int mouseClickX;
-    int mouseClickY;
-
+    //int mouseClickX;
+    //int mouseClickY;
+    
+    cv::Mat image;
+    
     //****************************************************************************/
     // mouseHandler
     //****************************************************************************/
     static void mouseHandler(int event, int x, int y, int flags, void * window) {
       
-      if(event == cv::EVENT_LBUTTONUP) {
+      if(event == cv::EVENT_LBUTTONUP || event == cv::EVENT_RBUTTONUP) {
         
-        ((window_t*)window)->mouseClickX = x;
-        ((window_t*)window)->mouseClickX = y;
-
-        ((window_t*)window)->processMouseEvent();
+        ((window_t*)window)->processMouseEvent(event, x, y);
         
       }
       
@@ -71,7 +70,7 @@ namespace cvl {
     //****************************************************************************/
     // processMouseEvent
     //****************************************************************************/
-    virtual void processMouseEvent() {}
+    virtual void processMouseEvent(int event, int mouseX, int mouseY) {}
     
   public:
     
@@ -85,7 +84,7 @@ namespace cvl {
       cv::namedWindow(name, cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_NORMAL);
       
       cv::setMouseCallback(name, mouseHandler, this);
-      
+            
     }
     
     //****************************************************************************/
@@ -99,7 +98,9 @@ namespace cvl {
     //****************************************************************************/
     // show() -
     //****************************************************************************/
-    void show(const cv::Mat & image, int time = 0) {
+    void show(const cv::Mat & _image, int time = 0) {
+      
+      image = _image;
       
       cv::imshow(name, image);
       
@@ -107,11 +108,21 @@ namespace cvl {
         
         time = 250;
         
-        while(cv::getWindowProperty(name, cv::WND_PROP_VISIBLE) >= 1)
-          cv::waitKey(time);
-        
+        while(cv::getWindowProperty(name, cv::WND_PROP_VISIBLE) >= 1) {
+          if(cv::waitKey(time) != -1) break;
+        }
+          
       } else { cv::waitKey(time); }
 
+    }
+    
+    //****************************************************************************/
+    // update() -
+    //****************************************************************************/
+    void update(const cv::Mat & _image) {
+      
+      cv::imshow(name, _image);
+      
     }
     
     //****************************************************************************/
