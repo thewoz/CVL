@@ -52,6 +52,8 @@ namespace cvl {
     //int mouseClickX;
     //int mouseClickY;
     
+    bool isToClose;
+    
     cv::Mat image;
     
     //****************************************************************************/
@@ -72,6 +74,11 @@ namespace cvl {
     //****************************************************************************/
     virtual void processMouseEvent(int event, int mouseX, int mouseY) {}
     
+    //****************************************************************************/
+    // processKeyboardEvent
+    //****************************************************************************/
+    virtual void processKeyboardEvent(int key) {}
+
   public:
     
     //****************************************************************************/
@@ -82,9 +89,11 @@ namespace cvl {
       name = _name;
       
       cv::namedWindow(name, cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_NORMAL);
-      
+
       cv::setMouseCallback(name, mouseHandler, this);
-            
+      
+      isToClose = false;
+      
     }
     
     //****************************************************************************/
@@ -98,22 +107,38 @@ namespace cvl {
     //****************************************************************************/
     // show() -
     //****************************************************************************/
-    void show(const cv::Mat & _image, int time = 0) {
+    void show(const cv::Mat & _image, int time = 0, bool mode = true) {
       
       image = _image;
       
       cv::imshow(name, image);
+      
+      int key = -1;
       
       if(time == 0) {
         
         time = 250;
         
         while(cv::getWindowProperty(name, cv::WND_PROP_VISIBLE) >= 1) {
-          if(cv::waitKey(time) != -1) break;
+          if((key=cv::waitKey(time)) != -1) {
+            processKeyboardEvent(key);
+            if(mode || isToClose) break;
+          }
         }
           
-      } else { cv::waitKey(time); }
+      } else { key = cv::waitKey(time); }
 
+      processKeyboardEvent(key);
+      
+    }
+    
+    //****************************************************************************/
+    // setFullScreen() -
+    //****************************************************************************/
+    void setFullScreen() {
+      
+      cv::setWindowProperty(name, cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
+      
     }
     
     //****************************************************************************/
