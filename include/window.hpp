@@ -102,6 +102,7 @@ namespace cvl {
     ~window_t() {
       
       cv::destroyWindow(name);
+      
     }
     
     //****************************************************************************/
@@ -117,7 +118,7 @@ namespace cvl {
       
       if(time == 0) {
         
-        time = 250;
+        time = 100;
         
         while(cv::getWindowProperty(name, cv::WND_PROP_VISIBLE) >= 1) {
           if((key=cv::waitKey(time)) != -1) {
