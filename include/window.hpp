@@ -60,13 +60,9 @@ namespace cvl {
     // mouseHandler
     //****************************************************************************/
     static void mouseHandler(int event, int x, int y, int flags, void * window) {
-      
-      if(event == cv::EVENT_LBUTTONUP || event == cv::EVENT_RBUTTONUP) {
-        
-        ((window_t*)window)->processMouseEvent(event, x, y);
-        
-      }
-      
+              
+      ((window_t*)window)->processMouseEvent(event, x, y);
+
     }
     
     //****************************************************************************/
