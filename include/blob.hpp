@@ -29,6 +29,7 @@
 #include <opencv2/opencv.hpp>
 
 #include <mpl/log.hpp>
+#include <mpl/opencv.hpp>
 
 #include <cvl/contours.hpp>
 
