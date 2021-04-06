@@ -27,19 +27,19 @@
 
 #include <opencv2/opencv.hpp>
 
-/*****************************************************************************/
+//****************************************************************************
 // namespace
-/*****************************************************************************/
+//****************************************************************************
 namespace cvl::enhance {
   
-  /*****************************************************************************/
+  //****************************************************************************
   // namespace
-  /*****************************************************************************/
+  //****************************************************************************
   namespace utils {
     
-    /*****************************************************************************/
+    //****************************************************************************
     // auto_alpha_beta
-    /*****************************************************************************/
+    //****************************************************************************
     // https://answers.opencv.org/question/75510/how-to-make-auto-adjustmentsbrightness-and-contrast-for-image-android-opencv-image-correction
     void auto_alpha_beta(const cv::Mat & image, float clipHistPercent, float & alpha, float & beta) {
       
@@ -102,16 +102,16 @@ namespace cvl::enhance {
     
   } /* utils */
 
-  /*****************************************************************************/
+  //****************************************************************************
   // histogramEqualization
-  /*****************************************************************************/
+  //****************************************************************************
   void histogramEqualization(cv::Mat & src) {
     cv::equalizeHist(src, src);
   }
 
-  /*****************************************************************************/
+  //****************************************************************************
   // histogramEqualization
-  /*****************************************************************************/
+  //****************************************************************************
   void histogramEqualization(std::vector<cv::Mat> & images) {
     
     for(uint32_t i=0; i<images.size(); ++i)
@@ -119,9 +119,9 @@ namespace cvl::enhance {
     
   }
 
-  /*****************************************************************************/
+  //****************************************************************************
   // autoContrast
-  /*****************************************************************************/
+  //****************************************************************************
   void autoContrast(cv::Mat & image, float clipHistPercent) {
     
     if(image.channels() != 1) {
@@ -156,9 +156,9 @@ namespace cvl::enhance {
                     
   }
   
-  /*****************************************************************************/
+  //****************************************************************************
   // autoContrast
-  /*****************************************************************************/
+  //****************************************************************************
   void autoContrast(std::vector<cv::Mat> & images, float clipHistPercent) {
     
     for(uint32_t i=0; i<images.size(); ++i)
@@ -166,9 +166,9 @@ namespace cvl::enhance {
     
   }
   
-  /*****************************************************************************/
+  //****************************************************************************
   // unsharpMask
-  /*****************************************************************************/
+  //****************************************************************************
   void unsharpMask(cv::Mat & src, double size = 3, double sigma = 1, double threshold = 5, double amount = 3) {
     
     #if(1)
@@ -217,9 +217,9 @@ namespace cvl::enhance {
 		
   }
   
-  /*****************************************************************************/
+  //****************************************************************************
   // unsharpMask
-  /*****************************************************************************/
+  //****************************************************************************
   void unsharpMask(std::vector<cv::Mat> & images, double size = 3, double sigma = 1, double threshold = 5, double amount = 1) {
     
     for(unsigned int i=0; i<images.size(); ++i)
@@ -229,15 +229,16 @@ namespace cvl::enhance {
   
   
   
-  /*****************************************************************************/
+  //****************************************************************************
   // clahe
-  /*****************************************************************************/
-  void clahe(cv::Mat & src, float clipLimit) {
+  //****************************************************************************
+  // https://en.wikipedia.org/wiki/Adaptive_histogram_equalization#Contrast_Limited_AHE
+  void clahe(cv::Mat & src, float clipLimit, const cv::Size & tilesGridSize) {
     
     cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
     
     clahe->setClipLimit(clipLimit);
-    //clahe->setTilesGridSize();
+    clahe->setTilesGridSize(tilesGridSize);
 
     cv::Mat dst;
     clahe->apply(src, dst);
@@ -246,16 +247,16 @@ namespace cvl::enhance {
 
   }
   
-  void clahe(std::vector<cv::Mat> & images,  float clipLimit) {
+  void clahe(std::vector<cv::Mat> & images, float clipLimit, const cv::Size & tilesGridSize) {
     
     for(unsigned int i=0; i<images.size(); ++i)
-      clahe(images[i], clipLimit);
+      clahe(images[i], clipLimit, tilesGridSize);
     
   }
   
-  /*****************************************************************************/
+  //****************************************************************************
   // get
-  /*****************************************************************************/
+  //****************************************************************************
   void get(cv::Mat & src, const std::string & algo, double param1, double param2 = 1,  double param3 = 5, double param4 = 1) {
     
     if(algo.compare("UNSHARPMASK") == 0) {
@@ -271,7 +272,7 @@ namespace cvl::enhance {
     }
     
     if(algo.compare("CLAHE") == 0) {
-      return clahe(src, param1);
+      return clahe(src, param1, cv::Size(param2, param2));
     }
     
     fprintf(stderr, "error unknown type of enhance evaluation criteria.\n");
@@ -282,9 +283,9 @@ namespace cvl::enhance {
     
   }
   
-  /*****************************************************************************/
+  //****************************************************************************
   // get
-  /*****************************************************************************/
+  //****************************************************************************
   void get(std::vector<cv::Mat> & src, const std::string & algo, double param1, double param2 = 1,  double param3 = 5, double param4 = 1) {
     
     if(algo.compare("UNSHARPMASK") == 0) {
@@ -300,7 +301,7 @@ namespace cvl::enhance {
     }
     
     if(algo.compare("CLAHE") == 0) {
-      return clahe(src, param1);
+      return clahe(src, param1, cv::Size(param2, param3));
     }
     
     fprintf(stderr, "error unknown type of enhance evaluation criteria.\n");
