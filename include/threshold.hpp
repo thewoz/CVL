@@ -40,6 +40,68 @@ namespace cvl::threshold {
   namespace utils {
     
     /*****************************************************************************/
+    // moda
+    /*****************************************************************************/
+    int moda(const cv::Mat & src, bool skipZero, const cv::Mat & mask) {
+      
+      if(src.channels() > 1){
+        fprintf(stderr, "The destination image not have one channel.\n");
+        exit(EXIT_FAILURE);
+      }
+      
+      int median_index;
+      
+      if(!mask.empty()){
+        
+        if(skipZero==SKIP_ZERO){
+          
+          median_index = 0;
+          
+          for(int y=0; y<src.rows; ++y)
+            for(int x=0; x<src.cols; ++x)
+              if(mask.at<uchar>(y,x) != 0 && src.at<uchar>(y,x) != 0)
+                median_index++;
+          
+        } else { median_index = (int)(cv::countNonZero(mask) * 0.5); }
+        
+      } else {
+        
+        (skipZero==SKIP_ZERO) ? median_index = (int)(cv::countNonZero(src) * 0.5) : median_index = (int)(src.cols * src.rows * 0.5);
+        
+      }
+      
+      int comulative_pixel = 0;
+      
+      int histSize = 256;
+      float range[] = { 0, 256 };
+      const float* histRange = { range };
+      
+      cv::Mat hist;
+      
+      cv::calcHist(&src, 1, 0, mask, hist, 1, &histSize, &histRange);
+      
+      int index;
+      
+      skipZero ? index = 1 : index = 0;
+      
+      int moda = 0;
+      
+      float maxFreq = 0;
+      
+      for(; index<256; ++index){
+        
+        if(hist.at<float>(index) > maxFreq) {
+          maxFreq = hist.at<float>(index);
+          moda = index;
+        }
+                
+      }
+      
+      return moda;
+      
+    }
+    
+    /*****************************************************************************/
     // median
     /*****************************************************************************/
     int median(const cv::Mat & src, bool skipZero, const cv::Mat & mask) {
@@ -150,6 +212,28 @@ namespace cvl::threshold {
   double median(cv::Mat & src, double factor, bool skipZero, const cv::Mat & mask) {
     
     double threshold = utils::median(src, skipZero, mask);
+    
+    if(threshold == 0) {
+      threshold = factor;
+    } else {
+      threshold *= factor;
+    }
+    
+    double value = cv::threshold(src, src, (threshold - 1), 255, cv::THRESH_BINARY) + 1;
+    
+    if(!mask.empty())
+      cv::bitwise_and(src, mask, src);
+    
+    return value;
+    
+  }
+  
+  /*****************************************************************************/
+  // moda
+  /*****************************************************************************/
+  double moda(cv::Mat & src, double factor, bool skipZero, const cv::Mat & mask) {
+    
+    double threshold = utils::moda(src, skipZero, mask);
     
     if(threshold == 0) {
       threshold = factor;
