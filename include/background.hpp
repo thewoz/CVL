@@ -102,6 +102,48 @@ namespace cvl::background {
     
   }
 
+  /*****************************************************************************/
+  // moda
+  /*****************************************************************************/
+  void moda(const std::vector<cv::Mat> & src, cv::Mat & dst) {
+    
+    int histo[256];
+    
+    int moda_index = 0;
+    
+    int max = 0;
+    
+    // assumo che tutte le img sono grandi uguali
+    for(int y=0; y<src[0].rows; ++y){
+      
+      for(int x=0; x<src[0].cols; ++x){
+        
+        memset(histo, 0, sizeof(int) * 256);
+        
+        for(size_t index=0; index<src.size(); ++index)
+          histo[src[index].at<uchar>(y,x)]++;
+        
+        max = 0;
+        
+        for(int i=0; i<256; ++i){
+          
+          if(max < histo[i]) {
+            
+            max = histo[i];
+            
+            moda_index = i;
+                        
+          }
+          
+        } // for i
+        
+        dst.at<uchar>(y,x) = moda_index;
+        
+      }
+      
+    }
+    
+  }
 
   /*****************************************************************************/
   // avg
@@ -183,6 +225,9 @@ namespace cvl::background {
     if(algo.compare("MEDIAN") == 0)
       return median(src, dst);
       
+    if(algo.compare("MODA") == 0)
+      return moda(src, dst);
+    
     if(algo.compare("AVG") == 0)
       return avg(src, dst);
       
