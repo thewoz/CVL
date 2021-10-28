@@ -54,7 +54,9 @@ namespace cvl {
     
     bool isToClose;
     
-    cv::Mat image;
+    bool isInit;
+
+    //cv::Mat image;
     
     //****************************************************************************/
     // mouseHandler
@@ -73,14 +75,19 @@ namespace cvl {
     //****************************************************************************/
     // processKeyboardEvent
     //****************************************************************************/
-    virtual void processKeyboardEvent(int key) {}
+    virtual int processKeyboardEvent(int key) { return -1; }
 
   public:
     
     //****************************************************************************/
     // window_t()
     //****************************************************************************/
-    window_t(const std::string & _name) {
+    window_t() : isInit(false) {  }
+    
+    //****************************************************************************/
+    // window_t()
+    //****************************************************************************/
+    window_t(const std::string & _name) : isInit(true)  {
       
       name = _name;
       
@@ -102,13 +109,40 @@ namespace cvl {
     }
     
     //****************************************************************************/
+    // init() -
+    //****************************************************************************/
+    void init(const std::string & _name) {
+      
+      if(isInit) {
+        fprintf(stderr, "error the window is already inited\n");
+        abort();
+      }
+      
+      name = _name;
+      
+      cv::namedWindow(name, cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_NORMAL);
+
+      cv::setMouseCallback(name, mouseHandler, this);
+      
+      isToClose = false;
+      
+      isInit = true;
+      
+    }
+    
+    //****************************************************************************/
     // show() -
     //****************************************************************************/
-    void show(const cv::Mat & _image, int time = 0, bool mode = true) {
+    int show(const cv::Mat & _image, int time = 0, bool mode = true) {
       
-      image = _image;
+      if(!isInit) {
+        fprintf(stderr, "error the window must be init before\n");
+        abort();
+      }
       
-      cv::imshow(name, image);
+      //image = _image;
+      
+      cv::imshow(name, _image);
       
       int key = -1;
       
@@ -125,14 +159,35 @@ namespace cvl {
           
       } else { key = cv::waitKey(time); }
 
-      processKeyboardEvent(key);
+      isToClose = false;
       
+      return processKeyboardEvent(key);
+      
+    }
+    
+    //****************************************************************************/
+    // setTitle() -
+    //****************************************************************************/
+    void setTitle(const std::string & str) {
+      
+      if(!isInit) {
+        fprintf(stderr, "error the window must be init before\n");
+        abort();
+      }
+      
+      cv::setWindowTitle(name, str);
+            
     }
     
     //****************************************************************************/
     // setFullScreen() -
     //****************************************************************************/
     void setFullScreen() {
+      
+      if(!isInit) {
+        fprintf(stderr, "error the window must be init before\n");
+        abort();
+      }
       
       cv::setWindowProperty(name, cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
       
@@ -143,6 +198,11 @@ namespace cvl {
     //****************************************************************************/
     void update(const cv::Mat & _image) {
       
+      if(!isInit) {
+        fprintf(stderr, "error the window must be init before\n");
+        abort();
+      }
+      
       cv::imshow(name, _image);
       
     }
@@ -151,6 +211,11 @@ namespace cvl {
     // resize() -
     //****************************************************************************/
     void resize(int _width, int _height) {
+      
+      if(!isInit) {
+        fprintf(stderr, "error the window must be init before\n");
+        abort();
+      }
       
       width  = _width;
       height = _height;
@@ -163,6 +228,11 @@ namespace cvl {
     // move() -
     //****************************************************************************/
     void move(int _screenPosX, int _screenPosY) {
+      
+      if(!isInit) {
+        fprintf(stderr, "error the window must be init before\n");
+        abort();
+      }
       
       screenPosX = _screenPosX;
       screenPosY = _screenPosY;
