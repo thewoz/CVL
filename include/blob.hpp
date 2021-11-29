@@ -80,6 +80,11 @@ public:
    /*****************************************************************************/
    size_t mass() const { return pixels.size(); }
    
+   /*****************************************************************************/
+   // clear
+   /*****************************************************************************/
+   void clear() { pixels.clear(); }
+   
   /*****************************************************************************/
   // finalize
   /*****************************************************************************/
@@ -135,6 +140,15 @@ public:
     
   }
   
+   void draw(cv::Mat & dst, int value) {
+     
+     for(uint32_t i=0; i<pixels.size(); i++)
+       dst.at<int>(pixels[i].y, pixels[i].x) = value;
+
+   }
+   
+   
+   
   /*****************************************************************************/
   // draw
   /*****************************************************************************/
@@ -197,6 +211,7 @@ public:
     draw(dst, cv::Vec3b(255,255,255), offset);
     
   }
+   
   
   /*****************************************************************************/
   // drawContours
@@ -464,7 +479,9 @@ public:
          mpl::log::error("The destination image is not a three channel image.\n");
     
     for(uint32_t i=0; i<blobs.size(); ++i) {
-      dst.at<cv::Vec3b>(cv::Point2i(blobs[i].baricenter.x*scaleFactor, blobs[i].baricenter.y*scaleFactor)) = color;
+
+      dst.at<cv::Vec3b>(cv::Point2i(blobs[i].baricenter.x*scaleFactor,blobs[i].baricenter.y*scaleFactor)) = color;
+                        
     }
     
   }

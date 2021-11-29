@@ -25,6 +25,7 @@
 
 #include <vector>
 #include <string>
+#include <random>
 
 #include <opencv2/opencv.hpp>
 
@@ -40,7 +41,8 @@ namespace cvl::blobsplitting {
   // namespace
   /*****************************************************************************/
   namespace utils {
-    
+  
+  
     /*****************************************************************************/
     // split
     // se devo andare con la soglia verso l'alto o il basso
@@ -123,7 +125,7 @@ namespace cvl::blobsplitting {
           
         } // ciclo sulla soglia
         
-        // se e' alla fine rimasto un solo cluster l'aggiungo al risulato
+        // se e' alla fine rimasto un solo cluster l'aggiungo l'originale al risulato
         if(tmpBlobs.size() <= 1) {
           
           blobsFound.push_back(blobsToSplit[i]);
@@ -142,7 +144,6 @@ namespace cvl::blobsplitting {
               // oppure lo aggiungo al risultato
             } else{
               
-              //TODO: qua dovrei espandere
               blobsFound.push_back(tmpBlobs[j]);
               
             }
@@ -152,17 +153,18 @@ namespace cvl::blobsplitting {
         } // else
         
       } // for i
-      
+            
     }
     
   }  /* namespace */
   
   
-  
-  /*****************************************************************************/
+//#define _DEBUG_CVL_BLOBSPLITTING_
+
+  //**************************************************************************** 
   // get
-  /*****************************************************************************/
-  void get(std::vector<blob_t> & blobs, const cv::Mat & src, const std::string & mode, uint32_t enterMass, uint32_t exitMass, uint32_t minMass, bool recursiveSplitting, const std::string & labelingNeighboursType){
+  //****************************************************************************
+  void get(std::vector<blob_t> & blobs, const cv::Mat & src, const cv::Mat & orig, const std::string & mode, uint32_t enterMass, uint32_t exitMass, uint32_t minMass, bool recursiveSplitting, const std::string & labelingNeighboursType){
 
     bool toDark = true;
     
@@ -193,7 +195,7 @@ namespace cvl::blobsplitting {
         
         // provo a splittarlo
         utils::split(blobs[i], src, blobsFound, toDark, enterMass, exitMass, minMass, recursiveSplitting, labelingNeighboursType);
-        
+
         // ciclo su tutti i blob trovati
         for(uint32_t j=0; j<blobsFound.size(); ++j) {
           
@@ -212,6 +214,89 @@ namespace cvl::blobsplitting {
       }
       
     }
+    
+#ifdef _DEBUG_CVL_BLOBSPLITTING_
+    cv::namedWindow("markers", cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_EXPANDED);
+#endif
+    
+    cv::Mat markers(src.size(), CV_32SC1);
+    markers = cv::Scalar::all(0);
+    
+#ifdef _DEBUG_CVL_BLOBSPLITTING_
+    cv::Mat markersColor(src.size(), CV_8UC3);
+    markersColor = cv::Scalar::all(0);
+#endif
+    
+    // creo la tabella di colori
+    std::vector<cv::Vec3b> colorTab;
+    for(int i=0; i<foundedBlobs.size(); ++i)
+      colorTab.push_back(cv::getRandomColor());
+        
+    for(int i=0; i<foundedBlobs.size(); ++i) {
+#ifdef _DEBUG_CVL_BLOBSPLITTING_
+      foundedBlobs[i].draw(markersColor, colorTab[i]);
+#endif
+      foundedBlobs[i].draw(markers, i+1);
+      foundedBlobs[i].clear();
+    }
+    
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distrX(0, markers.rows-1);
+    std::uniform_int_distribution<> distrY(0, markers.cols-1);
+
+    int count = 0;
+    
+    while(count <= 10) {
+      
+      int x = distrX(gen);
+      int y = distrY(gen);
+
+      if(markers.at<int>(x,y) == 0) {
+        markers.at<int>(x,y) = (int)foundedBlobs.size() + count + 1;
+        ++count;
+      }
+      
+    }
+      
+    cv::Mat srcColor; cvtColor(src, srcColor, cv::COLOR_GRAY2BGR);
+
+    cv::watershed(srcColor, markers);
+
+#ifdef _DEBUG_CVL_BLOBSPLITTING_
+    cv::Mat wshed(markers.size(), CV_8UC3);
+#endif
+    
+    for(int i=0; i<markers.rows; ++i) {
+      for(int  j=0; j<markers.cols; ++j) {
+         
+        int index = markers.at<int>(i,j);
+  
+#ifdef _DEBUG_CVL_BLOBSPLITTING_
+        if(index == -1)
+          //wshed.at<cv::Vec3b>(i,j) = cv::Vec3b(255,255,255);
+          wshed.at<cv::Vec3b>(i,j) = cv::Vec3b(0,0,0);
+        else if(index <= 0 || index > foundedBlobs.size())
+          wshed.at<cv::Vec3b>(i,j) = cv::Vec3b(0,0,0);
+        else
+          wshed.at<cv::Vec3b>(i,j) = colorTab[index-1];
+#endif
+        
+        if(index > 0 && index <= foundedBlobs.size()) {
+          foundedBlobs[index-1].add(j, i, orig.at<uchar>(i,j));
+        }
+        
+       }
+      
+    }
+    
+#ifdef _DEBUG_CVL_BLOBSPLITTING_
+    wshed = wshed + markersColor*0.5;
+    cv::imshow("markers", wshed); cv::waitKey(0);
+#endif
+    
+    for(int i=0; i<foundedBlobs.size(); ++i)
+      foundedBlobs[i].finalize();
     
     blobs.swap(foundedBlobs);
     
