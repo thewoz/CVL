@@ -291,7 +291,7 @@ namespace cvl::labeling {
       blobs.push_back(blob);
       
     }
-    
+        
     utils::freeMatrix(matrixLabel, workImageSize);
     
   }
