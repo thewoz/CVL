@@ -90,6 +90,9 @@ namespace cvl::clustering {
     
     cluster = clusters[nearIndex];
     
+    for(int i=0; i<cluster.size(); ++i)
+      cluster[i].label = i;
+    
     return clusters[nearIndex].baricenter;
     
   }
