@@ -40,7 +40,7 @@ namespace cvl::baricenter {
 
 		cv::Point2d baricenter(0.0, 0.0);
 
-		for(uint32_t i=0; i<pixels.size(); ++i) {
+		for(size_t i=0; i<pixels.size(); ++i) {
 		      
 		  baricenter.x += pixels[i].x;
 		  baricenter.y += pixels[i].y;
@@ -63,9 +63,9 @@ namespace cvl::baricenter {
 	//****************************************************************************
 	cv::Point2d maxIntensity(const std::vector<cv::Point3i> & pixels) {
 		    
-		uint32_t maxPixelIntensity = 0;
+    size_t maxPixelIntensity = 0;
 		
-		for(uint32_t i=0; i<pixels.size(); ++i) {
+		for(size_t i=0; i<pixels.size(); ++i) {
 
 		  if(pixels[i].z > pixels[maxPixelIntensity].z )
 				maxPixelIntensity = i;
@@ -87,9 +87,9 @@ namespace cvl::baricenter {
 	//****************************************************************************
 	cv::Point2d lowIntensity(const std::vector<cv::Point3i> & pixels) {
 		
-		uint32_t lowPixelIntensity = 256;
+		size_t lowPixelIntensity = pixels.size() - 1;
 		
-		for(uint32_t i=0; i<pixels.size(); ++i) {
+		for(size_t i=0; i<pixels.size(); ++i) {
 
 		  if(pixels[i].z < pixels[lowPixelIntensity].z )
 				lowPixelIntensity = i;
@@ -111,11 +111,11 @@ namespace cvl::baricenter {
 	//****************************************************************************
 	cv::Point2d maxIntensityWeighted(const std::vector<cv::Point3i> & pixels) {
 		
-		uint32_t totalPixelsIntensity = 0;
+    size_t totalPixelsIntensity = 0;
 		
 		cv::Point2d baricenter(0.0, 0.0);
 		
-		for(int i=0; i<pixels.size(); ++i) {
+		for(size_t i=0; i<pixels.size(); ++i) {
 		  
 		  totalPixelsIntensity += pixels[i].z;
 		  
@@ -145,11 +145,11 @@ namespace cvl::baricenter {
 	//*****************************************************************************
 	cv::Point2d lowIntensityWeighted(const std::vector<cv::Point3i> & pixels) {
 
-		uint32_t totalPixelsIntensity = 0;
+    size_t totalPixelsIntensity = 0;
 		
 		cv::Point2d baricenter(0.0, 0.0);
 		
-		for(int i=0; i<pixels.size(); ++i) {
+		for(size_t i=0; i<pixels.size(); ++i) {
 		  
 		  totalPixelsIntensity += 255 - pixels[i].z;
 		  
