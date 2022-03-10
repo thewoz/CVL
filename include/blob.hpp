@@ -516,7 +516,36 @@ public:
     
   }
   
-  /*****************************************************************************/
+  //*****************************************************************************
+  // enclosingCircle
+  //*****************************************************************************
+  void enclosingCircle(cv::Point2f & center, float & radius) {
+  
+    std::vector<cv::Point2f> points(blobs.size());
+    
+    for(uint32_t i=0; i<blobs.size(); ++i)
+      points[i] = blobs[i].baricenter;
+    
+    cv::minEnclosingCircle(points, center, radius);
+  
+  }
+  
+  //*****************************************************************************
+  // boundingRect
+  //*****************************************************************************
+  void boundingRect(cv::Rect & roi) {
+    
+    std::vector<cv::Point2f> points(blobs.size());
+    
+    for(uint32_t i=0; i<blobs.size(); ++i)
+      points[i] = blobs[i].baricenter;
+    
+    roi = cv::boundingRect(points);
+  
+  }
+  
+  
+  //*****************************************************************************
   // save
   //*****************************************************************************
   void save(FILE * outputPoints, int32_t camera, int32_t frame, FILE * outputFrame = NULL) {
