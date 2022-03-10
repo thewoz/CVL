@@ -32,18 +32,21 @@
 #include "blob.hpp"
 #include "labeling.hpp"
 
-/*****************************************************************************/
+//#define _DEBUG_CVL_BLOBSPLITTING_
+
+
+//*****************************************************************************
 // namespace
-/*****************************************************************************/
+//*****************************************************************************
 namespace cvl::blobsplitting {
   
-  /*****************************************************************************/
+  //*****************************************************************************
   // namespace
-  /*****************************************************************************/
+  //*****************************************************************************
   namespace utils {
   
   
-    /*****************************************************************************/
+    //*****************************************************************************
     // split
     // se devo andare con la soglia verso l'alto o il basso
     //    bool toDark;
@@ -62,8 +65,12 @@ namespace cvl::blobsplitting {
     //
     //    // se devo continuare a dividire una volta diviso
     //    bool recursiveSplitting;
-    /*****************************************************************************/
+    //*****************************************************************************
     void split(blob_t & blob, const cv::Mat & src, std::vector<blob_t> & blobsFound, bool toDark, uint32_t enterMass, uint32_t exitMass, uint32_t minMass, bool recursiveSplitting, const std::string & labelingNeighboursType) {
+      
+#ifdef _DEBUG_CVL_BLOBSPLITTING_
+    //cv::namedWindow("blobs", cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_EXPANDED);
+#endif
       
       // vettore che contiene i blob che saranno trovati
       blobsFound.clear();
@@ -98,11 +105,28 @@ namespace cvl::blobsplitting {
           threshold       = blobsToSplit[i].iMin;
         }
         
+        //printf("threshold min %d threshold max %d\n", blobsToSplit[i].iMin, blobsToSplit[i].iMax);
+        
+//        if(targetThreshold == 0 && threshold ==0) {
+//          printf("i %d\n", i);
+//          printf("baricenter %f %f\n", blobsToSplit[i].baricenter.x, blobsToSplit[i].baricenter.y);
+//          printf("mass %lu\n", blobsToSplit[i].mass());
+//          fflush(stdout);
+//          cv::namedWindow("blobs", cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_EXPANDED);
+//          blobsToSplit[i].draw(blobImg, blob.offset);
+//          cv::imshow("blobs", blobImg); cv::waitKey(0);
+//          abort();
+//        }
+        
         // dimenzione imagine disegno il blob
         blobsToSplit[i].draw(blobImg, blob.offset);
         
+        //cv::imshow("blobs", blobImg); cv::waitKey(0);
+
         // ciclo sulla soglia fino a che non splitto o raggiungo il minimo
         for(;;) {
+          
+          //printf("threshold %d\n", threshold); fflush(stdout);
           
           // applico la nuova soglia
           if(toDark){
@@ -114,11 +138,13 @@ namespace cvl::blobsplitting {
           }
           //
           
+          //cv::imshow("blobs", thrsImg); cv::waitKey(0);
+          
           // trovo le componeti connesse
           cvl::labeling::get(thrsImg, labelingNeighboursType, minMass, tmpBlobs, src, blob.offset);
           
-          // se non ho ancora un solo blob con massa ancora grande continuo
-          if(!(tmpBlobs.size() == 1 && tmpBlobs[0].pixels.size() > exitMass)) break;
+          // se l'ho diviso o è rimasto un troppo piccolo esco
+          if(tmpBlobs.size() > 1 || tmpBlobs.size() == 0 || tmpBlobs[0].pixels.size() <= exitMass) break;
           
           if(toDark) { --threshold; /*if(threshold > tmpBlobs[0].iMax) threshold = tmpBlobs[0].iMax;*/ }
           else       { ++threshold; /*if(threshold < tmpBlobs[0].iMin) threshold = tmpBlobs[0].iMin;*/ }
@@ -126,29 +152,47 @@ namespace cvl::blobsplitting {
         } // ciclo sulla soglia
         
         // se e' alla fine rimasto un solo cluster l'aggiungo l'originale al risulato
-        if(tmpBlobs.size() <= 1) {
+        if(tmpBlobs.size() == 1) {
           
           blobsFound.push_back(blobsToSplit[i]);
           
           // se il blob e' stato diviso
         } else {
           
-          // ciclo su i blob trovati
-          for(uint32_t j=0; j<tmpBlobs.size(); ++j){
-            
-            // se il blob trovato e' ancora abbastanza grande e lo splitig e' ricorsivo lo aggiungo ai blob da dividere
-            if(tmpBlobs[j].pixels.size() > enterMass && recursiveSplitting){
-              
-              blobsToSplit.push_back(tmpBlobs[j]);
-              
-              // oppure lo aggiungo al risultato
-            } else{
-              
-              blobsFound.push_back(tmpBlobs[j]);
-              
+          // pulisco quelli troppo piccoli
+          for(uint32_t j=0; j<tmpBlobs.size(); ++j) {
+            if(tmpBlobs[j].pixels.size() < exitMass) {
+              tmpBlobs.erase(tmpBlobs.begin() + j);
+              --j;
             }
+          }
+
+          // se ne ho piu di uno
+          if(tmpBlobs.size() > 1) {
+          
+            // ciclo su i blob trovati
+            for(uint32_t j=0; j<tmpBlobs.size(); ++j){
+              
+              // se il blob trovato e' ancora abbastanza grande e lo splitig e' ricorsivo lo aggiungo ai blob da dividere
+              if(tmpBlobs[j].pixels.size() > enterMass && recursiveSplitting){
+                
+                blobsToSplit.push_back(tmpBlobs[j]);
+                
+                // oppure lo aggiungo al risultato
+              } else{
+                
+                blobsFound.push_back(tmpBlobs[j]);
+                
+              }
             
-          } // for j
+            } // for j
+            
+          // se era rimasta solo polvere
+          } else {
+            
+            blobsFound.push_back(blobsToSplit[i]);
+
+          }
           
         } // else
         
@@ -159,12 +203,10 @@ namespace cvl::blobsplitting {
   }  /* namespace */
   
   
-//#define _DEBUG_CVL_BLOBSPLITTING_
-
   //**************************************************************************** 
   // get
   //****************************************************************************
-  void get(std::vector<blob_t> & blobs, const cv::Mat & src, const cv::Mat & orig, const std::string & mode, uint32_t enterMass, uint32_t exitMass, uint32_t minMass, bool recursiveSplitting, const std::string & labelingNeighboursType){
+  void get(std::vector<blob_t> & blobs, const cv::Mat & src, const std::string & mode, uint32_t enterMass, uint32_t exitMass, uint32_t minMass, bool recursiveSplitting, const std::string & labelingNeighboursType){
 
     bool toDark = true;
     
@@ -184,7 +226,7 @@ namespace cvl::blobsplitting {
     
     // vettore di appoggio con il risultato finale
     std::vector<blob_t> foundedBlobs;
-    
+        
     // provo a dividere ogni blob
     for(uint32_t i=0; i<blobs.size(); ++i) {
       
@@ -219,46 +261,36 @@ namespace cvl::blobsplitting {
     cv::namedWindow("markers", cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_EXPANDED);
 #endif
     
-    cv::Mat markers(src.size(), CV_32SC1);
-    markers = cv::Scalar::all(0);
+    // creo un immagine come se fosse tutto cielo (sfondo)
+    cv::Mat markers(src.size(), CV_32SC1, cv::Scalar::all(foundedBlobs.size()+1));
+        
+    // ciclo sui blob di partenza
+    for(uint32_t i=0; i<blobs.size(); ++i) {
+      
+      // mi calcolo un raggio doppio che lo racchiude
+      double r = sqrt(blobs[i].mass() / M_PI) * 2.0;
+      
+      // disegno un cerchio nero per dire che quell'aria non so cosa sia
+      cv::circle(markers, blobs[i].baricenter, r, cv::Scalar(0), cv::FILLED);
+
+    }
     
+    // ciclo sui blob dopo lo split e metto i seed
+    for(int i=0; i<foundedBlobs.size(); ++i)
+      foundedBlobs[i].draw(markers, i+1);
+        
 #ifdef _DEBUG_CVL_BLOBSPLITTING_
     cv::Mat markersColor(src.size(), CV_8UC3);
     markersColor = cv::Scalar::all(0);
-#endif
     
     // creo la tabella di colori
     std::vector<cv::Vec3b> colorTab;
-    for(int i=0; i<foundedBlobs.size(); ++i)
-      colorTab.push_back(cv::getRandomColor());
-        
     for(int i=0; i<foundedBlobs.size(); ++i) {
-#ifdef _DEBUG_CVL_BLOBSPLITTING_
+      colorTab.push_back(cv::getRandomColor());
       foundedBlobs[i].draw(markersColor, colorTab[i]);
+    }
 #endif
-      foundedBlobs[i].draw(markers, i+1);
-      foundedBlobs[i].clear();
-    }
-    
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distrX(0, markers.rows-1);
-    std::uniform_int_distribution<> distrY(0, markers.cols-1);
 
-    int count = 0;
-    
-    while(count <= 10) {
-      
-      int x = distrX(gen);
-      int y = distrY(gen);
-
-      if(markers.at<int>(x,y) == 0) {
-        markers.at<int>(x,y) = (int)foundedBlobs.size() + count + 1;
-        ++count;
-      }
-      
-    }
-      
     cv::Mat srcColor; cvtColor(src, srcColor, cv::COLOR_GRAY2BGR);
 
     cv::watershed(srcColor, markers);
@@ -268,7 +300,7 @@ namespace cvl::blobsplitting {
 #endif
     
     for(int i=0; i<markers.rows; ++i) {
-      for(int  j=0; j<markers.cols; ++j) {
+      for(int j=0; j<markers.cols; ++j) {
          
         int index = markers.at<int>(i,j);
   
@@ -283,7 +315,7 @@ namespace cvl::blobsplitting {
 #endif
         
         if(index > 0 && index <= foundedBlobs.size()) {
-          foundedBlobs[index-1].add(j, i, orig.at<uchar>(i,j));
+          foundedBlobs[index-1].add(j, i, src.at<uchar>(i,j));
         }
         
        }
@@ -295,9 +327,11 @@ namespace cvl::blobsplitting {
     cv::imshow("markers", wshed); cv::waitKey(0);
 #endif
     
-    for(int i=0; i<foundedBlobs.size(); ++i)
-      foundedBlobs[i].finalize();
-    
+    for(int i=0; i<foundedBlobs.size(); ++i) {
+      if(foundedBlobs[i].mass() <= 0) { foundedBlobs.erase(foundedBlobs.begin()+i); --i; }
+        foundedBlobs[i].finalize();
+    }
+      
     blobs.swap(foundedBlobs);
     
   }
