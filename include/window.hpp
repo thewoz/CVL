@@ -52,9 +52,11 @@ namespace cvl {
     //int mouseClickX;
     //int mouseClickY;
     
-    bool isToClose;
+    bool isToClose = false;
     
-    bool isInit;
+    bool isInit = false;
+    
+    bool isFullScreen = false;
 
     //cv::Mat image;
     
@@ -82,21 +84,19 @@ namespace cvl {
     //****************************************************************************/
     // window_t()
     //****************************************************************************/
-    window_t() : isInit(false) {  }
+    window_t() {  }
     
     //****************************************************************************/
     // window_t()
     //****************************************************************************/
-    window_t(const std::string & _name) : isInit(true)  {
+    window_t(const std::string & _name) {
       
       name = _name;
       
       cv::namedWindow(name, cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_NORMAL);
 
       cv::setMouseCallback(name, mouseHandler, this);
-      
-      isToClose = false;
-      
+            
     }
     
     //****************************************************************************/
@@ -158,7 +158,7 @@ namespace cvl {
         
         while(cv::getWindowProperty(name, cv::WND_PROP_VISIBLE) >= 1) {
           if((key=cv::waitKey(time)) != -1) {
-            processKeyboardEvent(key);
+            key = processKeyboardEvent(key);
             if(mode || isToClose) break;
           }
         }
@@ -167,7 +167,7 @@ namespace cvl {
 
       isToClose = false;
       
-      return processKeyboardEvent(key);
+      return key; // processKeyboardEvent(key);
       
     }
     
@@ -186,16 +186,51 @@ namespace cvl {
     }
     
     //****************************************************************************/
-    // setFullScreen() -
+    // toggleFullScreen() -
     //****************************************************************************/
-    void setFullScreen() {
-      
+    void toggleFullScreen() {
+            
       if(!isInit) {
         fprintf(stderr, "error the window must be init before\n");
         abort();
       }
       
+      isFullScreen = !isFullScreen;
+      
+      if( isFullScreen) cv::setWindowProperty(name, cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
+      if(!isFullScreen) cv::setWindowProperty(name, cv::WND_PROP_FULLSCREEN, cv::WINDOW_NORMAL);
+      
+    }
+    
+    //****************************************************************************/
+    // setFullScreen() -
+    //****************************************************************************/
+    void setFullScreen() {
+            
+      if(!isInit) {
+        fprintf(stderr, "error the window must be init before\n");
+        abort();
+      }
+      
+      isFullScreen = true;
+      
       cv::setWindowProperty(name, cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
+      
+    }
+    
+    //****************************************************************************/
+    // unsetFullScreen() -
+    //****************************************************************************/
+    void unsetFullScreen() {
+            
+      if(!isInit) {
+        fprintf(stderr, "error the window must be init before\n");
+        abort();
+      }
+      
+      isFullScreen = false;
+      
+      cv::setWindowProperty(name, cv::WND_PROP_FULLSCREEN, cv::WINDOW_NORMAL);
       
     }
     
