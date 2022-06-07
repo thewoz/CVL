@@ -56,6 +56,13 @@ namespace cvl::chessboard {
         // cerco la scacchiera
         patternfound = cv::findChessboardCornersSB(image, patternSize, corners, cv::CALIB_CB_EXHAUSTIVE | cv::CALIB_CB_ACCURACY);
       
+        // FIX FOR OPENCV ISSUE
+        std::sort(corners.begin(), corners.end(), [](cv::Point2f & a, cv::Point2f & b) {
+          if(a.y < b.y) return true;
+          else if(a.y == b.y) return (a.x < b.x);
+          else return false;
+        });
+        
       }
       
       // Cerco i subpixel con l'algoritmo vecchio
