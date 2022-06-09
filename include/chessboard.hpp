@@ -48,9 +48,6 @@ namespace cvl::chessboard {
     // Se devo trovare la scacchiera
     if(!mode.compare("checkerboard")) {
       
-      // chessBoard flags
-      int chessBoardFlags = cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_NORMALIZE_IMAGE;
-      
       // Cerco i subpixel con l'algoritmo nuovo
       if(!algorithm.compare("new")){
         // cerco la scacchiera
@@ -67,6 +64,9 @@ namespace cvl::chessboard {
       
       // Cerco i subpixel con l'algoritmo vecchio
       if(!algorithm.compare("old")){
+        
+        // chessBoard flags
+        int chessBoardFlags = cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_NORMALIZE_IMAGE;
         
         // cerco la scacchiera
         patternfound = cv::findChessboardCorners(image, patternSize, corners, chessBoardFlags | cv::CALIB_CB_FAST_CHECK);
