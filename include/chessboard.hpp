@@ -49,21 +49,15 @@ namespace cvl::chessboard {
     if(!mode.compare("checkerboard")) {
       
       // Cerco i subpixel con l'algoritmo nuovo
-      if(!algorithm.compare("new")){
+      if(!algorithm.compare("new")) {
+        
         // cerco la scacchiera
         patternfound = cv::findChessboardCornersSB(image, patternSize, corners, cv::CALIB_CB_EXHAUSTIVE | cv::CALIB_CB_ACCURACY);
-      
-        // FIX FOR OPENCV ISSUE
-        std::sort(corners.begin(), corners.end(), [](cv::Point2f & a, cv::Point2f & b) {
-          if(a.y < b.y) return true;
-          else if(a.y == b.y) return (a.x < b.x);
-          else return false;
-        });
-        
+              
       }
       
       // Cerco i subpixel con l'algoritmo vecchio
-      if(!algorithm.compare("old")){
+      if(!algorithm.compare("old")) {
         
         // chessBoard flags
         int chessBoardFlags = cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_NORMALIZE_IMAGE;
@@ -76,6 +70,13 @@ namespace cvl::chessboard {
           patternfound = cv::findChessboardCorners(image, patternSize, corners, chessBoardFlags);
         
       }
+      
+      // FIX FOR OPENCV ISSUE
+      std::sort(corners.begin(), corners.end(), [](cv::Point2f & a, cv::Point2f & b) {
+        if(a.y < b.y) return true;
+        else if(a.y == b.y) return (a.x < b.x);
+        else return false;
+      });
       
       // Se l'ho trovata mi calcolo i subpixels
       if(patternfound) {
