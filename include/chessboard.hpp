@@ -30,6 +30,7 @@
 
 #include <mpl/stdio.hpp>
 #include <mpl/opencv.hpp>
+#include <mpl/loader.hpp>
 
 #include <cvl/subpixel.hpp>
 
@@ -183,5 +184,78 @@ namespace cvl::chessboard {
 
 } /* namespace cvl::chessboard */
 
+
+//****************************************************************************/
+// namespace cvl
+//****************************************************************************/
+namespace cvl {
+
+  //****************************************************************************/
+  // chessboard_t
+  //****************************************************************************/
+  class chessboard_t : public mpl::loader {
+    
+  public:
+    
+    std::vector<std::vector<cv::Point3d>> objectPoints;
+    std::vector<std::vector<cv::Point2d>> imagePoints;
+    
+    //****************************************************************************/
+    // scale
+    //****************************************************************************/
+    void scale(double factor) {
+      
+      for(int i=0; i<objectPoints.size(); ++i) {
+
+        for(int j=0; j<objectPoints[i].size(); ++j) {
+          
+          objectPoints[i][j].x *= factor;
+          objectPoints[i][j].y *= factor;
+          objectPoints[i][j].z *= factor;
+                        
+        }
+      
+      }
+      
+    }
+    
+  private:
+    
+    //****************************************************************************/
+    // filler
+    //****************************************************************************/
+    void filler(const mpl::loader::data & arguments) {
+      
+      static std::string frame = "";
+      
+      if(arguments.get<std::string>(0).compare(frame)) {
+        
+        objectPoints.push_back(std::vector<cv::Point3d>());
+        imagePoints.push_back(std::vector<cv::Point2d>());
+
+        frame = arguments.get<std::string>(0);
+        
+      }
+      
+      cv::Point3d objectPoint;
+      
+      objectPoint.x = arguments.get<double>(1);
+      objectPoint.y = arguments.get<double>(2);
+      objectPoint.z = arguments.get<double>(3);
+      
+      objectPoints.back().push_back(objectPoint);
+      
+      cv::Point2d imagePoint;
+      
+      imagePoint.x = arguments.get<double>(4);
+      imagePoint.y = arguments.get<double>(5);
+      
+      imagePoints.back().push_back(imagePoint);
+      
+    }
+    
+  }; /* class chessboard_t */
+
+} /* namespace */
 
 #endif /* _H_CVL_CORNERS_H_ */
