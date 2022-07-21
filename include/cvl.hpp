@@ -37,5 +37,6 @@
 #include <cvl/targetMass.hpp>
 #include <cvl/threshold.hpp>
 #include <cvl/window.hpp>
+#include <cvl/pose.hpp>
 
 #endif /* _H_CVL_H_ */
