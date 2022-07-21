@@ -71,12 +71,12 @@ namespace cvl::chessboard {
         
       }
       
-      // FIX FOR OPENCV ISSUE
-      std::sort(corners.begin(), corners.end(), [](cv::Point2f & a, cv::Point2f & b) {
-        if(a.y < b.y) return true;
-        else if(a.y == b.y) return (a.x < b.x);
-        else return false;
-      });
+      // FIX FOR OPENCV ISSUE (GIUSTAMENTE NON FUNZIONA)
+//      std::sort(corners.begin(), corners.end(), [](cv::Point2f & a, cv::Point2f & b) {
+//        if(a.y < b.y) return true;
+//        else if(a.y == b.y) return (a.x < b.x);
+//        else return false;
+//      });
       
       // Se l'ho trovata mi calcolo i subpixels
       if(patternfound) {
