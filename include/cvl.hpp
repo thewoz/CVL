@@ -26,6 +26,7 @@
 #include <cvl/blob.hpp>
 #include <cvl/blobSplitting.hpp>
 #include <cvl/chessboard.hpp>
+#include <cvl/corners.hpp>
 #include <cvl/clustering.hpp>
 #include <cvl/contours.hpp>
 #include <cvl/deflickering.hpp>

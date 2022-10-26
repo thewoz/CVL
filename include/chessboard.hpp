@@ -18,8 +18,8 @@
  */
 
 
-#ifndef _H_CVL_CORNERS_H_
-#define _H_CVL_CORNERS_H_
+#ifndef _H_CVL_CHESSBOARD_H_
+#define _H_CVL_CHESSBOARD_H_
 
 #include <cstdio>
 #include <cstdlib>
@@ -193,7 +193,7 @@ namespace cvl {
   //****************************************************************************/
   // chessboard_t
   //****************************************************************************/
-  class chessboard_t : public mpl::loader {
+  class chessboard_t {
     
   public:
     
@@ -216,6 +216,16 @@ namespace cvl {
         }
       
       }
+      
+    }
+    
+    //****************************************************************************/
+    // load
+    //****************************************************************************/
+    void load(std::string filepath) {
+      
+      mpl::loader loader;
+      loader(filepath, "1 2 3 4 5 6", this, &chessboard_t::filler);
       
     }
     
@@ -258,4 +268,4 @@ namespace cvl {
 
 } /* namespace */
 
-#endif /* _H_CVL_CORNERS_H_ */
+#endif /* _H_CVL_CHESSBOARD_H_ */
