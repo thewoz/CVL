@@ -120,6 +120,19 @@ namespace cvl::enhance {
   }
 
   //****************************************************************************
+  // contrast
+  //****************************************************************************
+  void contrast(cv::Mat & image, float alpha, float beta) {
+    
+    if(image.channels() != 1) {
+      fprintf(stderr, "error autoContrast() works only with one channel image\n");
+      abort();
+    }
+    cv::convertScaleAbs(image, image, alpha, beta);
+    
+  }
+
+  //****************************************************************************
   // autoContrast
   //****************************************************************************
   void autoContrast(cv::Mat & image, float clipHistPercent) {
@@ -133,26 +146,7 @@ namespace cvl::enhance {
                     
     utils::auto_alpha_beta(image, clipHistPercent, alpha, beta);
     
-    // si potrebbe chiamare direttamente convertScaleAbs()
-    if(image.depth() == CV_8U) {
-    
-      for(int y = 0; y < image.rows; ++y) {
-        for(int x = 0; x < image.cols; ++x) {
-          image.at<uchar>(y,x) = cv::saturate_cast<uchar>(alpha*image.at<uchar>(y,x) + beta);
-          }
-        }
-
-    }
-    
-    if(image.depth() == CV_16U) {
-      
-      for(int y = 0; y < image.rows; ++y) {
-        for(int x = 0; x < image.cols; ++x) {
-          image.at<ushort>(y,x) = cv::saturate_cast<ushort>(alpha*image.at<ushort>(y,x) + beta);
-        }
-      }
-      
-    }
+    cv::convertScaleAbs(image, image, alpha, beta);
                     
   }
   
