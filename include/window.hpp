@@ -89,15 +89,7 @@ namespace cvl {
     //****************************************************************************/
     // window_t()
     //****************************************************************************/
-    window_t(const std::string & _name) {
-      
-      name = _name;
-      
-      cv::namedWindow(name, cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_NORMAL);
-
-      cv::setMouseCallback(name, mouseHandler, this);
-            
-    }
+    window_t(const std::string & _name) { init(_name); }
     
     //****************************************************************************/
     // ~window_t()
@@ -152,7 +144,7 @@ namespace cvl {
       
       int key = -1;
       
-      if(time == 0) {
+      if(time == 0) { 
         
         time = 100;
         
@@ -162,11 +154,12 @@ namespace cvl {
             if(mode || isToClose) break;
           }
         }
+        
           
       } else { key = cv::waitKey(time); }
 
       isToClose = false;
-      
+
       return key; // processKeyboardEvent(key);
       
     }
