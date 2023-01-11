@@ -531,6 +531,20 @@ public:
   }
   
   //*****************************************************************************
+  // getConvexHull
+  //*****************************************************************************
+  void getConvexHull(std::vector<cv::Point> & hull) {
+  
+    std::vector<cv::Point> points(blobs.size());
+    
+    for(uint32_t i=0; i<blobs.size(); ++i)
+      points[i] = blobs[i].baricenter;
+    
+    cv::convexHull(points, hull, false, true);
+  
+  }
+  
+  //*****************************************************************************
   // boundingRect
   //*****************************************************************************
   void boundingRect(cv::Rect & roi) {
