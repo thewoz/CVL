@@ -28,6 +28,9 @@
 
 #include <opencv2/opencv.hpp>
 
+//#include <QtWidgets/QWidget>
+//#include <QtGui/QCursor>
+//#include <QtGui/QGuiApplication>
 
 //****************************************************************************/
 // namescape cvl
@@ -141,7 +144,7 @@ namespace cvl {
       //image = _image;
       
       cv::imshow(name, _image);
-      
+            
       int key = -1;
       
       if(time == 0) { 
@@ -275,6 +278,19 @@ namespace cvl {
       
     }
 
+    //****************************************************************************/
+    // setCursor() -
+    //****************************************************************************/
+    void setCursor() {
+      
+      //QWidget * handle = (QWidget*) cv::getWindowHandle(name);
+
+      //handle->setCursor(Qt::WaitCursor);
+      
+      //QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+      
+    }
+    
   }; /* class window_t */
 
 } /* namespace cvl */
