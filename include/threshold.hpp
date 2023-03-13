@@ -176,7 +176,7 @@ namespace cvl::threshold {
   //****************************************************************************/
   // adaptive
   //****************************************************************************/
-  double adaptive(cv::Mat & src, const cv::Mat & mask, int adaptiveMethod = cv::ADAPTIVE_THRESH_MEAN_C, int thresholdType = cv::THRESH_BINARY_INV, int blockSize = 11, double C = 4) {
+  double adaptive(cv::Mat & src, int adaptiveMethod, int thresholdType, int blockSize, double C, const cv::Mat & mask) {
 
     cv::adaptiveThreshold(src, src, 255, adaptiveMethod, thresholdType, blockSize, C);
   
@@ -258,6 +258,14 @@ namespace cvl::threshold {
       return global(src, param1, mask);
     }
     
+    if(algo.compare("MODA") == 0) {
+      return moda(src, param1, WHIT_ZERO, mask);
+    }
+    
+    if(algo.compare("MODA_SKIP_ZERO") == 0) {
+      return moda(src, param1, SKIP_ZERO, mask);
+    }
+    
     if(algo.compare("MEDIAN") == 0) {
       return median(src, param1, WHIT_ZERO, mask);
     }
@@ -271,8 +279,7 @@ namespace cvl::threshold {
     }
     
     if(algo.compare("ADAPTIVE") == 0) {
-
-      return adaptive(src, mask, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY, param1, param2);
+      return adaptive(src, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY, param1, param2, mask);
     }
     
     fprintf(stderr, "error unknown type of threshold evaluation criteria.\n");

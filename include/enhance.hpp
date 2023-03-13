@@ -257,6 +257,10 @@ namespace cvl::enhance {
       return unsharpMask(src, param1, param2, param3, param4);
     }
     
+    if(algo.compare("CONTRAST") == 0) {
+      return contrast(src, param1, param2);
+    }
+    
     if(algo.compare("AUTO_CONTRAST") == 0) {
       return autoContrast(src, param1);
     }

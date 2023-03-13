@@ -558,6 +558,42 @@ public:
   
   }
   
+  //*****************************************************************************
+  // getPoints
+  //*****************************************************************************
+  void getPoints(std::vector<cv::Point2f> & points) {
+    
+    points.resize(blobs.size());
+    
+    for(uint32_t i=0; i<blobs.size(); ++i)
+      points[i] = blobs[i].baricenter;
+    
+  }
+  
+  //*****************************************************************************
+  // applyRTS
+  //*****************************************************************************
+  void applyRTS(const cv::Point2d & p0, cv::Mat & R, cv::Mat & T, double S = 1.0) {
+
+    cv::Point2d tmp;
+      
+    for(std::size_t i=0; i<blobs.size(); ++i) {
+
+      for(std::size_t j=0; j<blobs[i].pixels.size(); ++j) {
+
+        tmp.x = (((((double*)R.data)[0]*(blobs[i].pixels[j].x-p0.x)) + (((double*)R.data)[1]*(blobs[i].pixels[j].y-p0.y))) * S) + ((double*)T.data)[0] + p0.x;
+        tmp.y = (((((double*)R.data)[2]*(blobs[i].pixels[j].x-p0.x)) + (((double*)R.data)[3]*(blobs[i].pixels[j].y-p0.y))) * S) + ((double*)T.data)[1] + p0.y;
+
+        blobs[i].pixels[j].x = std::round(tmp.x);
+        blobs[i].pixels[j].y = std::round(tmp.y);
+
+      }
+
+      blobs[i].finalize();
+      
+    }
+    
+  }
   
   //*****************************************************************************
   // save
