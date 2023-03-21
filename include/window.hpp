@@ -67,7 +67,7 @@ namespace cvl {
     // mouseHandler
     //****************************************************************************/
     static void mouseHandler(int event, int x, int y, int flags, void * window) {
-              
+      
       ((window_t*)window)->processMouseEvent(event, x, y);
 
     }
@@ -75,7 +75,7 @@ namespace cvl {
     //****************************************************************************/
     // processMouseEvent
     //****************************************************************************/
-    virtual void processMouseEvent(int event, int mouseX, int mouseY) {}
+    virtual void processMouseEvent(int event, int x, int y) {}
     
     //****************************************************************************/
     // processKeyboardEvent
@@ -92,7 +92,7 @@ namespace cvl {
     //****************************************************************************/
     // window_t()
     //****************************************************************************/
-    window_t(const std::string & _name) { init(_name); }
+    window_t(const std::string & _name, int flags = cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_NORMAL) { init(_name, flags); }
     
     //****************************************************************************/
     // ~window_t()
@@ -112,7 +112,7 @@ namespace cvl {
     //****************************************************************************/
     // init() -
     //****************************************************************************/
-    void init(const std::string & _name) {
+    void init(const std::string & _name, int flags = cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_NORMAL) {
       
       if(isInit) {
         fprintf(stderr, "error the window is already inited\n");
@@ -121,7 +121,7 @@ namespace cvl {
       
       name = _name;
       
-      cv::namedWindow(name, cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_NORMAL);
+      cv::namedWindow(name, flags);
 
       cv::setMouseCallback(name, mouseHandler, this);
       
