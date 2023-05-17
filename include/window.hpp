@@ -57,6 +57,8 @@ namespace cvl {
     
     bool isToClose = false;
     
+    bool isToUpdate = false;
+    
     bool isInit = false;
     
     bool isFullScreen = false;
@@ -140,9 +142,7 @@ namespace cvl {
         fprintf(stderr, "error the window must be init before\n");
         abort();
       }
-      
-      //image = _image;
-      
+
       cv::imshow(name, _image);
             
       int key = -1;
@@ -152,9 +152,10 @@ namespace cvl {
         time = 100;
         
         while(cv::getWindowProperty(name, cv::WND_PROP_VISIBLE) >= 1) {
+          if(isToUpdate) break;
           if((key=cv::waitKey(time)) != -1) {
             key = processKeyboardEvent(key);
-            if(mode || isToClose) break;
+            if(mode || isToClose || isToUpdate) break;
           }
         }
         
@@ -162,6 +163,8 @@ namespace cvl {
       } else { key = cv::waitKey(time); }
 
       isToClose = false;
+      
+      isToUpdate = false;
 
       return key; // processKeyboardEvent(key);
       
