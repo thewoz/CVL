@@ -63,6 +63,7 @@ namespace cvl::clustering {
     
   }
 
+#if(1)
   /*****************************************************************************/
    // follow
    /*****************************************************************************/
@@ -96,6 +97,8 @@ namespace cvl::clustering {
     return clusters[nearIndex].baricenter;
     
   }
+
+#endif
   
   
 } /* namespace cvl::clustering */

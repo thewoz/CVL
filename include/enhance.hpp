@@ -163,7 +163,7 @@ namespace cvl::enhance {
   //****************************************************************************
   // unsharpMask
   //****************************************************************************
-  void unsharpMask(cv::Mat & src, double size = 3, double sigma = 1, double threshold = 5, double amount = 3) {
+  void unsharpMask(cv::Mat & src, int size = 3, double sigma = 1, double threshold = 5, double amount = 3) {
     
     #if(1)
     

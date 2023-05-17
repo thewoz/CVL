@@ -66,7 +66,7 @@ namespace cvl::blobsplitting {
     //    // se devo continuare a dividire una volta diviso
     //    bool recursiveSplitting;
     //*****************************************************************************
-    void split(blob_t & blob, const cv::Mat & src, std::vector<blob_t> & blobsFound, bool toDark, uint32_t enterMass, uint32_t exitMass, uint32_t minMass, bool recursiveSplitting, const std::string & labelingNeighboursType) {
+    void split(blob_t & blob, const cv::Mat & src, std::vector<blob_t> & blobsFound, bool toDark, uint32_t enterMass, uint32_t exitMass, uint32_t minMass, bool recursiveSplitting, int labelingNeighboursType) {
       
 #ifdef _DEBUG_CVL_BLOBSPLITTING_
     //cv::namedWindow("blobs", cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_EXPANDED);
@@ -206,7 +206,7 @@ namespace cvl::blobsplitting {
   //**************************************************************************** 
   // get
   //****************************************************************************
-  void get(std::vector<blob_t> & blobs, const cv::Mat & src, const std::string & mode, uint32_t enterMass, uint32_t exitMass, uint32_t minMass, bool recursiveSplitting, const std::string & labelingNeighboursType){
+  void get(std::vector<blob_t> & blobs, const cv::Mat & src, const std::string & mode, uint32_t enterMass, uint32_t exitMass, uint32_t minMass, bool recursiveSplitting, int labelingNeighboursType){
 
     bool toDark = true;
     

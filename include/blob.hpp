@@ -423,12 +423,12 @@ public:
   //*****************************************************************************
   // draw
   //*****************************************************************************
-  void draw(cv::Mat & dst, const cv::Vec3b & color, bool mode = true) const {
+  void draw(cv::Mat & dst, const cv::Vec3b & color) const {
     
    if(dst.channels() != 1 && dst.channels() !=3)
         mpl::log::error("The destination image is not a one or three channel image.\n");
     
-    if(mode) dst.setTo(0);
+    //if(mode) dst.setTo(0);
     
     for(uint32_t i=0; i<blobs.size(); ++i)
       blobs[i].draw(dst, color);

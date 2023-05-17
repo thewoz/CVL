@@ -60,7 +60,7 @@ namespace cvl::targetmass {
   /*****************************************************************************/
    // erode
    /*****************************************************************************/
-   void erode(std::vector<blob_t> & blobs, const cv::Mat & src, size_t targetMass, size_t minMass = 1, const std::string & labelingNeighboursType = "NEXT_NEAREST_NEIGHBOURS") {
+   void erode(std::vector<blob_t> & blobs, const cv::Mat & src, size_t targetMass, size_t minMass = 1, int labelingNeighboursType = cvl::labeling::NEXT_NEAREST_NEIGHBOURS) {
   
      std::vector<blob_t> tmpBlobs;
      
@@ -122,7 +122,7 @@ namespace cvl::targetmass {
     /*****************************************************************************/
      // try2split
      /*****************************************************************************/
-     void try2split(blob_t & blob, const cv::Mat & src, std::vector<blob_t> & blobsFound, size_t targetMass, bool toDark, size_t minMass = 1, const std::string & labelingNeighboursType = "NEXT_NEAREST_NEIGHBOURS") {
+     void try2split(blob_t & blob, const cv::Mat & src, std::vector<blob_t> & blobsFound, size_t targetMass, bool toDark, size_t minMass = 1, int labelingNeighboursType = cvl::labeling::NEXT_NEAREST_NEIGHBOURS) {
                   
        // vettore che contiene i vari blob che vanno divisi
        std::vector<blob_t> blobsToSplit;
@@ -215,7 +215,7 @@ namespace cvl::targetmass {
   /*****************************************************************************/
   // split
   /*****************************************************************************/
-  void split(std::vector<blob_t> & blobs, const cv::Mat & src, size_t targetMass, bool toDark, size_t minMass = 1, const std::string & labelingNeighboursType = "NEXT_NEAREST_NEIGHBOURS") {
+  void split(std::vector<blob_t> & blobs, const cv::Mat & src, size_t targetMass, bool toDark, size_t minMass = 1, int labelingNeighboursType = cvl::labeling::NEXT_NEAREST_NEIGHBOURS) {
         
     // vettore di appoggio con il risultato finale
     std::vector<blob_t> foundedBlobs;

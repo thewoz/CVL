@@ -138,19 +138,20 @@ namespace cvl::labeling {
     
   } /* namespace utils */
   
+ enum { NEAREST_NEIGHBOURS, NEXT_NEAREST_NEIGHBOURS };
   
   /*****************************************************************************/
   // get
   /*****************************************************************************/
-  void get(cv::Mat & src, const std::string & neighboursType, size_t minClusterMass, std::vector<blob_t> & blobs, const cv::Mat & original, const cv::Point & offset = cv::Point(0,0)) {
+  void get(cv::Mat & src, int neighboursType, size_t minClusterMass, std::vector<blob_t> & blobs, const cv::Mat & original, const cv::Point & offset = cv::Point(0,0)) {
     
     bool eight_connectivity = true;
     
-    if(neighboursType.compare("NEAREST_NEIGHBOURS") == 0) {
+    if(neighboursType == NEAREST_NEIGHBOURS) {
       eight_connectivity = false;
     }
     
-    if(neighboursType.compare("NEAREST_NEIGHBOURS") != 0 &&  neighboursType.compare("NEXT_NEAREST_NEIGHBOURS") != 0) {
+    if(neighboursType != NEAREST_NEIGHBOURS && neighboursType != NEXT_NEAREST_NEIGHBOURS) {
     
       fprintf(stderr, "error unknown type of cluster connectivity criteria.\n");
       fprintf(stderr, "You can choose between:\n");
