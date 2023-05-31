@@ -95,8 +95,8 @@ namespace cvl::enhance {
       // current range
       float inputRange = massimo - minimo;
       
-      alpha = (histSize - 1) / inputRange;   // alpha expands current range to histsize range
-      beta = -minimo * alpha;             // beta shifts current range so that minGray will go to 0
+      alpha = (histSize - 1) / inputRange; // alpha expands current range to histsize range
+      beta = -minimo * alpha;              // beta shifts current range so that minGray will go to 0
       
     }
     
@@ -122,6 +122,7 @@ namespace cvl::enhance {
   //****************************************************************************
   // contrast
   //****************************************************************************
+  // I(x,y) = alpha * I(x,y) + beta
   void contrast(cv::Mat & image, float alpha, float beta) {
     
     if(image.channels() != 1) {
@@ -135,6 +136,7 @@ namespace cvl::enhance {
   //****************************************************************************
   // autoContrast
   //****************************************************************************
+  // I(x,y) = alpha * I(x,y) + beta
   void autoContrast(cv::Mat & image, float clipHistPercent) {
     
     if(image.channels() != 1) {
