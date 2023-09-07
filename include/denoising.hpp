@@ -83,7 +83,6 @@ namespace cvl::denoising {
     
   }
   
-  
   //*****************************************************************************/
   // gaussian
   //*****************************************************************************/
@@ -92,7 +91,24 @@ namespace cvl::denoising {
     cv::GaussianBlur(src, src, cv::Size(size,size), 0);
     
   }
-  
+
+  //*****************************************************************************/
+  // anisotropic
+  //*****************************************************************************/
+  void anisotropic(cv::Mat & src, double amount, double sensitivity) {
+    
+    bool mode = false;
+    
+    if(src.channels() == 1) {
+      cv::cvtColor(src, src, cv::COLOR_GRAY2BGR);
+      mode = true;
+    }
+    
+    cv::ximgproc::anisotropicDiffusion(src, src, amount, sensitivity, 1);
+    
+    if(mode) cv::cvtColor(src, src, cv::COLOR_BGR2GRAY);
+    
+  }
   
   //*****************************************************************************/
   // median
