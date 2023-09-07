@@ -222,9 +222,32 @@ namespace cvl::enhance {
       unsharpMask(images[i], size, sigma, threshold, amount);
     
   }
-  
-  
-  
+
+  //****************************************************************************
+  // laplacianUnsharpMask
+  //****************************************************************************
+  void laplacianUnsharpMask(cv::Mat & src, double amount = 1.1) {
+    
+    cv::Mat filtered;
+    cv::medianBlur(src, filtered, 1);
+    
+    cv::Mat laplace;
+    cv::Laplacian(filtered, laplace, CV_8U);
+    
+    src = filtered - (amount*laplace);
+    
+  }
+
+  //****************************************************************************
+  // laplacianUnsharpMask
+  //****************************************************************************
+  void laplacianUnsharpMask(std::vector<cv::Mat> & images, double amount) {
+    
+    for(unsigned int i=0; i<images.size(); ++i)
+      laplacianUnsharpMask(images[i], amount);
+    
+  }
+
   //****************************************************************************
   // clahe
   //****************************************************************************
@@ -254,6 +277,10 @@ namespace cvl::enhance {
   // get
   //****************************************************************************
   void get(cv::Mat & src, const std::string & algo, double param1, double param2 = 1,  double param3 = 5, double param4 = 1) {
+    
+    if(algo.compare("LAPLACIAN") == 0) {
+      return laplacianUnsharpMask(src, param1);
+    }
     
     if(algo.compare("UNSHARPMASK") == 0) {
       return unsharpMask(src, param1, param2, param3, param4);
@@ -287,6 +314,10 @@ namespace cvl::enhance {
   // get
   //****************************************************************************
   void get(std::vector<cv::Mat> & src, const std::string & algo, double param1, double param2 = 1,  double param3 = 5, double param4 = 1) {
+    
+    if(algo.compare("LAPLACIAN") == 0) {
+      return laplacianUnsharpMask(src, param1);
+    }
     
     if(algo.compare("UNSHARPMASK") == 0) {
       return unsharpMask(src, param1, param2, param3, param4);
