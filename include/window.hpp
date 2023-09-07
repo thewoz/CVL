@@ -65,8 +65,6 @@ namespace cvl {
 
     //cv::Mat image;
     
-    
-    
     //****************************************************************************/
     // mouseHandler
     //****************************************************************************/
@@ -79,7 +77,7 @@ namespace cvl {
     //****************************************************************************/
     // processMouseEvent
     //****************************************************************************/
-    virtual void processMouseEvent(int event, int x, int y) {}
+    virtual void processMouseEvent(int event, int x, int y) { }
     
     //****************************************************************************/
     // processKeyboardEvent
@@ -129,7 +127,7 @@ namespace cvl {
       }
       
       name = _name;
-      
+            
       cv::namedWindow(name, flags);
 
       cv::setMouseCallback(name, mouseHandler, this);
@@ -137,6 +135,17 @@ namespace cvl {
       isToClose = false;
       
       isInit = true;
+      
+    }
+    
+    //****************************************************************************/
+    // show() -
+    //****************************************************************************/
+    int show(const cv::Mat & _image, const std::string & str, int time = 0, bool mode = true) {
+      
+      setTitle(str);
+      
+      return show(_image, time, mode);
       
     }
     
