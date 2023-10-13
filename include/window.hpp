@@ -57,7 +57,7 @@ namespace cvl {
     
     bool isToClose = false;
     
-    bool isToUpdate = false;
+    //bool isToUpdate = false;
     
     bool isInit = false;
     
@@ -70,19 +70,25 @@ namespace cvl {
     //****************************************************************************/
     static void mouseHandler(int event, int x, int y, int flags, void * window) {
       
-      ((window_t*)window)->processMouseEvent(event, x, y);
+      ((window_t*)window)->processMouseEvent(event, x, y, flags);
 
     }
     
     //****************************************************************************/
     // processMouseEvent
     //****************************************************************************/
-    virtual void processMouseEvent(int event, int x, int y) { }
+    virtual void processMouseEvent(int event, int x, int y, int flags) { }
     
     //****************************************************************************/
     // processKeyboardEvent
     //****************************************************************************/
     virtual int processKeyboardEvent(int key) { return -1; }
+    
+    //****************************************************************************/
+    // processProgramEvent
+    //****************************************************************************/
+    virtual void processProgramEvent(void) { ; }
+
 
   public:
     
@@ -168,10 +174,11 @@ namespace cvl {
         time = 100;
         
         while(cv::getWindowProperty(name, cv::WND_PROP_VISIBLE) >= 1) {
-          if(isToUpdate) break;
+          //if(isToUpdate) break;
+          processProgramEvent();
           if((key=cv::waitKey(time)) != -1) {
             key = processKeyboardEvent(key);
-            if(mode || isToClose || isToUpdate) break;
+            if(mode || isToClose) break;
           }
         }
         
@@ -180,8 +187,6 @@ namespace cvl {
 
       isToClose = false;
       
-      isToUpdate = false;
-
       return key; // processKeyboardEvent(key);
       
     }
@@ -252,12 +257,14 @@ namespace cvl {
     //****************************************************************************/
     // update() -
     //****************************************************************************/
-    void update(const cv::Mat & _image) {
+    void update(const cv::Mat & _image, std::string title = "") {
       
       if(!isInit) {
         fprintf(stderr, "error the window must be init before\n");
         abort();
       }
+      
+      if(!title.empty()) setTitle(title);
       
       cv::imshow(name, _image);
       
