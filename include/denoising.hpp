@@ -92,6 +92,24 @@ namespace cvl::denoising {
     
   }
 
+  //*****************************************************************************/
+  // blur
+  //*****************************************************************************/
+  void blur(cv::Mat & src, uint32_t size = 3) {
+    
+    cv::blur(src, src, cv::Size(size,size));
+    
+  }
+
+  //*****************************************************************************/
+  // bilateralFilter
+  //*****************************************************************************/
+  void bilateralFilter(cv::Mat & src, uint32_t diameter = 11, double sigmaColor = 21,  double sigmaSpace = 7) {
+    
+    cv::bilateralFilter(src, src, diameter, sigmaColor, sigmaSpace);
+    
+  }
+
 #ifdef __OPENCV_XIMGPROC_HPP__
 
   //*****************************************************************************/
