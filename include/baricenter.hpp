@@ -36,7 +36,8 @@ namespace cvl::baricenter {
   //****************************************************************************
 	// geometric
   //****************************************************************************
-	cv::Point2d geometric(const std::vector<cv::Point3i> & pixels) {
+  template <class T>
+	cv::Point2d geometric(const std::vector<T> & pixels) {
 
 		cv::Point2d baricenter(0.0, 0.0);
 
