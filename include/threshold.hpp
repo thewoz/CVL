@@ -42,7 +42,7 @@ namespace cvl::threshold {
     //****************************************************************************/
     // moda
     //****************************************************************************/
-    int moda(const cv::Mat & src, bool skipZero, const cv::Mat & mask) {
+    int moda(const cv::Mat & src, bool skipZero, const cv::Mat & mask = cv::Mat()) {
       
       if(src.channels() > 1){
         fprintf(stderr, "The destination image not have one channel.\n");
@@ -102,7 +102,7 @@ namespace cvl::threshold {
     //****************************************************************************/
     // median
     //****************************************************************************/
-    int median(const cv::Mat & src, bool skipZero, const cv::Mat & mask) {
+    int median(const cv::Mat & src, bool skipZero, const cv::Mat & mask = cv::Mat()) {
       
       if(src.channels() > 1){
         fprintf(stderr, "The destination image not have one channel.\n");
@@ -161,7 +161,7 @@ namespace cvl::threshold {
   //****************************************************************************/
   // otsu
   //****************************************************************************/
-  double otsu(cv::Mat & src, const cv::Mat & mask) {
+  double otsu(cv::Mat & src, const cv::Mat & mask = cv::Mat()) {
     
     double value = cv::threshold(src, src, 128, 255, cv::THRESH_OTSU | cv::THRESH_BINARY) + 1;
     
@@ -176,7 +176,7 @@ namespace cvl::threshold {
   //****************************************************************************/
   // adaptive
   //****************************************************************************/
-  double adaptive(cv::Mat & src, int adaptiveMethod, int thresholdType, int blockSize, double C, const cv::Mat & mask) {
+  double adaptive(cv::Mat & src, int adaptiveMethod, int thresholdType, int blockSize, double C, const cv::Mat & mask = cv::Mat()) {
 
     cv::adaptiveThreshold(src, src, 255, adaptiveMethod, thresholdType, blockSize, C);
   
@@ -192,7 +192,7 @@ namespace cvl::threshold {
   // global
   //****************************************************************************/
   // openCV global threshold doesn't use threshold value in a strict way. this means why there is -1 here!!!
-  double global(cv::Mat & src,  double threshold, const cv::Mat & mask) {
+  double global(cv::Mat & src,  double threshold, const cv::Mat & mask = cv::Mat()) {
     
     double value = cv::threshold(src, src, (threshold - 1), 255, cv::THRESH_BINARY) + 1;
     
@@ -207,7 +207,7 @@ namespace cvl::threshold {
   //*****************************************************************************/
   // median
   //*****************************************************************************/
-  double median(cv::Mat & src, double factor, bool skipZero, const cv::Mat & mask) {
+  double median(cv::Mat & src, double factor, bool skipZero, const cv::Mat & mask = cv::Mat()) {
     
     double threshold = utils::median(src, skipZero, mask);
     
@@ -229,7 +229,7 @@ namespace cvl::threshold {
   //*****************************************************************************/
   // moda
   //*****************************************************************************/
-  double moda(cv::Mat & src, double factor, bool skipZero, const cv::Mat & mask) {
+  double moda(cv::Mat & src, double factor, bool skipZero, const cv::Mat & mask = cv::Mat()) {
     
     double threshold = utils::moda(src, skipZero, mask);
     
@@ -252,7 +252,7 @@ namespace cvl::threshold {
   //*****************************************************************************/
   // get
   //*****************************************************************************/
-  double get(cv::Mat & src, const std::string & algo, double param1, double param2, const cv::Mat & mask) {
+  double get(cv::Mat & src, const std::string & algo, double param1, double param2, const cv::Mat & mask = cv::Mat()) {
     
     if(algo.compare("GLOBAL") == 0) {
       return global(src, param1, mask);
