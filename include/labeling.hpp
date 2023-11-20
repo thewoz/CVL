@@ -247,8 +247,8 @@ namespace cvl::labeling {
       
     }
     
-    std::map<uint32_t,std::vector<cv::Point> > foundBlobs;
-    std::map<uint32_t,std::vector<cv::Point> >::iterator blobsIter;
+    std::map<uint32_t,std::vector<cv::Point>> foundBlobs;
+    std::map<uint32_t,std::vector<cv::Point>>::iterator blobsIter;
     
     for(uint32_t y=1; y<workImageSize.height-1; ++y) {
       

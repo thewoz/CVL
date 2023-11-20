@@ -42,6 +42,9 @@ namespace cvl::subpixel {
      
      if(corners.size() > 0) {
      
+       // Talpa vecchio
+       //cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.1);
+
        // Criteri di stop
        cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.0001);
        
