@@ -42,6 +42,8 @@ namespace cvl::subpixel {
      
      if(corners.size() > 0) {
      
+       roiSize *= 0.5;
+       
        // Talpa vecchio
        //cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.1);
 
