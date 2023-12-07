@@ -44,6 +44,12 @@ namespace cvl {
   
   protected:
     
+    static std::vector<window_t *> windows;
+     
+    static int idCounter;
+    
+    int id;
+    
     std::string name;
     
     int width;
@@ -70,6 +76,10 @@ namespace cvl {
     //****************************************************************************/
     static void mouseHandler(int event, int x, int y, int flags, void * window) {
       
+      if(event == cv::EVENT_LBUTTONDOWN || event == cv::EVENT_LBUTTONUP || event == cv::EVENT_LBUTTONDBLCLK) flags -= cv::EVENT_FLAG_LBUTTON;
+      if(event == cv::EVENT_RBUTTONDOWN || event == cv::EVENT_RBUTTONUP || event == cv::EVENT_RBUTTONDBLCLK) flags -= cv::EVENT_FLAG_RBUTTON;
+      if(event == cv::EVENT_MBUTTONDOWN || event == cv::EVENT_MBUTTONUP || event == cv::EVENT_MBUTTONDBLCLK) flags -= cv::EVENT_FLAG_MBUTTON;
+      
       ((window_t*)window)->processMouseEvent(event, x, y, flags);
 
     }
@@ -87,20 +97,24 @@ namespace cvl {
     //****************************************************************************/
     // processProgramEvent
     //****************************************************************************/
-    virtual void processProgramEvent(void) { ; }
+    virtual void processProgramEvent() { ; }
 
+    //****************************************************************************/
+    // processBroadcastEvent
+    //****************************************************************************/
+    virtual void processBroadcastEvent() { ; }
 
   public:
     
     //****************************************************************************/
     // window_t()
     //****************************************************************************/
-    window_t() {  }
+    window_t() : id (++idCounter) {  }
     
     //****************************************************************************/
     // window_t()
     //****************************************************************************/
-    window_t(const std::string & _name, int flags = cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_NORMAL) { init(_name, flags); }
+    window_t(const std::string & _name, int flags = cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_NORMAL) : id (++idCounter) { init(_name, flags); }
     
     //****************************************************************************/
     // ~window_t()
@@ -112,6 +126,8 @@ namespace cvl {
     //****************************************************************************/
     void close() {
       if(isInit) {
+        auto itr = std::find(windows.begin(), windows.end(), this);
+        windows.erase(itr);
         cv::destroyWindow(name);
         isInit = false;
       }
@@ -137,6 +153,8 @@ namespace cvl {
       cv::namedWindow(name, flags);
 
       cv::setMouseCallback(name, mouseHandler, this);
+      
+      windows.push_back(this);
       
       isToClose = false;
       
@@ -174,20 +192,18 @@ namespace cvl {
         time = 100;
         
         while(cv::getWindowProperty(name, cv::WND_PROP_VISIBLE) >= 1) {
-          //if(isToUpdate) break;
           processProgramEvent();
           if((key=cv::waitKey(time)) != -1) {
             key = processKeyboardEvent(key);
             if(mode || isToClose) break;
           }
         }
-        
           
       } else { key = cv::waitKey(time); }
 
       isToClose = false;
       
-      return key; // processKeyboardEvent(key);
+      return key;
       
     }
     
@@ -305,6 +321,11 @@ namespace cvl {
     }
 
     //****************************************************************************/
+    // broadcast()
+    //****************************************************************************
+    void broadcast() { for(int i=0; i<windows.size(); ++i) if(windows[i]->id != id) windows[i]->processBroadcastEvent(); }
+    
+    //****************************************************************************/
     // setCursor() -
     //****************************************************************************/
     void setCursor() {
@@ -318,6 +339,10 @@ namespace cvl {
     }
     
   }; /* class window_t */
+
+  std::vector<window_t *> window_t::windows = std::vector<window_t *>();
+
+  int window_t::idCounter = -1;
 
 } /* namespace cvl */
 
