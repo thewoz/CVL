@@ -33,19 +33,19 @@
 
 #define MERGE_MASS_LABEL(a,b) { labelMass[b] += labelMass[a]; labelMass[a] = -b; }
 
-/*****************************************************************************/
+//*****************************************************************************/
 // namespace cvl::labeling
-/*****************************************************************************/
+//*****************************************************************************/
 namespace cvl::labeling {
 
-  /*****************************************************************************/
+  //*****************************************************************************/
   // namespace utils
-  /*****************************************************************************/
+  //*****************************************************************************/
   namespace utils {
 
-    /*****************************************************************************/
+    //*****************************************************************************/
     // freeMatrix
-    /*****************************************************************************/
+    //*****************************************************************************/
     void freeMatrix(int ** matrixLabel, const cv::Size & size){
       
       if(matrixLabel != NULL) {
@@ -59,9 +59,9 @@ namespace cvl::labeling {
       
     }
     
-    /*****************************************************************************/
+    //*****************************************************************************/
     // allocMatrix
-    /*****************************************************************************/
+    //*****************************************************************************/
     void allocMatrix(int ** & matrixLabel, const cv::Size & size) {
       
       if(matrixLabel != NULL) freeMatrix(matrixLabel, size);
@@ -89,9 +89,9 @@ namespace cvl::labeling {
     }
   
 
-    /*****************************************************************************/
+    //*****************************************************************************/
     // init
-    /*****************************************************************************/
+    //*****************************************************************************/
     void init(const cv::Size & imgSize, cv::Size & workImageSize, int **  & matrixLabel) {
 
       if(matrixLabel == NULL){
@@ -123,9 +123,9 @@ namespace cvl::labeling {
       
     }
     
-    /*****************************************************************************/
+    //*****************************************************************************/
     // findRoot
-    /*****************************************************************************/
+    //*****************************************************************************/
     inline int findRoot(int startLabel, const std::vector<int> & labelMass) {
       
       while(labelMass[startLabel] < 0)
@@ -140,9 +140,9 @@ namespace cvl::labeling {
   
  enum { NEAREST_NEIGHBOURS, NEXT_NEAREST_NEIGHBOURS };
   
-  /*****************************************************************************/
+  //*****************************************************************************/
   // get
-  /*****************************************************************************/
+  //*****************************************************************************/
   void get(cv::Mat & src, int neighboursType, size_t minClusterMass, std::vector<blob_t> & blobs, const cv::Mat & original, const cv::Point & offset = cv::Point(0,0)) {
     
     bool eight_connectivity = true;
@@ -297,6 +297,159 @@ namespace cvl::labeling {
     
   }
   
+  //*****************************************************************************/
+  // get
+  //*****************************************************************************/
+  void get(cv::Mat & src, int neighboursType, size_t minClusterMass, std::vector<std::vector<cv::Point>> & blobs) {
+    
+    bool eight_connectivity = true;
+    
+    if(neighboursType == NEAREST_NEIGHBOURS) {
+      eight_connectivity = false;
+    }
+    
+    if(neighboursType != NEAREST_NEIGHBOURS && neighboursType != NEXT_NEAREST_NEIGHBOURS) {
+    
+      fprintf(stderr, "error unknown type of cluster connectivity criteria.\n");
+      fprintf(stderr, "You can choose between:\n");
+      fprintf(stderr, "      NEAREST_NEIGHBOURS, NEXT_NEAREST_NEIGHBOURS\n");
+      
+      exit(EXIT_FAILURE);
+    
+    }
+    
+    std::vector<int> labelMass(1,0);
+
+    int label = 0;
+
+    blobs.clear();
+    
+    cv::Size workImageSize;
+    
+    int ** matrixLabel = NULL;
+    
+    utils::init(src.size(), workImageSize, matrixLabel);
+    
+    int neighbors_found;
+    
+    int neighbors[4];
+    
+    for(uint32_t y=1; y<workImageSize.height-1; ++y) {
+      
+      for(uint32_t x=1; x<workImageSize.width-1; ++x) {
+        
+        /* if the pixel is not a background pixel */
+        if(src.at<uchar>(y-1,x-1) != 0){
+          
+          neighbors_found = 0;
+          
+          if(matrixLabel[y][x-1] != 0){
+            neighbors[neighbors_found] = utils::findRoot(matrixLabel[y][x-1], labelMass);
+            neighbors_found++;
+          }
+          
+          if(matrixLabel[y-1][x] != 0){
+            neighbors[neighbors_found] = utils::findRoot(matrixLabel[y-1][x], labelMass);
+            neighbors_found++;
+          }
+          
+          if(eight_connectivity){
+            
+            if(matrixLabel[y-1][x-1] != 0){
+              neighbors[neighbors_found] = utils::findRoot(matrixLabel[y-1][x-1], labelMass);
+              neighbors_found++;
+            }
+            
+            if(matrixLabel[y-1][x+1] != 0){
+              neighbors[neighbors_found] = utils::findRoot(matrixLabel[y-1][x+1], labelMass);
+              neighbors_found++;
+            }
+            
+          }
+          
+          if(neighbors_found == 0){
+            
+            matrixLabel[y][x] = label;
+            
+            labelMass.push_back(1);
+            
+            label++;
+            
+          } else {
+            
+            int min_label = INT_MAX;
+            
+            /* find the neighbours with the minimum label */
+            for(uint32_t i=0; i<neighbors_found; ++i)
+              if(min_label > neighbors[i]) min_label = neighbors[i];
+            
+            matrixLabel[y][x] = min_label;
+            
+            labelMass[min_label] += 1;
+            
+            for(uint32_t i=0; i<neighbors_found; ++i)
+              for(int32_t j=i-1; j>=0; --j)
+                if(neighbors[i] == neighbors[j])
+                  neighbors[i] = -1;
+            
+            for(uint32_t i=0; i<neighbors_found; ++i)
+              if(neighbors[i] != min_label && neighbors[i] != -1)
+                MERGE_MASS_LABEL(neighbors[i], min_label);
+            
+          }
+          
+        }
+        
+      }
+      
+    }
+    
+    std::map<uint32_t,std::vector<cv::Point>> foundBlobs;
+    std::map<uint32_t,std::vector<cv::Point>>::iterator blobsIter;
+    
+    for(uint32_t y=1; y<workImageSize.height-1; ++y) {
+      
+      for(uint32_t x=1; x<workImageSize.width-1; ++x) {
+        
+        if(matrixLabel[y][x] != 0) {
+          
+          int found_label = utils::findRoot(matrixLabel[y][x], labelMass);
+          
+          if((blobsIter = foundBlobs.find(found_label)) == foundBlobs.end()) {
+            
+            foundBlobs[found_label].clear();
+            
+            foundBlobs[found_label].push_back(cv::Point(x-1,y-1));
+            
+          } else {
+            
+            blobsIter->second.push_back(cv::Point(x-1,y-1));
+            
+          }
+          
+        }
+        
+      }
+      
+    }
+    
+    for(blobsIter=foundBlobs.begin(); blobsIter!=foundBlobs.end(); blobsIter++){
+      
+      if(blobsIter->second.size() < minClusterMass) continue;
+      
+      std::vector<cv::Point> blob;
+      
+      for(size_t i=0; i<blobsIter->second.size(); ++i)
+        blob.push_back(cv::Point(blobsIter->second[i].x, blobsIter->second[i].y));
+      
+      blobs.push_back(blob);
+      
+    }
+        
+    utils::freeMatrix(matrixLabel, workImageSize);
+    
+  }
+
 } /* namespace cvl::labeling */
 
 
