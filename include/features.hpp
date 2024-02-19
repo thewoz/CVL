@@ -27,6 +27,8 @@
 
 #include <opencv2/opencv.hpp>
 
+#include <cvl/subpixelNew.hpp>
+
 
 //****************************************************************************/
 // cvl::features
@@ -77,6 +79,35 @@ namespace cvl::features {
     
     return circles;
     
+  }
+
+
+  // //****************************************************************************/
+  // // subpixelNew
+  // //****************************************************************************/
+  void cornerSubPixNew(const cv::Mat image, std::vector<cv::Point2f> & corners, int roiSize = 60){
+
+    for(auto & corner : corners){
+
+      int x = corner.x - roiSize/2;  // Centro della maschera      
+      int y = corner.y - roiSize/2;
+
+      cv::Rect roi(x, y, roiSize, roiSize);
+
+      cv::Mat subImage = image(roi);
+
+      // cv::namedWindow("check");
+      // cv::imshow("check",subImage);
+      // cv::waitKey(0);
+
+      corner = cornerSubPixNewImpl(subImage);
+
+      if(corner.x != 0 || corner.y != 0){
+        corner.x += roi.x; // mi riporto nel sistema di riferimento di image
+        corner.y += roi.y;
+      }
+
+    } 
   }
   
 } /* namespace cvl::features */

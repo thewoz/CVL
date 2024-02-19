@@ -27,6 +27,7 @@
 #include <string>
 
 #include <opencv2/opencv.hpp>
+#include <cvl/features.hpp>
 
 //****************************************************************************/
 // cvl::subpixel
@@ -39,23 +40,23 @@ namespace cvl::subpixel {
   void get(const cv::Mat image, std::vector<cv::Point2f> & corners, int roiSize = 15, const std::string & algorithm = "old") {
      
     if(corners.size() > 0) {
-     
+         
       roiSize *= 0.5;
-       
+           
       // Talpa vecchio
       //cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.1);
 
       // Criteri di stop
       cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.0001);
-       
+           
       // Cerco i subpixel con l'algoritmo vecchio
       if(!algorithm.compare("old"))
         cv::cornerSubPix(image, corners, cv::Size(roiSize,roiSize), cv::Size(-1,-1), criteria);
-       
+           
       // Cerco i subpixel con l'algoritmo nuovo
       if(!algorithm.compare("new"))
         cv::find4QuadCornerSubpix(image, corners, cv::Size(roiSize,roiSize));
-     
+         
     }
        
   }
