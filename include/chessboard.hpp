@@ -54,7 +54,9 @@ namespace cvl::chessboard {
         
         // cerco la scacchiera
         patternfound = cv::findChessboardCornersSB(image, patternSize, corners, cv::CALIB_CB_EXHAUSTIVE | cv::CALIB_CB_ACCURACY);
-              
+        
+        return patternfound;
+        
       }
       
       // Cerco i subpixel con l'algoritmo vecchio
@@ -63,15 +65,15 @@ namespace cvl::chessboard {
         // cerco la scacchiera
         patternfound = cv::findChessboardCorners(image, patternSize, corners, cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_FAST_CHECK);
         
+        return patternfound;
+        
       }
       
-      // Se l'ho trovata mi calcolo i subpixels
-      if(patternfound)
-        cvl::subpixel::get(image, corners);
+      fprintf(stderr, "cvl::chessboard::get() error algorithm not found\n");
       
-      //FIXME: non controllo old new
+      abort();
       
-      return patternfound;
+      return false;
       
     }
   
