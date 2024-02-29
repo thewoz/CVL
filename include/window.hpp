@@ -165,18 +165,18 @@ namespace cvl {
     //****************************************************************************/
     // show() -
     //****************************************************************************/
-    int show(const cv::Mat & _image, const std::string & str, int time = 0, bool mode = true) {
+    int show(const cv::Mat & _image, const std::string & str, int time = 0) { //}, bool mode = true) {
       
       setTitle(str);
       
-      return show(_image, time, mode);
+      return show(_image, time);//, mode);
       
     }
     
     //****************************************************************************/
     // show() -
     //****************************************************************************/
-    int show(const cv::Mat & _image, int time = 0, bool mode = true) {
+    int show(const cv::Mat & _image, int time = 0) { //, bool mode = true) {
       
       if(!isInit) {
         fprintf(stderr, "error the window must be init before\n");
@@ -193,13 +193,18 @@ namespace cvl {
         
         while(cv::getWindowProperty(name, cv::WND_PROP_VISIBLE) >= 1) {
           processProgramEvent();
-          if((key=cv::waitKey(time)) != -1) {
+          key = cv::waitKey(time);
+          if(key != -1) {
             key = processKeyboardEvent(key);
-            if(mode || isToClose) break;
+            break;
           }
+          if(isToClose) break;
         }
           
-      } else { key = cv::waitKey(time); }
+      } else {
+        key = cv::waitKey(time);
+        if(key != -1) key = processKeyboardEvent(key);
+      }
 
       isToClose = false;
       
