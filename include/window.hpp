@@ -207,7 +207,7 @@ namespace cvl {
         if(key != -1) key = processKeyboardEvent(key);
       }
 
-      isToClose = false;
+      //isToClose = false;
       
       return key;
       
