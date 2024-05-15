@@ -39,5 +39,6 @@
 #include <cvl/threshold.hpp>
 #include <cvl/window.hpp>
 #include <cvl/pose.hpp>
+#include <cvl/draw.hpp>
 
 #endif /* _H_CVL_H_ */
