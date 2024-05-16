@@ -93,17 +93,29 @@ namespace cvl {
     //****************************************************************************/
     // processKeyboardEvent
     //****************************************************************************/
-    virtual int processKeyboardEvent(int key) { return -1; }
+    virtual void processKeyboardEvent(int key) { }
     
     //****************************************************************************/
     // processProgramEvent
     //****************************************************************************/
-    virtual void processProgramEvent() { ; }
+    //virtual void processProgramEvent() { }
 
     //****************************************************************************/
     // processBroadcastEvent
     //****************************************************************************/
-    virtual void processBroadcastEvent() { ; }
+    virtual void processBroadcastEvent() { }
+    
+    //****************************************************************************/
+    // processKeyboardEvent
+    //****************************************************************************/
+    void _processKeyboardEvent(int key) {
+      
+      // ciclo sulle finestre
+      for(size_t i=0; i<windows.size(); ++i) {
+        windows[i]->processKeyboardEvent(key);
+      }
+      
+    }
 
   public:
     
@@ -127,10 +139,10 @@ namespace cvl {
     //****************************************************************************/
     void close() {
       if(isInit) {
+        isInit = false;
         auto itr = std::find(windows.begin(), windows.end(), this);
         windows.erase(itr);
-        cv::destroyWindow(name);
-        isInit = false;
+        //cv::destroyWindow(name);
       }
     }
 
@@ -150,9 +162,9 @@ namespace cvl {
       }
       
       name = _name;
-            
+      
       cv::namedWindow(name, flags);
-
+            
       cv::setMouseCallback(name, mouseHandler, this);
       
       windows.push_back(this);
@@ -164,20 +176,20 @@ namespace cvl {
     }
     
     //****************************************************************************/
-    // show() -
+    // show()
     //****************************************************************************/
-    int show(const cv::Mat & _image, const std::string & str, int time = 0) { //}, bool mode = true) {
+    int show(const cv::Mat & _image, const std::string & str, int time = 0) {
       
       setTitle(str);
       
-      return show(_image, time);//, mode);
+      return show(_image, time);
       
     }
     
     //****************************************************************************/
-    // show() -
+    // show()
     //****************************************************************************/
-    int show(const cv::Mat & _image, int time = 0) { //, bool mode = true) {
+    int show(const cv::Mat & _image, int time = 0) {
       
       if(!isInit) {
         fprintf(stderr, "error the window must be init before\n");
@@ -188,33 +200,33 @@ namespace cvl {
             
       int key = -1;
       
-      if(time == 0) { 
+      // se devo aspettare un tempo indefinito
+      if(time == 0) {
         
         time = 100;
         
         while(cv::getWindowProperty(name, cv::WND_PROP_VISIBLE) >= 1) {
-          processProgramEvent();
+          //processProgramEvent();
           key = cv::waitKey(time);
           if(key != -1) {
-            key = processKeyboardEvent(key);
+            _processKeyboardEvent(key);
             break;
           }
           if(isToClose) break;
         }
-          
+      
+      // se devo aspettare un tempo fissato
       } else {
         key = cv::waitKey(time);
-        if(key != -1) key = processKeyboardEvent(key);
+        if(key != -1) _processKeyboardEvent(key);
       }
-
-      //isToClose = false;
       
       return key;
       
     }
     
     //****************************************************************************/
-    // setTitle() -
+    // setTitle()
     //****************************************************************************/
     void setTitle(const std::string & str) {
       
