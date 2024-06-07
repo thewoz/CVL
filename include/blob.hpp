@@ -49,7 +49,7 @@ public:
    
   static std::string baricenterType;
   
-  enum { EXTERNAL_CONTOUR, INTERNAL_CONTOUR };
+  //enum { EXTERNAL_CONTOUR, INTERNAL_CONTOUR };
   
   int32_t label;
   
@@ -145,8 +145,6 @@ public:
 
    }
    
-   
-   
    //*****************************************************************************
   // draw
    //*****************************************************************************
@@ -209,6 +207,23 @@ public:
     draw(dst, cv::Vec3b(255,255,255), offset);
     
   }
+   //*****************************************************************************
+   // saveContours
+   //*****************************************************************************
+   void saveContours(FILE * output, int camera, int frame) const {
+     
+     fprintf(output, "%d %d %d %lu ", camera, frame, label, pixels.size());
+     
+     std::vector<cv::Point> contours;
+     
+     getContour(contours);
+     
+     for(int i=0; i<contours.size(); ++i)
+       fprintf(output, "%d %d ", contours[i].x, contours[i].y);
+  
+     fprintf(output, "\n");
+     
+   }
    
   
   //*****************************************************************************
@@ -259,9 +274,7 @@ public:
 //    }
 //
 //  }
-  
-
-  
+    
   //*****************************************************************************
   // setPixels
   //*****************************************************************************
@@ -297,62 +310,64 @@ public:
   //*****************************************************************************
   // getContour
   //*****************************************************************************
-//  void getContour(bool mode, std::vector<cv::Point> & contours) const {
-//
-//    cv::Size size_i;
-//
-//    size_i.width  = size.width  + 2;
-//    size_i.height = size.height + 2;
-//
-//    cv::Point offset_i;
-//
-//    offset_i.x = offset.x - 1;
-//    offset_i.y = offset.y - 1;
-//
-//    cv::Mat image = cv::Mat::zeros(size_i, CV_8UC1);
-//
-//    drawMask(image, offset_i);
-//
-//    contours.clear();
-//
-//    for(int32_t y=0; y<image.rows; ++y) {
-//
-//      for(int32_t x=0; x<image.cols; ++x) {
-//
-//        // con !0 faccio l'esterno con ==0 l'interno
-//        if(mode == EXTERNAL_CONTOUR && image.at<uchar>(y,x) != 0) continue;
-//        if(mode == INTERNAL_CONTOUR && image.at<uchar>(y,x) == 0) continue;
-//
-//        if((y-1) >= 0 && image.at<uchar>(y-1,x) != 0){
-//          contours.push_back(cv::Point(x,y));
-//          continue;
-//        }
-//
-//        if((y+1) >= 0 && image.at<uchar>(y+1,x) != 0){
-//          contours.push_back(cv::Point(x,y));
-//          continue;
-//        }
-//
-//        if((x+1) >= 0 && image.at<uchar>(y,x+1) != 0){
-//          contours.push_back(cv::Point(x,y));
-//          continue;
-//        }
-//
-//        if((x-1) >= 0 && image.at<uchar>(y,x-1) != 0){
-//          contours.push_back(cv::Point(x,y));
-//          continue;
-//        }
-//
-//      }
-//
-//    }
-//
-//    for(uint32_t i=0; i<contours.size(); ++i){
-//      contours[i].x += offset_i.x;
-//      contours[i].y += offset_i.y;
-//    }
-//
-//  }
+  //void getContour(bool mode, std::vector<cv::Point> & contours) const {
+  void getContour(std::vector<cv::Point> & contours) const {
+
+    cv::Size size_i;
+
+    size_i.width  = size.width  + 2;
+    size_i.height = size.height + 2;
+
+    cv::Point offset_i;
+
+    offset_i.x = offset.x - 1;
+    offset_i.y = offset.y - 1;
+
+    cv::Mat image = cv::Mat::zeros(size_i, CV_8UC1);
+
+    drawMask(image, offset_i);
+
+    contours.clear();
+
+    for(int32_t y=0; y<image.rows; ++y) {
+
+      for(int32_t x=0; x<image.cols; ++x) {
+
+        // con !0 faccio l'esterno con ==0 l'interno
+        //if(mode == EXTERNAL_CONTOUR && image.at<uchar>(y,x) != 0) continue;
+        //if(mode == INTERNAL_CONTOUR && image.at<uchar>(y,x) == 0) continue;
+        if(image.at<uchar>(y,x) != 0) continue;
+
+        if((y-1) >= 0 && image.at<uchar>(y-1,x) != 0){
+          contours.push_back(cv::Point(x,y));
+          continue;
+        }
+
+        if((y+1) >= 0 && image.at<uchar>(y+1,x) != 0){
+          contours.push_back(cv::Point(x,y));
+          continue;
+        }
+
+        if((x+1) >= 0 && image.at<uchar>(y,x+1) != 0){
+          contours.push_back(cv::Point(x,y));
+          continue;
+        }
+
+        if((x-1) >= 0 && image.at<uchar>(y,x-1) != 0){
+          contours.push_back(cv::Point(x,y));
+          continue;
+        }
+
+      }
+
+    }
+
+    for(uint32_t i=0; i<contours.size(); ++i){
+      contours[i].x += offset_i.x;
+      contours[i].y += offset_i.y;
+    }
+
+  }
   
 };
 
@@ -609,6 +624,18 @@ public:
     }    
 
     fflush(outputPoints);
+
+  }
+  
+  //*****************************************************************************
+  // saveContours
+  //*****************************************************************************
+  void saveContours(FILE * output, int32_t camera, int32_t frame) {
+    
+    for(uint32_t i=0; i<blobs.size(); ++i)
+      blobs[i].saveContours(output, camera, frame);
+
+    fflush(output);
 
   }
   
