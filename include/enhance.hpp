@@ -40,7 +40,7 @@ namespace cvl::enhance {
     //****************************************************************************
     // auto_alpha_beta
     //****************************************************************************
-  // https://answers.opencv.org/question/75510/how-to-make-auto-adjustmentsbrightness-and-contrast-for-image-android-opencv-image-correction
+    // https://answers.opencv.org/question/75510/how-to-make-auto-adjustmentsbrightness-and-contrast-for-image-android-opencv-image-correction
     void auto_alpha_beta(const cv::Mat & image, float clipHistPercent, float & alpha, float & beta) {
       
       double minimo, massimo;

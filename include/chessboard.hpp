@@ -76,7 +76,6 @@ namespace cvl::chessboard {
       return false;
       
     }
-  
     
     if(!mode.compare("circles")) {
       

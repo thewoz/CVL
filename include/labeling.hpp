@@ -87,7 +87,6 @@ namespace cvl::labeling {
       }
       
     }
-  
 
     //*****************************************************************************/
     // init
@@ -138,7 +137,7 @@ namespace cvl::labeling {
     
   } /* namespace utils */
   
- enum { NEAREST_NEIGHBOURS, NEXT_NEAREST_NEIGHBOURS };
+  enum { NEAREST_NEIGHBOURS, NEXT_NEAREST_NEIGHBOURS };
   
   //*****************************************************************************/
   // get

@@ -32,66 +32,31 @@
 //****************************************************************************/
 namespace cv {
 
-//  void dashedCircle(cv::Mat & image, cv::Point center, int radius, int dashWidth, int dashSpacing, const cv::Scalar & color, int thickness = 1, int steps = 200) {
-//      
-//    int dashPeriod = dashWidth + dashSpacing;
-//    bool lastDashed = false;
-//    
-//    std::vector<cv::Point> points;
-//
-//    for(int i = 0; i < steps; ++i) {
-//    
-//      bool curDashed = (i % dashPeriod) < dashWidth;
-//      
-//      if(curDashed && !lastDashed) {
-//        points.clear();
-//      }
-//
-//      if(!curDashed && lastDashed) {
-//        if(!points.empty()) {
-//          cv::polylines(image, points, false, color, thickness);
-//          points.clear();
-//        }
-//      }
-//          
-//      if(curDashed) {
-//        float theta = (float) i / steps * 2 * CV_PI;
-//        int x = center.x + std::cos(theta) * radius;
-//        int y = center.y + std::sin(theta) * radius;
-//        points.push_back(cv::Point(x, y));
-//      }
-//      
-//      lastDashed = curDashed;
-//      
-//    }
-//
-//    if(lastDashed && !points.empty()) {
-//      cv::polylines(image, points, false, color, thickness);
-//    }
-//    
-//  }
+  //****************************************************************************/
+  // dashedCircle() - ChatGPT
+  //****************************************************************************/
+  void dashedCircle(cv::Mat & image, cv::Point center, int radius, int dashWidth, int dashSpacing, const cv::Scalar & color, int thickness = 1) {
 
- void dashedCircle(cv::Mat & image, cv::Point center, int radius, int dashWidth, int dashSpacing, const cv::Scalar & color, int thickness = 1) {
-
-  const double PI = 3.14159265358979323846;
-  double circumference = 2 * PI * radius;
-  int numSegments = static_cast<int>(circumference / (dashWidth + dashSpacing));
-  
-  double angleStep = 2 * PI / numSegments;
-  double dashAngle = angleStep * dashWidth / (dashWidth + dashSpacing);
-  
-  for (int i = 0; i < numSegments; ++i) {
-    double theta1 = i * angleStep;
-    double theta2 = theta1 + dashAngle;
+    const double PI = 3.14159265358979323846;
+    double circumference = 2 * PI * radius;
+    int numSegments = static_cast<int>(circumference / (dashWidth + dashSpacing));
     
-    cv::Point pt1(center.x + radius * cos(theta1), center.y + radius * sin(theta1));
-    cv::Point pt2(center.x + radius * cos(theta2), center.y + radius * sin(theta2));
+    double angleStep = 2 * PI / numSegments;
+    double dashAngle = angleStep * dashWidth / (dashWidth + dashSpacing);
     
+    for (int i = 0; i < numSegments; ++i) {
+      
+      double theta1 = i * angleStep;
+      double theta2 = theta1 + dashAngle;
+      
+      cv::Point pt1(center.x + radius * cos(theta1), center.y + radius * sin(theta1));
+      cv::Point pt2(center.x + radius * cos(theta2), center.y + radius * sin(theta2));
+      
+      cv::line(image, pt1, pt2, color, thickness, cv::LINE_AA);
+      
+    }
     
-    cv::line(image, pt1, pt2, color, thickness, cv::LINE_AA);
   }
-  
-}
   
 } /* namespace */
 

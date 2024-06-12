@@ -17,10 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef _H_CVL_SUBPIXEL_H_
 #define _H_CVL_SUBPIXEL_H_
-
 
 #include <cstdio>
 #include <cstdlib>
@@ -35,32 +33,32 @@
 //****************************************************************************/
 namespace cvl::subpixel {
   
-  /*****************************************************************************/
-   // get() -
-   /*****************************************************************************/
-   void get(const cv::Mat image, std::vector<cv::Point2f> & corners, int roiSize = 15, const std::string & algorithm = "old") {
+  //*****************************************************************************/
+  // get() -
+  //*****************************************************************************/
+  void get(const cv::Mat image, std::vector<cv::Point2f> & corners, int roiSize = 15, const std::string & algorithm = "old") {
      
-     if(corners.size() > 0) {
+    if(corners.size() > 0) {
      
-       roiSize *= 0.5;
+      roiSize *= 0.5;
        
-       // Talpa vecchio
-       //cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.1);
+      // Talpa vecchio
+      //cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.1);
 
-       // Criteri di stop
-       cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.0001);
+      // Criteri di stop
+      cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.0001);
        
-       // Cerco i subpixel con l'algoritmo vecchio
-       if(!algorithm.compare("old"))
-         cv::cornerSubPix(image, corners, cv::Size(roiSize,roiSize), cv::Size(-1,-1), criteria);
+      // Cerco i subpixel con l'algoritmo vecchio
+      if(!algorithm.compare("old"))
+        cv::cornerSubPix(image, corners, cv::Size(roiSize,roiSize), cv::Size(-1,-1), criteria);
        
-       // Cerco i subpixel con l'algoritmo nuovo
-       if(!algorithm.compare("new"))
-         cv::find4QuadCornerSubpix(image, corners, cv::Size(roiSize,roiSize));
+      // Cerco i subpixel con l'algoritmo nuovo
+      if(!algorithm.compare("new"))
+        cv::find4QuadCornerSubpix(image, corners, cv::Size(roiSize,roiSize));
      
-     }
+    }
        
-   }
+  }
 
 } /* namespace cvl::subpixels */
 
