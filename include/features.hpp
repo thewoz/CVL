@@ -27,8 +27,6 @@
 
 #include <opencv2/opencv.hpp>
 
-#include <cvl/subpixelNew.hpp>
-
 
 //****************************************************************************/
 // cvl::features
@@ -58,7 +56,6 @@ namespace cvl::features {
     //cv::Canny(image, image, 0, 650, 3, false);
 
     cv::imshow("detected circles", image); cv::waitKey();
-
     
     cv::HoughCircles(image, circles, cv::HOUGH_GRADIENT, 1, minDist, higherThreshold, accumulatorThreshold, minRadius, maxRadius);
     
@@ -75,39 +72,11 @@ namespace cvl::features {
          int radius = c[2];
        cv::circle( image, center, radius, cv::Scalar(255,0,255), 3, cv::LINE_AA);
      }
+    
     cv::imshow("detected circles", image); cv::waitKey();
     
     return circles;
     
-  }
-
-
-  // //****************************************************************************/
-  // // subpixelNew
-  // //****************************************************************************/
-  void cornerSubPixNew(const cv::Mat image, std::vector<cv::Point2f> & corners, int roiSize = 60){
-
-    for(auto & corner : corners){
-
-      int x = corner.x - roiSize/2;  // Centro della maschera      
-      int y = corner.y - roiSize/2;
-
-      cv::Rect roi(x, y, roiSize, roiSize);
-
-      cv::Mat subImage = image(roi);
-
-      // cv::namedWindow("check");
-      // cv::imshow("check",subImage);
-      // cv::waitKey(0);
-
-      corner = cornerSubPixNewImpl(subImage);
-
-      if(corner.x != 0 || corner.y != 0){
-        corner.x += roi.x; // mi riporto nel sistema di riferimento di image
-        corner.y += roi.y;
-      }
-
-    } 
   }
   
 } /* namespace cvl::features */

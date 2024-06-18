@@ -27,7 +27,8 @@
 #include <string>
 
 #include <opencv2/opencv.hpp>
-#include <cvl/features.hpp>
+
+#include <cvl/subpixelNew.hpp>
 
 //****************************************************************************/
 // cvl::subpixel
@@ -55,7 +56,7 @@ namespace cvl::subpixel {
            
       // Cerco i subpixel con l'algoritmo nuovo
       if(!algorithm.compare("new"))
-        cv::find4QuadCornerSubpix(image, corners, cv::Size(roiSize,roiSize));
+        cornerSubPixNew(image, corners, roiSize);
          
     }
        
