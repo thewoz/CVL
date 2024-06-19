@@ -608,19 +608,37 @@ cv::Point2d cornerSubPixNewImpl (const cv::Mat image){
     return cv::Point2d(keypoints[0].pt.x, keypoints[0].pt.y);
 }
 
+void fitRectangleInImage(const cv::Mat& image, cv::Rect &roi){
+
+    //limiti dell'immagine
+    int leftBound = 0, topBound = 0, bottomBound = image.rows, rightBound = image.cols;
+
+    if(roi.x < leftBound){
+        roi.x = leftBound;
+    }
+    if(roi.y < topBound){
+        roi.y = topBound;
+    }
+    if(roi.x + roi.width > rightBound){
+        roi.width = rightBound - roi.x;
+    }
+    if(roi.y + roi.height > bottomBound){
+        roi.height = bottomBound - roi.y;
+    }
+}
 
 // //****************************************************************************/
 // // subpixelNew
 // //****************************************************************************/
 void cornerSubPixNew(const cv::Mat image, std::vector<cv::Point2f> & corners, int roiSize = 60){
-
+  
   for(auto & corner : corners){
 
     int x = corner.x - roiSize/2;  // Centro della maschera
     int y = corner.y - roiSize/2;
 
     cv::Rect roi(x, y, roiSize, roiSize);
-
+    fitRectangleInImage(image, roi);
     cv::Mat subImage = image(roi);
 
     // cv::namedWindow("check");
