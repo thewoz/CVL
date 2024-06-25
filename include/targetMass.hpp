@@ -27,8 +27,6 @@
 
 #include <opencv2/opencv.hpp>
 
-#include <mpl/configure.hpp>
-
 #include "blob.hpp"
 #include "labeling.hpp"
 #include "contours.hpp"
