@@ -160,18 +160,14 @@ namespace cvl {
     void draw(cv::Mat & dst, const cv::Vec3b & color, const cv::Point & offset = cv::Point(0,0)) const {
       
       if(dst.channels() == 1) {
-        printf("offset %d %d\n", offset.y, offset.x);
         for(uint32_t i=0; i<pixels.size(); i++){
-          printf("%d %d -> %d %d\n", pixels[i].x, pixels[i].y, pixels[i].x-offset.x, pixels[i].y-offset.y);
           dst.at<uchar>(pixels[i].y-offset.y, pixels[i].x-offset.x) = color[0];
         }
       }
       
       if(dst.channels() == 3) {
-        
         for(uint32_t i=0; i<pixels.size(); i++)
           dst.at<cv::Vec3b>(pixels[i].y-offset.y, pixels[i].x-offset.x) = color;
-        
       }
       
     }
