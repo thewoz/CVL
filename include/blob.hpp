@@ -63,7 +63,7 @@ namespace cvl {
     
     cv::Rect roi;
     
-    cv::Point offset;
+    cv::Point2d offset;
     
     //*****************************************************************************
     // blob_t
@@ -120,16 +120,51 @@ namespace cvl {
       
     }
     
+//    //*****************************************************************************
+//    // draw
+//    //*****************************************************************************
+//      void draw(cv::Mat & dst, const cv::Mat & src, const cv::Point & offset = cv::Point(0,0)) const {
+//    
+//        if(dst.channels() != 1 && dst.channels() !=3)
+//          mpl::log::error("The destination image is not a one or three channel image.\n");
+//    
+//        if(dst.channels() == 1) {
+//    
+//          for(uint32_t i=0; i<pixels.size(); i++)
+//            dst.at<uchar>(pixels[i].y-offset.y, pixels[i].x-offset.x) = src.at<uchar>(pixels[i].y-offset.y, pixels[i].x-offset.x);
+//    
+//        }
+//    
+//        if(dst.channels() == 3) {
+//    
+//          for(uint32_t i=0; i<pixels.size(); i++)
+//            dst.at<cv::Vec3b>(pixels[i].y-offset.y, pixels[i].x-offset.x) = src.at<cv::Vec3b>(pixels[i].y-offset.y, pixels[i].x-offset.x);
+//    
+//        }
+//    
+//      }
+    
+//    //*****************************************************************************
+//    // draw
+//    //*****************************************************************************
+//    void draw(cv::Mat & dst, int value) {
+//      
+//      for(uint32_t i=0; i<pixels.size(); i++)
+//        dst.at<int>(pixels[i].y, pixels[i].x) = value;
+//      
+//    }
+    
     //*****************************************************************************
     // draw
     //*****************************************************************************
     void draw(cv::Mat & dst, const cv::Vec3b & color, const cv::Point & offset = cv::Point(0,0)) const {
       
       if(dst.channels() == 1) {
-        
-        for(uint32_t i=0; i<pixels.size(); i++)
+        printf("offset %d %d\n", offset.y, offset.x);
+        for(uint32_t i=0; i<pixels.size(); i++){
+          printf("%d %d -> %d %d\n", pixels[i].x, pixels[i].y, pixels[i].x-offset.x, pixels[i].y-offset.y);
           dst.at<uchar>(pixels[i].y-offset.y, pixels[i].x-offset.x) = color[0];
-        
+        }
       }
       
       if(dst.channels() == 3) {
@@ -140,37 +175,6 @@ namespace cvl {
       }
       
     }
-    
-    void draw(cv::Mat & dst, int value) {
-      
-      for(uint32_t i=0; i<pixels.size(); i++)
-        dst.at<int>(pixels[i].y, pixels[i].x) = value;
-      
-    }
-    
-    //*****************************************************************************
-    // draw
-    //*****************************************************************************
-    //  void draw(cv::Mat & dst, const cv::Mat & src, const cv::Point & offset = cv::Point(0,0)) const {
-    //
-    //    if(dst.channels() != 1 && dst.channels() !=3)
-    //      mpl::log::error("The destination image is not a one or three channel image.\n");
-    //
-    //    if(dst.channels() == 1) {
-    //
-    //      for(uint32_t i=0; i<pixels.size(); i++)
-    //        dst.at<uchar>(pixels[i].y-offset.y, pixels[i].x-offset.x) = src.at<uchar>(pixels[i].y-offset.y, pixels[i].x-offset.x);
-    //
-    //    }
-    //
-    //    if(dst.channels() == 3) {
-    //
-    //      for(uint32_t i=0; i<pixels.size(); i++)
-    //        dst.at<cv::Vec3b>(pixels[i].y-offset.y, pixels[i].x-offset.x) = src.at<cv::Vec3b>(pixels[i].y-offset.y, pixels[i].x-offset.x);
-    //
-    //    }
-    //
-    //  }
     
     //*****************************************************************************
     // draw
@@ -194,20 +198,38 @@ namespace cvl {
     }
     
     //*****************************************************************************
-    // draw
+    // drawInv
     //*****************************************************************************
-    void drawLabel(cv::Mat & dst, const cv::Vec3b & color = cv::Yellow, int scaleFactor = 1) const {
+    void drawInv(cv::Mat & dst, const cv::Point & offset = cv::Point(0,0)) const {
       
-      cv::drawNumber(dst, label, cv::Point2i((baricenter.x*scaleFactor) + roi.width * 0.5, (baricenter.y*scaleFactor) + roi.height * 0.5), color);
+      if(dst.channels() == 1) {
+        
+        for(uint32_t i=0; i<pixels.size(); i++)
+          dst.at<uchar>(pixels[i].y-offset.y, pixels[i].x-offset.x) = 255 - pixels[i].z;
+        
+      }
+      
+      if(dst.channels() == 3) {
+        
+        for(uint32_t i=0; i<pixels.size(); i++)
+          dst.at<cv::Vec3b>(pixels[i].y-offset.y, pixels[i].x-offset.x) = cv::Vec3b(255 - pixels[i].z,  255 - pixels[i].z, 255 - pixels[i].z);
+        
+      }
       
     }
+    
     
     //*****************************************************************************
     // drawMask
     //*****************************************************************************
-    void drawMask(cv::Mat & dst, const cv::Point & offset = cv::Point(0,0)) const {
+    void drawMask(cv::Mat & dst, const cv::Point & offset = cv::Point(0,0)) const { draw(dst, cv::Vec3b(255,255,255), offset); }
+    
+    //*****************************************************************************
+    // drawLabel
+    //*****************************************************************************
+    void drawLabel(cv::Mat & dst, const cv::Vec3b & color = cv::Yellow, int scaleFactor = 1) const {
       
-      draw(dst, cv::Vec3b(255,255,255), offset);
+      cv::drawNumber(dst, label, cv::Point2i((baricenter.x*scaleFactor) + roi.width * 0.5, (baricenter.y*scaleFactor) + roi.height * 0.5), color);
       
     }
     
