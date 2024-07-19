@@ -291,7 +291,9 @@ namespace cvl::labeling {
       blobs.push_back(blob);
       
     }
-        
+    
+    if(blobs.size() > 0) std::sort(blobs.begin(), blobs.end(), [] (const blob_t & blA, const blob_t & blB) { return blA.size() > blB.size(); } );
+    
     utils::freeMatrix(matrixLabel, workImageSize);
     
   }
