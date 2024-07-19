@@ -42,16 +42,6 @@ namespace cvl::contours {
     
     if(image.channels() != 1)
       mpl::log::error("The destination image must have one channel image.\n");
-    //  cv::Point offset_i;
-    
-    //  offset_i.x = offset.x - 1;
-    //  offset_i.y = offset.y - 1;
-    
-   // cv::Mat workImg = cv::Mat::zeros(image.rows + 2, image.cols + 2, CV_8UC1);
-    
-   // image.copyTo(workImg(cv::Rect(1, 1, image.cols, image.rows)));
-    
-    // drawMask(image, offset_i);
     
     contours.clear();
     
