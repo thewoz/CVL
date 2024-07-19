@@ -31,142 +31,239 @@
 // namespace
 //****************************************************************************/
 namespace cvl::threshold {
-
-  enum { WHIT_ZERO, SKIP_ZERO };
   
   //****************************************************************************/
   // namespace
   //****************************************************************************/
   namespace utils {
-    
+  
+    //****************************************************************************/
+    // otsu() - ChatGPT
+    // Funzione per calcolare la soglia di Otsu escludendo un valore specifico
+    //****************************************************************************/
+    int otsu(const cv::Mat & src, int excludeValue) {
+        
+      // Controlla che l'immagine sia in scala di grigi
+      if(src.channels() != 1) {
+        fprintf(stderr, "cvl::threshold::otsu() error: the image must be a CV_8UC1\n");
+        abort();
+      }
+
+      // per restire che non voglio escudere nulla (messo da me)
+      if(excludeValue < 0 || excludeValue > 255)
+        excludeValue = 256;
+      
+      int totalPixels = (int)src.total();
+      std::vector<int> histogram(257, 0);
+
+      // Calcola l'istogramma dell'immagine
+      for(int y=0; y<src.rows; y++)
+        for(int x=0; x<src.cols; x++)
+          ++histogram[src.at<uchar>(y,x)];
+  
+      // Calcola il numero totale di pixel da considerare
+      int pixelsToConsider = totalPixels - histogram[excludeValue];
+
+      // Somma totale dei pixel
+      double sum = 0;
+
+      for(int i=0; i<256; i++) {
+        if(i!=excludeValue) {
+          sum += i * histogram[i];
+        }
+      }
+
+      // Variabili per il calcolo della soglia di Otsu
+      double sumB = 0;
+      int wB = 0;
+      int wF = 0;
+      double varMax = 0;
+      
+      // valore di soglia
+      int threshold = 0;
+      
+      // Calcolo della soglia di Otsu
+      for(int i=0; i<256; i++) {
+        
+        if(i != excludeValue) {
+          
+          // Peso della classe background
+          wB += histogram[i];
+          
+          if(wB == 0) continue;
+          
+          // Peso della classe foreground
+          wF = pixelsToConsider - wB;
+          
+          if(wF == 0) break;
+
+          sumB += static_cast<double>(i * histogram[i]);
+
+          // Media della classe background
+          double mB = sumB / wB;
+          
+          // Media della classe foreground
+          double mF = (sum - sumB) / wF;
+
+          // Calcola la varianza tra le classi
+          double varBetween = static_cast<double>(wB) * static_cast<double>(wF) * (mB - mF) * (mB - mF);
+
+          // Aggiorna la soglia se la varianza è massima
+          if(varBetween > varMax) {
+            varMax = varBetween;
+            threshold = i;
+          }
+          
+        }
+        
+      }
+
+      return threshold;
+      
+    }
+
+  
     //****************************************************************************/
     // moda
     //****************************************************************************/
-    int moda(const cv::Mat & src, bool skipZero, const cv::Mat & mask = cv::Mat()) {
+    int moda(const cv::Mat & src, cv::Mat mask = cv::Mat(), int valueToSkip = -1) {
       
-      if(src.channels() > 1){
-        fprintf(stderr, "The destination image not have one channel.\n");
-        exit(EXIT_FAILURE);
-      }
-      
-      int median_index;
-      
-      if(!mask.empty()){
-        
-        if(skipZero==SKIP_ZERO){
-          
-          median_index = 0;
-          
-          for(int y=0; y<src.rows; ++y)
-            for(int x=0; x<src.cols; ++x)
-              if(mask.at<uchar>(y,x) != 0 && src.at<uchar>(y,x) != 0)
-                median_index++;
-          
-        } else { median_index = (int)(cv::countNonZero(mask) * 0.5); }
-        
-      } else {
-        
-        (skipZero==SKIP_ZERO) ? median_index = (int)(cv::countNonZero(src) * 0.5) : median_index = (int)(src.cols * src.rows * 0.5);
-        
-      }
-            
-      int histSize = 256;
-      float range[] = { 0, 256 };
-      const float* histRange = { range };
-      
-      cv::Mat hist;
-      
-      cv::calcHist(&src, 1, 0, mask, hist, 1, &histSize, &histRange);
-      
-      int index;
-      
-      skipZero ? index = 1 : index = 0;
-      
-      int moda = 0;
+      cv::Mat histo;
+      cv::histogram(src, histo, mask, valueToSkip);
       
       float maxFreq = 0;
+
+      int moda;
       
-      for(; index<256; ++index){
+      for(int color=0; color<256; ++color) {
         
-        if(hist.at<float>(index) > maxFreq) {
-          maxFreq = hist.at<float>(index);
-          moda = index;
+        if(histo.at<float>(color) > maxFreq) {
+          maxFreq = histo.at<float>(color);
+          moda = color;
         }
                 
       }
-      
+     
       return moda;
       
     }
-    
+  
     //****************************************************************************/
     // median
     //****************************************************************************/
-    int median(const cv::Mat & src, bool skipZero, const cv::Mat & mask = cv::Mat()) {
+    int median(const cv::Mat & src, cv::Mat mask = cv::Mat(), int valueToSkip = -1) {
       
-      if(src.channels() > 1){
-        fprintf(stderr, "The destination image not have one channel.\n");
-        exit(EXIT_FAILURE);
-      }
+      int countNonZero = src.rows * src.cols;
       
-      int median_index;
-      
-      if(!mask.empty()){
+      // se ci sta definita la mashera o il valore da ignorare
+      if(!mask.empty() || valueToSkip != -1) {
         
-        if(skipZero==SKIP_ZERO){
-          
-          median_index = 0;
-          
-          for(int y=0; y<src.rows; ++y)
-            for(int x=0; x<src.cols; ++x)
-              if(mask.at<uchar>(y,x) != 0 && src.at<uchar>(y,x) != 0)
-                median_index++;
-          
-        } else { median_index = (int)(cv::countNonZero(mask) * 0.5); }
+        // se la maschera è vuota la definisco
+        if(!mask.empty()) mask = cv::Mat::zeros(src.size(), CV_8UC1);
         
-      } else {
+        countNonZero = 0;
         
-        (skipZero==SKIP_ZERO) ? median_index = (int)(cv::countNonZero(src) * 0.5) : median_index = (int)(src.cols * src.rows * 0.5);
+        for(int y=0; y<src.rows; ++y) {
+          for(int x=0; x<src.cols; ++x) {
+            
+            // se il valore lo devo ignorare modifico la maschera
+            if(src.at<uchar>(y,x) == src.at<uchar>(y,x)) mask.at<uchar>(y,x) = 0;
+            
+            if(mask.at<uchar>(y,x) != 0) ++countNonZero;
+              
+          }
+        }
         
       }
+            
+      cv::Mat histo;
+      cv::histogram(src, histo, mask);
       
-      int comulative_pixel = 0;
+      int medianPixel = std::round(countNonZero * 0.5);
       
-      int histSize = 256;
-      float range[] = { 0, 256 };
-      const float* histRange = { range };
-      
-      cv::Mat hist;
-      
-      cv::calcHist(&src, 1, 0, mask, hist, 1, &histSize, &histRange);
-      
-      int median;
-      
-      skipZero ? median = 1 : median = 0;
-      
-      for(; median<256; ++median){
+      int comulativePixel = 0;
+
+      for(int color=0; color<256; ++color) {
         
-        comulative_pixel += hist.at<float>(median);
+        comulativePixel += histo.at<float>(color);
         
-        if(comulative_pixel >= median_index) return median;
-        
+        if(comulativePixel >= medianPixel) return color;
+                
       }
       
-      return 255;
+      fprintf(stderr, "cvl::median() error: I'm not supposed to be here\n");
+      
+      abort();
       
     }
     
-  } /* namespace */
+    //****************************************************************************/
+    // percentile
+    //****************************************************************************/
+    int percentile(const cv::Mat & src, float _percentile, cv::Mat mask = cv::Mat(), int valueToSkip = -1) {
+      
+      int countNonZero = src.rows * src.cols;
+      
+      // se ci sta definita la mashera o il valore da ignorare
+      if(!mask.empty() || valueToSkip != -1) {
+        
+        // se la maschera è vuota la definisco
+        if(!mask.empty()) mask = cv::Mat::zeros(src.size(), CV_8UC1);
+        
+        countNonZero = 0;
+        
+        for(int y=0; y<src.rows; ++y) {
+          for(int x=0; x<src.cols; ++x) {
+            
+            // se il valore lo devo ignorare modifico la maschera
+            if(src.at<uchar>(y,x) == src.at<uchar>(y,x)) mask.at<uchar>(y,x) = 0;
+            
+            if(mask.at<uchar>(y,x) != 0) ++countNonZero;
+              
+          }
+        }
+        
+      }
+            
+      _percentile = std::round((countNonZero / 100.0) * _percentile);
+      
+      cv::Mat histo;
+      cv::histogram(src, histo, mask);
+      
+      int comulativePixel = 0;
+      
+      for(int color=0; color<256; ++color) {
+        
+        comulativePixel += histo.at<float>(color);
+        
+        if(comulativePixel >= _percentile) return color;
+                
+      }
+      
+      fprintf(stderr, "cvl::median() error: I'm not supposed to be here\n");
+      
+      abort();
+      
+    }
   
+  
+  } /* namespace */
+
+
   //****************************************************************************/
   // otsu
   //****************************************************************************/
-  double otsu(cv::Mat & src, const cv::Mat & mask = cv::Mat()) {
+  double otsu(cv::Mat & src, cv::Mat & dst, const cv::Mat & mask = cv::Mat()) {
     
-    double value = cv::threshold(src, src, 128, 255, cv::THRESH_OTSU | cv::THRESH_BINARY) + 1;
+    // TODO: qua dovrei controlalre che è grande uguale e dello stesso tipo
+    if(dst.empty()) {
+      dst = cv::Mat(src.size(), CV_8UC1);
+    }
+    
+    double value = cv::threshold(src, dst, 128, 255, cv::THRESH_OTSU | cv::THRESH_BINARY) + 1;
     
     if(!mask.empty())
-      cv::bitwise_and(src, mask, src);
+      cv::bitwise_and(dst, mask, dst);
     
     return value;
     
@@ -175,12 +272,17 @@ namespace cvl::threshold {
   //****************************************************************************/
   // adaptive
   //****************************************************************************/
-  double adaptive(cv::Mat & src, int adaptiveMethod, int thresholdType, int blockSize, double C, const cv::Mat & mask = cv::Mat()) {
+  double adaptive(cv::Mat & src, cv::Mat & dst, int adaptiveMethod, int thresholdType, int blockSize, double C, const cv::Mat & mask = cv::Mat()) {
 
-    cv::adaptiveThreshold(src, src, 255, adaptiveMethod, thresholdType, blockSize, C);
+    // TODO: qua dovrei controlalre che è grande uguale e dello stesso tipo
+    if(dst.empty()) {
+      dst = cv::Mat(src.size(), CV_8UC1);
+    }
+    
+    cv::adaptiveThreshold(src, dst, 255, adaptiveMethod, thresholdType, blockSize, C);
   
     if(!mask.empty())
-      cv::bitwise_and(src, mask, src);
+      cv::bitwise_and(dst, mask, dst);
     
     return -1;
     
@@ -190,12 +292,22 @@ namespace cvl::threshold {
   // global
   //****************************************************************************/
   // openCV global threshold doesn't use threshold value in a strict way. this means why there is -1 here!!!
-  double global(cv::Mat & src,  double threshold, const cv::Mat & mask = cv::Mat()) {
+  double global(cv::Mat & src, cv::Mat & dst, double threshold, const cv::Mat & mask = cv::Mat()) {
     
-    double value = cv::threshold(src, src, (threshold - 1), 255, cv::THRESH_BINARY) + 1;
+    if(src.type() > CV_8UC1){
+      fprintf(stderr, "cvl::global() error: the input image must be a CV_8UC1 image.\n");
+      exit(EXIT_FAILURE);
+    }
+    
+    // TODO: qua dovrei controlalre che è grande uguale e dello stesso tipo
+    if(dst.empty()) {
+      dst = cv::Mat(src.size(), CV_8UC1);
+    }
+    
+    double value = cv::threshold(src, dst, (threshold - 1), 255, cv::THRESH_BINARY) + 1;
     
     if(!mask.empty())
-      cv::bitwise_and(src, mask, src);
+      cv::bitwise_and(dst, mask, dst);
     
     return value;
     
@@ -204,9 +316,9 @@ namespace cvl::threshold {
   //*****************************************************************************/
   // median
   //*****************************************************************************/
-  double median(cv::Mat & src, double factor, bool skipZero, const cv::Mat & mask = cv::Mat()) {
+  double median(cv::Mat & src, cv::Mat & dst, double factor, int valueToSkip, const cv::Mat & mask = cv::Mat()) {
     
-    double threshold = utils::median(src, skipZero, mask);
+    double threshold = utils::median(src, mask, valueToSkip);
     
     if(threshold == 0) {
       threshold = factor;
@@ -214,10 +326,15 @@ namespace cvl::threshold {
       threshold *= factor;
     }
     
-    double value = cv::threshold(src, src, (threshold - 1), 255, cv::THRESH_BINARY) + 1;
+    // TODO: qua dovrei controlalre che è grande uguale e dello stesso tipo
+    if(dst.empty()) {
+      dst = cv::Mat(src.size(), CV_8UC1);
+    }
+    
+    double value = cv::threshold(src, dst, (threshold - 1), 255, cv::THRESH_BINARY) + 1;
     
     if(!mask.empty())
-      cv::bitwise_and(src, mask, src);
+      cv::bitwise_and(dst, mask, dst);
     
     return value;
     
@@ -226,9 +343,9 @@ namespace cvl::threshold {
   //*****************************************************************************/
   // moda
   //*****************************************************************************/
-  double moda(cv::Mat & src, double factor, bool skipZero, const cv::Mat & mask = cv::Mat()) {
+  double moda(cv::Mat & src, cv::Mat & dst, double factor, int valueToSkip, const cv::Mat & mask = cv::Mat()) {
     
-    double threshold = utils::moda(src, skipZero, mask);
+    double threshold = utils::moda(src, mask, valueToSkip);
     
     if(threshold == 0) {
       threshold = factor;
@@ -236,10 +353,36 @@ namespace cvl::threshold {
       threshold *= factor;
     }
     
-    double value = cv::threshold(src, src, (threshold - 1), 255, cv::THRESH_BINARY) + 1;
+    // TODO: qua dovrei controlalre che è grande uguale e dello stesso tipo
+    if(dst.empty()) {
+      dst = cv::Mat(src.size(), CV_8UC1);
+    }
+    
+    double value = cv::threshold(src, dst, (threshold - 1), 255, cv::THRESH_BINARY) + 1;
     
     if(!mask.empty())
-      cv::bitwise_and(src, mask, src);
+      cv::bitwise_and(dst, mask, dst);
+    
+    return value;
+    
+  }
+
+  //*****************************************************************************/
+  // percentile
+  //*****************************************************************************/
+  double percentile(cv::Mat & src, cv::Mat & dst, double percentile, int valueToSkip, const cv::Mat & mask = cv::Mat()) {
+    
+    double threshold = utils::percentile(src, percentile, mask, valueToSkip);
+   
+    // TODO: qua dovrei controlalre che è grande uguale e dello stesso tipo
+    if(dst.empty()) {
+      dst = cv::Mat(src.size(), CV_8UC1);
+    }
+    
+    double value = cv::threshold(src, dst, (threshold - 1), 255, cv::THRESH_BINARY) + 1;
+    
+    if(!mask.empty())
+      cv::bitwise_and(dst, mask, dst);
     
     return value;
     
@@ -248,39 +391,35 @@ namespace cvl::threshold {
   //*****************************************************************************/
   // get
   //*****************************************************************************/
-  double get(cv::Mat & src, const std::string & algo, double param1, double param2, const cv::Mat & mask = cv::Mat()) {
+  double get(cv::Mat & src, cv::Mat & dst, const std::string & algo, double param1, double param2, int param3, const cv::Mat & mask = cv::Mat()) {
     
     if(algo.compare("GLOBAL") == 0) {
-      return global(src, param1, mask);
+      return global(src, dst, param1, mask);
     }
     
     if(algo.compare("MODA") == 0) {
-      return moda(src, param1, WHIT_ZERO, mask);
-    }
-    
-    if(algo.compare("MODA_SKIP_ZERO") == 0) {
-      return moda(src, param1, SKIP_ZERO, mask);
+      return moda(src, dst, param1, param3, mask);
     }
     
     if(algo.compare("MEDIAN") == 0) {
-      return median(src, param1, WHIT_ZERO, mask);
+      return median(src, dst, param1, param3, mask);
     }
     
-    if(algo.compare("MEDIAN_SKIP_ZERO") == 0) {
-      return median(src, param1, SKIP_ZERO, mask);
+    if(algo.compare("PERCENTILE") == 0) {
+      return percentile(src, dst, param1, param3, mask);
     }
     
     if(algo.compare("OTSU") == 0) {
-      return otsu(src, mask);
+      return otsu(src, dst, mask);
     }
     
     if(algo.compare("ADAPTIVE") == 0) {
-      return adaptive(src, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY, param1, param2, mask);
+      return adaptive(src, dst, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY, param1, param2, mask);
     }
     
     fprintf(stderr, "error unknown type of threshold evaluation criteria.\n");
     fprintf(stderr, "You can choose between:\n");
-    fprintf(stderr, "      GLOBAL, MEDIAN, MEDIAN_SKIP_ZERO, OTSU or ADAPTIVE\n");
+    fprintf(stderr, "      GLOBAL, MEDIAN, MODA, PERCENTILE, OTSU or ADAPTIVE\n");
     
     exit(EXIT_FAILURE);
     
