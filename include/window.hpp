@@ -28,10 +28,6 @@
 
 #include <opencv2/opencv.hpp>
 
-//#include <QtWidgets/QWidget>
-//#include <QtGui/QCursor>
-//#include <QtGui/QGuiApplication>
-
 //****************************************************************************/
 // namescape cvl
 //****************************************************************************/
@@ -118,6 +114,14 @@ namespace cvl {
     }
 
   public:
+    
+    enum cursor {
+           ARROW    = 0,  //!< Arrow Cursor
+           CROSS    = 2,  //!< Cross Cursor
+           WAIT     = 3,  //!< Wait Cursor
+           OPENHAND = 17, //!< Open Hand Cursor
+           LOSEHAND = 18  //!< Close Hand Cursor
+         };
     
     //****************************************************************************/
     // window_t()
@@ -346,13 +350,17 @@ namespace cvl {
     //****************************************************************************/
     // setCursor() -
     //****************************************************************************/
-    void setCursor() {
+    void setCursor(int cursorTypes) {
       
-      //QWidget * handle = (QWidget*) cv::getWindowHandle(name);
-
-      //handle->setCursor(Qt::WaitCursor);
+#ifdef OPENCV_EXTENDED_QT_GUI
       
-      //QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+      cv::setDefaultCursor(name, cursorTypes);
+      
+#else
+      
+      fprintf(stderr, "cvl::windows_t::setCursor() error: the function is not available with this version of OpenCV\n");
+      
+#endif
       
     }
     
