@@ -159,17 +159,33 @@ namespace cvl {
     //*****************************************************************************
     void draw(cv::Mat & dst, const cv::Vec3b & color, const cv::Point & offset = cv::Point(0,0)) const {
       
-      if(dst.channels() == 1) {
+      bool status = false;
+      
+      if(dst.type() == CV_32SC1) {
+        for(uint32_t i=0; i<pixels.size(); i++){
+          dst.at<int>(pixels[i].y-offset.y, pixels[i].x-offset.x) = color[0];
+        }
+        status = true;
+      }
+      
+      if(dst.type() == CV_8UC1) {
         for(uint32_t i=0; i<pixels.size(); i++){
           dst.at<uchar>(pixels[i].y-offset.y, pixels[i].x-offset.x) = color[0];
         }
+        status = true;
       }
       
-      if(dst.channels() == 3) {
+      if(dst.type() == CV_8UC3) {
         for(uint32_t i=0; i<pixels.size(); i++)
           dst.at<cv::Vec3b>(pixels[i].y-offset.y, pixels[i].x-offset.x) = color;
+        status = true;
       }
-      
+       
+      if(!status) {
+        fprintf(stderr, "blob_t::draw() error: image type not recognized\n");
+        abort();
+      }
+
     }
     
     //*****************************************************************************
@@ -177,18 +193,61 @@ namespace cvl {
     //*****************************************************************************
     void draw(cv::Mat & dst, const cv::Point & offset = cv::Point(0,0)) const {
       
-      if(dst.channels() == 1) {
-        
+      bool status = false;
+      
+      if(dst.type() == CV_8UC1) {
         for(uint32_t i=0; i<pixels.size(); i++)
           dst.at<uchar>(pixels[i].y-offset.y, pixels[i].x-offset.x) = pixels[i].z;
-        
+        status = true;
       }
       
-      if(dst.channels() == 3) {
-        
+      if(dst.type() == CV_8UC3) {
         for(uint32_t i=0; i<pixels.size(); i++)
           dst.at<cv::Vec3b>(pixels[i].y-offset.y, pixels[i].x-offset.x) = cv::Vec3b(pixels[i].z, pixels[i].z, pixels[i].z);
-        
+        status = true;
+      }
+      
+      if(!status) {
+        fprintf(stderr, "blob_t::draw() error: image type not recognized\n");
+        abort();
+      }
+      
+    }
+    
+    //*****************************************************************************
+    // draw
+    //*****************************************************************************
+    void draw(cv::Mat & dst, const cv::Mat & ori, const cv::Point & offset = cv::Point(0,0)) const {
+      
+      bool status = false;
+      
+      if(dst.type() != ori.type()) {
+        fprintf(stderr, "blob_t::draw() error: image must have the same type\n");
+        abort();
+      }
+      
+      if(dst.type() == CV_8UC1) {
+        for(uint32_t i=0; i<pixels.size(); i++) {
+          int x = pixels[i].x - offset.x;
+          int y = pixels[i].y - offset.y;
+          dst.at<uchar>(y,x) = ori.at<uchar>(pixels[i].y, pixels[i].x);
+        }
+        status = true;
+      }
+      
+      if(dst.type() == CV_8UC3) {
+        for(uint32_t i=0; i<pixels.size(); i++){
+          int x = pixels[i].x - offset.x;
+          int y = pixels[i].y - offset.y;
+          uchar value = ori.at<uchar>(pixels[i].y, pixels[i].x);
+          dst.at<cv::Vec3b>(y,x) = cv::Vec3b(value, value, value);
+        }
+        status = true;
+      }
+       
+      if(!status) {
+        fprintf(stderr, "blob_t::draw() error: image type not recognized\n");
+        abort();
       }
       
     }
@@ -198,22 +257,59 @@ namespace cvl {
     //*****************************************************************************
     void drawInv(cv::Mat & dst, const cv::Point & offset = cv::Point(0,0)) const {
       
-      if(dst.channels() == 1) {
-        
+      bool status = false;
+
+      if(dst.type() == CV_8UC1) {
         for(uint32_t i=0; i<pixels.size(); i++)
           dst.at<uchar>(pixels[i].y-offset.y, pixels[i].x-offset.x) = 255 - pixels[i].z;
-        
+        status = true;
       }
       
-      if(dst.channels() == 3) {
-        
+      if(dst.type() == CV_8UC3) {
         for(uint32_t i=0; i<pixels.size(); i++)
-          dst.at<cv::Vec3b>(pixels[i].y-offset.y, pixels[i].x-offset.x) = cv::Vec3b(255 - pixels[i].z,  255 - pixels[i].z, 255 - pixels[i].z);
-        
+          dst.at<cv::Vec3b>(pixels[i].y-offset.y, pixels[i].x-offset.x) = cv::Vec3b(255 - pixels[i].z, 255 - pixels[i].z, 255 - pixels[i].z);
+        status = true;
+      }
+      
+      if(!status) {
+        fprintf(stderr, "blob_t::draw() error: image type not recognized\n");
+        abort();
       }
       
     }
     
+    //*****************************************************************************
+    // drawInv
+    //*****************************************************************************
+    void drawInv(cv::Mat & dst, const cv::Mat & ori, const cv::Point & offset = cv::Point(0,0)) const {
+      
+      bool status = false;
+      
+      if(dst.type() == CV_8UC1) {
+        for(uint32_t i=0; i<pixels.size(); i++) {
+          int x = pixels[i].x - offset.x;
+          int y = pixels[i].y - offset.y;
+          dst.at<uchar>(y,x) = 255 - ori.at<uchar>(pixels[i].y, pixels[i].x);
+        }
+        status = true;
+      }
+      
+      if(dst.type() == CV_8UC3) {
+        for(uint32_t i=0; i<pixels.size(); i++){
+          int x = pixels[i].x - offset.x;
+          int y = pixels[i].y - offset.y;
+          uchar value = 255 - ori.at<uchar>(pixels[i].y, pixels[i].x);
+          dst.at<cv::Vec3b>(y,x) = cv::Vec3b(value,  value, value);
+        }
+        status = true;
+      }
+      
+      if(!status) {
+        fprintf(stderr, "blob_t::draw() error: image type not recognized\n");
+        abort();
+      }
+      
+    }
     
     //*****************************************************************************
     // drawMask
