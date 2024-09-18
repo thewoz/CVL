@@ -29,7 +29,6 @@
 #include <opencv2/opencv.hpp>
 
 #include <mpl/stdio.hpp>
-#include <mpl/opencv.hpp>
 #include <mpl/loader.hpp>
 
 //****************************************************************************/

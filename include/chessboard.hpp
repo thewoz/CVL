@@ -29,10 +29,9 @@
 #include <opencv2/opencv.hpp>
 
 #include <mpl/stdio.hpp>
-#include <mpl/opencv.hpp>
 #include <mpl/loader.hpp>
 
-#include <cvl/subpixel.hpp>
+#include <cvl/cvl.hpp>
 
 //****************************************************************************/
 // cvl::chessboard
@@ -125,7 +124,7 @@ namespace cvl::chessboard {
   //****************************************************************************/
   bool get(const std::string & imagePath, const cv::Size & patternSize, std::vector<cv::Point2f> & corners, const std::string & mode, const std::string & algorithm = "old") {
     
-    cv::Mat image = cv::open(imagePath, cv::IMREAD_GRAYSCALE);
+    cv::Mat image = cvl::open(imagePath, cv::IMREAD_GRAYSCALE);
 
     return get(image, patternSize, corners, mode, algorithm);
     
@@ -142,7 +141,7 @@ namespace cvl::chessboard {
     cv::drawChessboardCorners(image, boardSize, cv::Mat(corners), status);
     
     // Salvo l'immagine
-    cv::save(image, file);
+    cvl::save(image, file);
     
   }
   

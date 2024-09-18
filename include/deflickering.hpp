@@ -28,8 +28,6 @@
 
 #include <opencv2/opencv.hpp>
 
-#include <mpl/opencv.hpp>
-
 
 //***************************************************************************************************//
 // asDeflickering
@@ -77,7 +75,7 @@ public:
       
       mpl::io::expandPath(maskPath);
 
-      mask = cv::open(maskPath, cv::IMREAD_GRAYSCALE);
+      mask = cvl::open(maskPath, cv::IMREAD_GRAYSCALE);
       
     } else { mask = cv::Mat(imageList[0].size(), CV_8UC1, cv::Scalar(255,255,255)); }
     

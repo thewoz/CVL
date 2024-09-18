@@ -21,9 +21,11 @@
 #ifndef _H_CVL_H_
 #define _H_CVL_H_
 
+#include <cvl/opencv.hpp>
 #include <cvl/background.hpp>
 #include <cvl/baricenter.hpp>
 #include <cvl/blob.hpp>
+#include <cvl/blobs.hpp>
 #include <cvl/blobSplitting.hpp>
 #include <cvl/chessboard.hpp>
 #include <cvl/corners.hpp>
