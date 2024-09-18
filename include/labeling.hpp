@@ -142,7 +142,7 @@ namespace cvl::labeling {
   //*****************************************************************************/
   // get
   //*****************************************************************************/
-  void get(cv::Mat & src, int neighboursType, size_t minClusterMass, std::vector<blob_t> & blobs, const cv::Mat & original, const cv::Point & offset = cv::Point(0,0)) {
+  void get(cv::Mat & src, int neighboursType, size_t minClusterMass, cvl::blobs_t & blobs, const cv::Mat & original, const cv::Point & offset = cv::Point(0,0)) {
     
     bool eight_connectivity = true;
     
@@ -279,7 +279,7 @@ namespace cvl::labeling {
       
       if(blobsIter->second.size() < minClusterMass) continue;
       
-      blob_t blob;
+      cvl::blob_t blob;
       
       for(size_t i=0; i<blobsIter->second.size(); ++i)
         blob.add(blobsIter->second[i].x+offset.x, blobsIter->second[i].y+offset.y, original.at<uchar>(blobsIter->second[i].y+offset.y, blobsIter->second[i].x+offset.x));
@@ -288,11 +288,15 @@ namespace cvl::labeling {
       
       blob.finalize();
       
-      blobs.push_back(blob);
+      blobs.add(blob);
       
     }
     
-    if(blobs.size() > 0) std::sort(blobs.begin(), blobs.end(), [] (const blob_t & blA, const blob_t & blB) { return blA.size() > blB.size(); } );
+    // non so perchè prima li ordinavo per la massa tolto nel 18/09/2024
+    //if(blobs.size() > 0) std::sort(blobs.begin(), blobs.end(), [] (const blob_t & blA, const blob_t & blB) { return blA.size() > blB.size(); } );
+    
+    // messo il 18/09/2024
+    blobs.finalize();
     
     utils::freeMatrix(matrixLabel, workImageSize);
     

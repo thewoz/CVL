@@ -41,9 +41,9 @@ namespace cvl::clustering {
   //*****************************************************************************/
   // NN
   //*****************************************************************************/
-  void NN(const blobs_t & cluster, std::vector<blobs_t> & clusters, double factor = 1) {
+  void NN(const cvl::blobs_t & blobs, std::vector<cvl::blobs_t> & clusters, double factor = 1) {
     
-    std::vector<std::vector<size_t>> clustersIndex = mpl::clustering::byNNDistance(cluster.blobs, factor);
+    std::vector<std::vector<size_t>> clustersIndex = mpl::clustering::byNNDistance(blobs, factor);
     
     clusters.clear();
     
@@ -54,7 +54,7 @@ namespace cvl::clustering {
       
       // aggiungo al cluster il blob
       for(size_t j=0; j<clustersIndex[i].size(); ++j)
-        clusters[i].add(cluster.blobs[clustersIndex[i][j]]);
+        clusters[i].add(blobs[clustersIndex[i][j]]);
       
       // Mi calcolo in baricentro del cluster e rinomino i balob dentro il cluster
       clusters[i].finalize();
@@ -66,10 +66,10 @@ namespace cvl::clustering {
   //*****************************************************************************/
   // follow
   //*****************************************************************************/
-  cv::Point2d follow(blobs_t & cluster, const cv::Point2d & coords, std::vector<blobs_t> & clusters, double factor = 1) {
+  cv::Point2d follow(cvl::blobs_t & blobs, const cv::Point2d & coords, std::vector<cvl::blobs_t> & clusters, double factor = 1) {
     
     // Clusterizzo
-    cvl::clustering::NN(cluster, clusters, factor);
+    cvl::clustering::NN(blobs, clusters, factor);
     
     size_t nearIndex = 0;
     double nearDist  = DBL_MAX;
@@ -78,7 +78,7 @@ namespace cvl::clustering {
     for(size_t i=0; i<clusters.size(); ++i) {
       
       // mi calcolo la distanza tra il cluster vecchio e quelli nuovi
-      double dist = cv::norm(coords - clusters[i].baricenter);
+      double dist = cv::norm(coords - clusters[i].getBaricenter());
       
       // mi prendo il piu vicino a quelo vecchio
       if(dist < nearDist) {
@@ -88,12 +88,12 @@ namespace cvl::clustering {
       
     }
     
-    cluster = clusters[nearIndex];
+    blobs = clusters[nearIndex];
     
-    for(int i=0; i<cluster.size(); ++i)
-      cluster[i].label = i;
+    for(int i=0; i<blobs.size(); ++i)
+      blobs[i].label = i;
     
-    return clusters[nearIndex].baricenter;
+    return clusters[nearIndex].getBaricenter();
     
   }
   

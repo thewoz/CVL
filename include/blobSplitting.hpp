@@ -65,7 +65,7 @@ namespace cvl::blobsplitting {
     //    // se devo continuare a dividire una volta diviso
     //    bool recursiveSplitting;
     //*****************************************************************************
-    void split(blob_t & blob, const cv::Mat & splitOn, const cv::Mat & original, std::vector<blob_t> & blobsFound, bool toDark, uint32_t enterMass, uint32_t exitMass, uint32_t minMass, bool recursiveSplitting, int labelingNeighboursType) {
+    void split(const cvl::blob_t & blob, const cv::Mat & splitOn, const cv::Mat & original, cvl::blobs_t & blobsFound, bool toDark, int enterMass, int exitMass, int minMass, bool recursiveSplitting, int labelingNeighboursType) {
       
     #ifdef _DEBUG_CVL_BLOBSPLITTING_
       //cv::namedWindow("blobs", cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_EXPANDED);
@@ -75,12 +75,12 @@ namespace cvl::blobsplitting {
       blobsFound.clear();
       
       // vettore che contiene i vari blob che vanno divisi
-      std::vector<blob_t> blobsToSplit;
+      cvl::blobs_t blobsToSplit;
       
-      blobsToSplit.push_back(blob);
+      blobsToSplit.add(blob);
       
       // vettore con i blob temporanei trovati a ogni passo
-      std::vector<blob_t> tmpBlobs;
+      cvl::blobs_t tmpBlobs;
       
       // immagini di appoggio
       cv::Mat blobImg = cv::Mat(blob.getImageSize(), CV_8UC1);
@@ -153,7 +153,7 @@ namespace cvl::blobsplitting {
         // se e' alla fine rimasto un solo cluster l'aggiungo l'originale al risulato
         if(tmpBlobs.size() == 1) {
           
-          blobsFound.push_back(blobsToSplit[i]);
+          blobsFound.add(blobsToSplit[i]);
           
           // se il blob e' stato diviso
         } else {
@@ -161,7 +161,7 @@ namespace cvl::blobsplitting {
           // pulisco quelli troppo piccoli
           for(size_t j=0; j<tmpBlobs.size(); ++j) {
             if(tmpBlobs[j].size() < exitMass) {
-              tmpBlobs.erase(tmpBlobs.begin() + j);
+              tmpBlobs.erase(j);
               --j;
             }
           }
@@ -175,12 +175,12 @@ namespace cvl::blobsplitting {
               // se il blob trovato e' ancora abbastanza grande e lo splitig e' ricorsivo lo aggiungo ai blob da dividere
               if(tmpBlobs[j].size() > enterMass && recursiveSplitting){
                 
-                blobsToSplit.push_back(tmpBlobs[j]);
+                blobsToSplit.add(tmpBlobs[j]);
                 
                 // oppure lo aggiungo al risultato
               } else{
                 
-                blobsFound.push_back(tmpBlobs[j]);
+                blobsFound.add(tmpBlobs[j]);
                 
               }
               
@@ -189,7 +189,7 @@ namespace cvl::blobsplitting {
             // se era rimasta solo polvere
           } else {
             
-            blobsFound.push_back(blobsToSplit[i]);
+            blobsFound.add(blobsToSplit[i]);
             
           }
           
@@ -204,7 +204,7 @@ namespace cvl::blobsplitting {
   //****************************************************************************
   // get
   //****************************************************************************
-  void get(std::vector<blob_t> & blobs, const cv::Mat & splitOn, const cv::Mat & original, const std::string & mode, uint32_t enterMass, uint32_t exitMass, uint32_t minMass, bool recursiveSplitting, int labelingNeighboursType){
+void get(cvl::blobs_t & blobs, const cv::Mat & splitOn, const cv::Mat & original, const std::string & mode, int enterMass, int exitMass, int minMass, bool recursiveSplitting, int labelingNeighboursType){
     
     bool toDark = true;
     
@@ -223,7 +223,7 @@ namespace cvl::blobsplitting {
     }
     
     // vettore di appoggio con il risultato finale
-    std::vector<blob_t> foundedBlobs;
+    cvl::blobs_t foundedBlobs;
     
     // provo a dividere ogni blob
     for(size_t i=0; i<blobs.size(); ++i) {
@@ -231,7 +231,7 @@ namespace cvl::blobsplitting {
       // se e' piu' grande della massa di entrata lo provo a dividere
       if(blobs[i].size() > enterMass) {
         
-        std::vector<blob_t> blobsFound;
+        cvl::blobs_t blobsFound;
         
         // provo a splittarlo
         utils::split(blobs[i], splitOn, original, blobsFound, toDark, enterMass, exitMass, minMass, recursiveSplitting, labelingNeighboursType);
@@ -241,7 +241,7 @@ namespace cvl::blobsplitting {
           
           blobsFound[j].label = (int)foundedBlobs.size();
           
-          foundedBlobs.push_back(blobsFound[j]);
+          foundedBlobs.add(blobsFound[j]);
           
         }
         
@@ -249,7 +249,7 @@ namespace cvl::blobsplitting {
         
         blobs[i].label = (int)foundedBlobs.size();
         
-        foundedBlobs.push_back(blobs[i]);
+        foundedBlobs.add(blobs[i]);
         
       }
       
@@ -342,11 +342,13 @@ namespace cvl::blobsplitting {
   #endif
     
     for(int i=0; i<foundedBlobs.size(); ++i) {
-      if(foundedBlobs[i].size() <= 0) { foundedBlobs.erase(foundedBlobs.begin()+i); --i; continue; }
+      if(foundedBlobs[i].size() <= 0) { foundedBlobs.erase(i); --i; continue; }
       foundedBlobs[i].finalize();
     }
     
-    blobs.swap(foundedBlobs);
+    foundedBlobs.finalize();
+  
+    blobs = foundedBlobs;
     
   }
 

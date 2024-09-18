@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _H_CVL_BLOBS_H_
-#define _H_CVL_BLOBS_H_
+#ifndef _H_CVL_BLOB_H_
+#define _H_CVL_BLOB_H_
 
 #include <cstdlib>
 #include <cstdio>
@@ -29,10 +29,9 @@
 #include <opencv2/opencv.hpp>
 
 #include <mpl/log.hpp>
-#include <mpl/opencv.hpp>
+#include <mpl/graph.hpp>
 
 #include "contours.hpp"
-
 #include "baricenter.hpp"
 
 //*****************************************************************************
@@ -43,7 +42,7 @@ namespace cvl {
   //*****************************************************************************
   // blob_t
   //*****************************************************************************
-  class blob_t {
+  class blob_t : public mpl::graph::node_t {
     
   public:
     
@@ -409,9 +408,8 @@ namespace cvl {
     //*****************************************************************************
     // operator <
     //*****************************************************************************
-    inline bool operator < (const blob_t & blob) const {
+    inline bool operator < (const cvl::blob_t & blob) const {
       
-      if(baricenter.y < blob.baricenter.y) return true;
            if(baricenter.y < blob.baricenter.y) return true;
       else if(baricenter.y > blob.baricenter.y) return false;
       else if(baricenter.x < blob.baricenter.x) return true;
@@ -488,275 +486,17 @@ namespace cvl {
   //*****************************************************************************
   // operator -
   //*****************************************************************************
-  double operator - (const blob_t & A, const blob_t & B) {
+  double operator - (const cvl::blob_t & A, const cvl::blob_t & B) {
     
     return cv::sqrt(((A.baricenter.x-B.baricenter.x)*(A.baricenter.x-B.baricenter.x)) + ((A.baricenter.y-B.baricenter.y)*(A.baricenter.y-B.baricenter.y)));
     
   }
 
-
-  //*****************************************************************************
-  // blobs_t
-  //*****************************************************************************
-  class blobs_t {
-    
-  public:
-    
-    std::vector<blob_t> blobs;
-    
-    cv::Point2d baricenter;
-    
-    //*****************************************************************************
-    //  operator []
-    //*****************************************************************************
-    blob_t & operator [] (size_t index) { return blobs[index]; }
-    
-    //*****************************************************************************
-    // size
-    //*****************************************************************************
-    size_t size() const { return blobs.size(); }
-    
-    //*****************************************************************************
-    // add
-    //*****************************************************************************
-    void add(const blob_t & blob) { blobs.push_back(blob); }
-    
-    //*****************************************************************************
-    // finalize
-    //*****************************************************************************
-    void finalize() {
-      
-      // ordino i punti
-      std::sort(blobs.begin(), blobs.end());
-      
-      baricenter = cv::Point2d(0,0);
-      
-      // mi calcolo il baricentro e rinomino i label dei punti
-      for(uint32_t i=0; i<blobs.size(); ++i) {
-        
-        blobs[i].finalize();
-        
-        baricenter += blobs[i].baricenter;
-        
-        blobs[i].label = i;
-        
-      }
-      
-      baricenter /= (double) blobs.size();
-      
-    }
-    
-    //*****************************************************************************
-    // draw
-    //*****************************************************************************
-    void draw(cv::Mat & dst, const cv::Vec3b & color) const {
-      
-      if(dst.channels() != 1 && dst.channels() !=3)
-        mpl::log::error("The destination image is not a one or three channel image.\n");
-      
-      //if(mode) dst.setTo(0);
-      
-      for(uint32_t i=0; i<blobs.size(); ++i)
-        blobs[i].draw(dst, color);
-      
-    }
-    
-    //*****************************************************************************
-    // draw
-    //*****************************************************************************
-    void draw(cv::Mat & dst, bool mode = true) const {
-      
-      if(dst.channels() != 1 && dst.channels() !=3)
-        mpl::log::error("The destination image is not a one or three channel image.\n");
-      
-      if(mode) dst.setTo(0);
-      
-      for(uint32_t i=0; i<blobs.size(); ++i)
-        blobs[i].draw(dst);
-      
-    }
-    
-    //*****************************************************************************
-    // drawMask
-    //*****************************************************************************
-    void drawMask(cv::Mat & dst, bool mode = true) const {
-      
-      if(dst.channels() != 1)
-        mpl::log::error("The destination image is not a one channel image.\n");
-      
-      if(mode) dst.setTo(0);
-      
-      for(uint32_t i=0; i<blobs.size(); ++i)
-        blobs[i].drawMask(dst);
-      
-    }
-    
-    //*****************************************************************************
-    // drawBaricenters
-    //*****************************************************************************
-    void drawBaricenters(cv::Mat & dst, const cv::Vec3b & color = cv::Red, int scaleFactor = 1) {
-      
-      if(dst.channels() !=3)
-        mpl::log::error("The destination image is not a three channel image.\n");
-      
-      for(uint32_t i=0; i<blobs.size(); ++i)
-        dst.at<cv::Vec3b>(cv::Point2i(blobs[i].baricenter.x*scaleFactor,blobs[i].baricenter.y*scaleFactor)) = color;
-      
-      
-    }
-    
-    //*****************************************************************************
-    // drawLabels
-    //*****************************************************************************
-    void drawLabels(cv::Mat & dst, const cv::Vec3b & color = cv::Yellow, int scaleFactor = 1) {
-      
-      if(dst.channels() !=3)
-        mpl::log::error("The destination image is not a three channel image.\n");
-      
-      for(uint32_t i=0; i<blobs.size(); ++i)
-        blobs[i].drawLabel(dst, color, scaleFactor);
-      
-    }
-    
-    //*****************************************************************************
-    // drawContours
-    //*****************************************************************************
-    void drawContours(cv::Mat & dst, const cv::Vec3b & color = cv::Blue) {
-      
-      if(dst.channels() !=3)
-        mpl::log::error("The destination image is not a three channel image.\n");
-      
-      cv::Mat mask = cv::Mat::zeros(dst.size(), CV_8UC1);
-      
-      for(uint32_t i=0; i<blobs.size(); ++i)
-        blobs[i].drawMask(mask);
-      
-      // Vettore con i pixels del contorno
-      std::vector<cv::Point> contours;
-      
-      // Mi trovo il contorni
-      cvl::contours::get(mask, cvl::contours::EXTERNAL, contours);
-      
-      for(uint32_t k=0; k<contours.size(); ++k)
-        dst.at<cv::Vec3b>(contours[k]) = color;
-      
-    }
-    
-    //*****************************************************************************
-    // enclosingCircle
-    //*****************************************************************************
-    void enclosingCircle(cv::Point2f & center, float & radius) {
-      
-      std::vector<cv::Point2f> points(blobs.size());
-      
-      for(uint32_t i=0; i<blobs.size(); ++i)
-        points[i] = blobs[i].baricenter;
-      
-      cv::minEnclosingCircle(points, center, radius);
-      
-    }
-    
-    //*****************************************************************************
-    // getConvexHull
-    //*****************************************************************************
-    void getConvexHull(std::vector<cv::Point> & hull) {
-      
-      std::vector<cv::Point> points(blobs.size());
-      
-      for(uint32_t i=0; i<blobs.size(); ++i)
-        points[i] = blobs[i].baricenter;
-      
-      cv::convexHull(points, hull, false, true);
-      
-    }
-    
-    //*****************************************************************************
-    // boundingRect
-    //*****************************************************************************
-    void boundingRect(cv::Rect & roi) {
-      
-      std::vector<cv::Point2f> points(blobs.size());
-      
-      for(uint32_t i=0; i<blobs.size(); ++i)
-        points[i] = blobs[i].baricenter;
-      
-      roi = cv::boundingRect(points);
-      
-    }
-    
-    //*****************************************************************************
-    // getPoints
-    //*****************************************************************************
-    void getPoints(std::vector<cv::Point2f> & points) {
-      
-      points.resize(blobs.size());
-      
-      for(uint32_t i=0; i<blobs.size(); ++i)
-        points[i] = blobs[i].baricenter;
-      
-    }
-    
-    //*****************************************************************************
-    // applyRTS
-    //*****************************************************************************
-    //  void applyRTS(const cv::Point2d & p0, cv::Mat & R, cv::Mat & T, double S = 1.0) {
-    //
-    //    cv::Point2d tmp;
-    //
-    //    for(std::size_t i=0; i<blobs.size(); ++i) {
-    //
-    //      for(std::size_t j=0; j<blobs[i].size(); ++j) {
-    //
-    //        tmp.x = (((((double*)R.data)[0]*(blobs[i].pixels[j].x-p0.x)) + (((double*)R.data)[1]*(blobs[i].pixels[j].y-p0.y))) * S) + ((double*)T.data)[0] + p0.x;
-    //        tmp.y = (((((double*)R.data)[2]*(blobs[i].pixels[j].x-p0.x)) + (((double*)R.data)[3]*(blobs[i].pixels[j].y-p0.y))) * S) + ((double*)T.data)[1] + p0.y;
-    //
-    //        blobs[i].pixels[j].x = std::round(tmp.x);
-    //        blobs[i].pixels[j].y = std::round(tmp.y);
-    //
-    //      }
-    //
-    //      blobs[i].finalize();
-    //
-    //    }
-    //
-    //  }
-    
-    //*****************************************************************************
-    // save
-    //*****************************************************************************
-    void save(FILE * outputPoints, int32_t camera, int32_t frame, FILE * outputFrame = NULL) {
-      
-      for(uint32_t i=0; i<blobs.size(); ++i)
-        fprintf(outputPoints, "%d %04d %04d %.4f %.4f %03lu\n", camera, frame, blobs[i].label, blobs[i].baricenter.x, blobs[i].baricenter.y, blobs[i].size());
-      
-      if(outputFrame != NULL) {
-        fprintf(outputFrame, "%d %04d %04lu\n", camera, frame, blobs.size());
-        fflush(outputFrame);
-      }
-      
-      fflush(outputPoints);
-      
-    }
-    
-    //*****************************************************************************
-    // saveContours
-    //*****************************************************************************
-    void saveContours(FILE * output, int32_t camera, int32_t frame) {
-      
-      for(uint32_t i=0; i<blobs.size(); ++i)
-        blobs[i].saveContours(output, camera, frame);
-      
-      fflush(output);
-      
-    }
-    
-  };
-
-  std::string blob_t::baricenterType = "GEOMETRIC";
+  std::string cvl::blob_t::baricenterType = "GEOMETRIC";
 
 } /* namespace */
 
 
-#endif /* _H_CVL_BLOBS_H_ */
+#endif /* _H_CVL_BLOB_H_ */
 
 
