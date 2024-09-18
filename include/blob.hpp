@@ -319,9 +319,9 @@ namespace cvl {
     //*****************************************************************************
     // drawLabel
     //*****************************************************************************
-    void drawLabel(cv::Mat & dst, const cv::Vec3b & color = cv::Yellow, int scaleFactor = 1) const {
+    void drawLabel(cv::Mat & dst, const cv::Vec3b & color = cvl::Yellow, int scaleFactor = 1) const {
       
-      cv::drawNumber(dst, label, cv::Point2i((baricenter.x*scaleFactor) + roi.width * 0.5, (baricenter.y*scaleFactor) + roi.height * 0.5), color);
+      cvl::drawNumber(dst, label, cv::Point2i((baricenter.x*scaleFactor) + roi.width * 0.5, (baricenter.y*scaleFactor) + roi.height * 0.5), color);
       
     }
     
@@ -412,6 +412,7 @@ namespace cvl {
     inline bool operator < (const blob_t & blob) const {
       
       if(baricenter.y < blob.baricenter.y) return true;
+           if(baricenter.y < blob.baricenter.y) return true;
       else if(baricenter.y > blob.baricenter.y) return false;
       else if(baricenter.x < blob.baricenter.x) return true;
       else return false;
