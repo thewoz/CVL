@@ -114,7 +114,7 @@ namespace cvl::enhance {
   //****************************************************************************
   void histogramEqualization(std::vector<cv::Mat> & images) {
     
-    for(uint32_t i=0; i<images.size(); ++i)
+    for(size_t i=0; i<images.size(); ++i)
       histogramEqualization(images[i]);
     
   }
@@ -157,7 +157,7 @@ namespace cvl::enhance {
   //****************************************************************************
   void autoContrast(std::vector<cv::Mat> & images, float clipHistPercent) {
     
-    for(uint32_t i=0; i<images.size(); ++i)
+    for(size_t i=0; i<images.size(); ++i)
       autoContrast(images[i], clipHistPercent);
     
   }

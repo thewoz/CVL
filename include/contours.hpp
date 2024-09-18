@@ -47,9 +47,9 @@ namespace cvl::contours {
     
     if(mode == EXTERNAL){
       
-      for(int32_t y=0; y<image.rows; ++y) {
+      for(int y=0; y<image.rows; ++y) {
         
-        for(int32_t x=0; x<image.cols; ++x) {
+        for(int x=0; x<image.cols; ++x) {
           
           // con !0 faccio l'esterno con ==0 l'interno
           if(image.at<uchar>(y,x) != 0) continue;
@@ -82,9 +82,9 @@ namespace cvl::contours {
     
     if(mode == INTERNAL){
       
-      for(int32_t y=0; y<image.rows; ++y) {
+      for(int y=0; y<image.rows; ++y) {
         
-        for(int32_t x=0; x<image.cols; ++x) {
+        for(int x=0; x<image.cols; ++x) {
           
           // con !0 faccio l'esterno con ==0 l'interno
           if(image.at<uchar>(y,x) == 0) continue;

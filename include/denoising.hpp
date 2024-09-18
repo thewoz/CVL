@@ -76,7 +76,7 @@ namespace cvl::denoising {
   //*****************************************************************************/
   // morphology
   //*****************************************************************************/
-  void morphology(cv::Mat & image, uint32_t size = 5) {
+  void morphology(cv::Mat & image, int size = 5) {
     
     cv::morphologyEx(image, image, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(size,size)));
     
@@ -85,7 +85,7 @@ namespace cvl::denoising {
   //*****************************************************************************/
   // gaussian
   //*****************************************************************************/
-  void gaussian(cv::Mat & src, uint32_t size = 3) {
+  void gaussian(cv::Mat & src, int size = 3) {
     
     cv::GaussianBlur(src, src, cv::Size(size,size), 0);
     
@@ -94,7 +94,7 @@ namespace cvl::denoising {
   //*****************************************************************************/
   // blur
   //*****************************************************************************/
-  void blur(cv::Mat & src, uint32_t size = 3) {
+  void blur(cv::Mat & src, int size = 3) {
     
     cv::blur(src, src, cv::Size(size,size));
     
@@ -103,7 +103,7 @@ namespace cvl::denoising {
   //*****************************************************************************/
   // bilateralFilter
   //*****************************************************************************/
-  void bilateralFilter(cv::Mat & src, uint32_t diameter = 11, double sigmaColor = 21,  double sigmaSpace = 7) {
+  void bilateralFilter(cv::Mat & src, int diameter = 11, double sigmaColor = 21,  double sigmaSpace = 7) {
     
     cv::bilateralFilter(src, src, diameter, sigmaColor, sigmaSpace);
     
@@ -134,7 +134,7 @@ namespace cvl::denoising {
   //*****************************************************************************/
   // median
   //*****************************************************************************/
-  void median(cv::Mat & src, uint32_t size = 3) {
+  void median(cv::Mat & src, int size = 3) {
     
     cv::medianBlur(src, src, size);
     
@@ -227,9 +227,9 @@ namespace cvl::denoising {
   //*****************************************************************************/
   // get
   //*****************************************************************************/
-  void get(cv::Mat & src, const std::string & algo, double param = 3, uint32_t time = 1) {
+  void get(cv::Mat & src, const std::string & algo, double param = 3, int time = 1) {
     
-    uint32_t size = param;
+    int size = param;
       
     if(size % 2 == 0) size++;
     

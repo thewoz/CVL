@@ -55,9 +55,9 @@ namespace cvl {
     
     //enum { EXTERNAL_CONTOUR, INTERNAL_CONTOUR };
     
-    int32_t label;
+    int label;
     
-    uint32_t iMin; uint32_t iMax;
+    int iMin; int iMax;
     
     cv::Point2d baricenter;
     
@@ -73,7 +73,7 @@ namespace cvl {
     //*****************************************************************************
     // add
     //*****************************************************************************
-    void add(uint32_t x, uint32_t y, uint32_t i) { pixels.push_back(cv::Point3i(x,y,i)); }
+    void add(int x, int y, int i) { pixels.push_back(cv::Point3i(x,y,i)); }
     
     //*****************************************************************************
     // size
@@ -95,12 +95,12 @@ namespace cvl {
     //*****************************************************************************
     void finalize() {
       
-      uint32_t xMin = UINT_MAX; uint32_t xMax = 0;
-      uint32_t yMin = UINT_MAX; uint32_t yMax = 0;
+      int xMin = INT_MAX; int xMax = 0;
+      int yMin = INT_MAX; int yMax = 0;
       
-      iMin = UINT_MAX; iMax = 0;
+      iMin = INT_MAX; iMax = 0;
       
-      for(uint32_t i=0; i<pixels.size(); i++) {
+      for(size_t i=0; i<pixels.size(); i++) {
         
         if(pixels[i].x > xMax) xMax = pixels[i].x;
         if(pixels[i].x < xMin) xMin = pixels[i].x;
@@ -162,21 +162,21 @@ namespace cvl {
       bool status = false;
       
       if(dst.type() == CV_32SC1) {
-        for(uint32_t i=0; i<pixels.size(); i++){
+        for(size_t i=0; i<pixels.size(); i++){
           dst.at<int>(pixels[i].y-offset.y, pixels[i].x-offset.x) = color[0];
         }
         status = true;
       }
       
       if(dst.type() == CV_8UC1) {
-        for(uint32_t i=0; i<pixels.size(); i++){
+        for(size_t i=0; i<pixels.size(); i++){
           dst.at<uchar>(pixels[i].y-offset.y, pixels[i].x-offset.x) = color[0];
         }
         status = true;
       }
       
       if(dst.type() == CV_8UC3) {
-        for(uint32_t i=0; i<pixels.size(); i++)
+        for(size_t i=0; i<pixels.size(); i++)
           dst.at<cv::Vec3b>(pixels[i].y-offset.y, pixels[i].x-offset.x) = color;
         status = true;
       }
@@ -196,13 +196,13 @@ namespace cvl {
       bool status = false;
       
       if(dst.type() == CV_8UC1) {
-        for(uint32_t i=0; i<pixels.size(); i++)
+        for(size_t i=0; i<pixels.size(); i++)
           dst.at<uchar>(pixels[i].y-offset.y, pixels[i].x-offset.x) = pixels[i].z;
         status = true;
       }
       
       if(dst.type() == CV_8UC3) {
-        for(uint32_t i=0; i<pixels.size(); i++)
+        for(size_t i=0; i<pixels.size(); i++)
           dst.at<cv::Vec3b>(pixels[i].y-offset.y, pixels[i].x-offset.x) = cv::Vec3b(pixels[i].z, pixels[i].z, pixels[i].z);
         status = true;
       }
@@ -227,7 +227,7 @@ namespace cvl {
       }
       
       if(dst.type() == CV_8UC1) {
-        for(uint32_t i=0; i<pixels.size(); i++) {
+        for(size_t i=0; i<pixels.size(); i++) {
           int x = pixels[i].x - offset.x;
           int y = pixels[i].y - offset.y;
           dst.at<uchar>(y,x) = ori.at<uchar>(pixels[i].y, pixels[i].x);
@@ -236,7 +236,7 @@ namespace cvl {
       }
       
       if(dst.type() == CV_8UC3) {
-        for(uint32_t i=0; i<pixels.size(); i++){
+        for(size_t i=0; i<pixels.size(); i++){
           int x = pixels[i].x - offset.x;
           int y = pixels[i].y - offset.y;
           uchar value = ori.at<uchar>(pixels[i].y, pixels[i].x);
@@ -260,13 +260,13 @@ namespace cvl {
       bool status = false;
 
       if(dst.type() == CV_8UC1) {
-        for(uint32_t i=0; i<pixels.size(); i++)
+        for(size_t i=0; i<pixels.size(); i++)
           dst.at<uchar>(pixels[i].y-offset.y, pixels[i].x-offset.x) = 255 - pixels[i].z;
         status = true;
       }
       
       if(dst.type() == CV_8UC3) {
-        for(uint32_t i=0; i<pixels.size(); i++)
+        for(size_t i=0; i<pixels.size(); i++)
           dst.at<cv::Vec3b>(pixels[i].y-offset.y, pixels[i].x-offset.x) = cv::Vec3b(255 - pixels[i].z, 255 - pixels[i].z, 255 - pixels[i].z);
         status = true;
       }
@@ -286,7 +286,7 @@ namespace cvl {
       bool status = false;
       
       if(dst.type() == CV_8UC1) {
-        for(uint32_t i=0; i<pixels.size(); i++) {
+        for(size_t i=0; i<pixels.size(); i++) {
           int x = pixels[i].x - offset.x;
           int y = pixels[i].y - offset.y;
           dst.at<uchar>(y,x) = 255 - ori.at<uchar>(pixels[i].y, pixels[i].x);
@@ -295,7 +295,7 @@ namespace cvl {
       }
       
       if(dst.type() == CV_8UC3) {
-        for(uint32_t i=0; i<pixels.size(); i++){
+        for(size_t i=0; i<pixels.size(); i++){
           int x = pixels[i].x - offset.x;
           int y = pixels[i].y - offset.y;
           uchar value = 255 - ori.at<uchar>(pixels[i].y, pixels[i].x);
@@ -332,7 +332,7 @@ namespace cvl {
       
       fprintf(output, "%d %d %d %lu ", camera, frame, label, pixels.size());
       
-      for(int i=0; i<pixels.size(); ++i)
+      for(size_t i=0; i<pixels.size(); ++i)
         fprintf(output, "%d %d ", pixels[i].x, pixels[i].y);
       
       fprintf(output, "\n\n\n");

@@ -211,7 +211,7 @@ namespace cvl::background {
   //*****************************************************************************/
   void get(const std::vector<cv::Mat> & src, cv::Mat & dst, const std::string & algo, uchar value = 0) {
     
-    uint32_t index = src.size() * 0.5;
+    int index = src.size() * 0.5;
     
     if(algo.compare("LIGHTEST") == 0)
       return lightest(src, dst);

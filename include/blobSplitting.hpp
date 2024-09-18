@@ -51,13 +51,13 @@ namespace cvl::blobsplitting {
     //    bool toDark;
     //
     //    // massa per cui smetto di splittare
-    //    uint32_t exitMass;
+    //    int exitMass;
     //
     //    // massa per cui inizio a splittare
-    //    uint32_t enterMass;
+    //    int enterMass;
     //
     //    // massa minimi per cui mi tengo il blob
-    //    uint32_t minMass;
+    //    int minMass;
     //
     //    // tipologia di connettivita
     //    char labelingNeighboursType[PATH_MAX];
@@ -86,12 +86,12 @@ namespace cvl::blobsplitting {
       cv::Mat blobImg = cv::Mat(blob.getImageSize(), CV_8UC1);
       cv::Mat thrsImg = cv::Mat(blob.getImageSize(), CV_8UC1);
       
-      uint32_t threshold;
+      int threshold;
       
-      uint32_t targetThreshold;
+      int targetThreshold;
       
       // ciclo su tutti i blob
-      for(uint32_t i=0; i<blobsToSplit.size(); ++i) {
+      for(size_t i=0; i<blobsToSplit.size(); ++i) {
         
         // in base se devo andare verso il nero o meno
         if(toDark){
@@ -159,7 +159,7 @@ namespace cvl::blobsplitting {
         } else {
           
           // pulisco quelli troppo piccoli
-          for(uint32_t j=0; j<tmpBlobs.size(); ++j) {
+          for(size_t j=0; j<tmpBlobs.size(); ++j) {
             if(tmpBlobs[j].size() < exitMass) {
               tmpBlobs.erase(tmpBlobs.begin() + j);
               --j;
@@ -170,7 +170,7 @@ namespace cvl::blobsplitting {
           if(tmpBlobs.size() > 1) {
             
             // ciclo su i blob trovati
-            for(uint32_t j=0; j<tmpBlobs.size(); ++j){
+            for(size_t j=0; j<tmpBlobs.size(); ++j){
               
               // se il blob trovato e' ancora abbastanza grande e lo splitig e' ricorsivo lo aggiungo ai blob da dividere
               if(tmpBlobs[j].size() > enterMass && recursiveSplitting){
@@ -226,7 +226,7 @@ namespace cvl::blobsplitting {
     std::vector<blob_t> foundedBlobs;
     
     // provo a dividere ogni blob
-    for(uint32_t i=0; i<blobs.size(); ++i) {
+    for(size_t i=0; i<blobs.size(); ++i) {
       
       // se e' piu' grande della massa di entrata lo provo a dividere
       if(blobs[i].size() > enterMass) {
@@ -237,9 +237,9 @@ namespace cvl::blobsplitting {
         utils::split(blobs[i], splitOn, original, blobsFound, toDark, enterMass, exitMass, minMass, recursiveSplitting, labelingNeighboursType);
         
         // ciclo su tutti i blob trovati
-        for(uint32_t j=0; j<blobsFound.size(); ++j) {
+        for(size_t j=0; j<blobsFound.size(); ++j) {
           
-          blobsFound[j].label = (int32_t) foundedBlobs.size();
+          blobsFound[j].label = (int)foundedBlobs.size();
           
           foundedBlobs.push_back(blobsFound[j]);
           
@@ -247,7 +247,7 @@ namespace cvl::blobsplitting {
         
       } else {
         
-        blobs[i].label = (int32_t) foundedBlobs.size();
+        blobs[i].label = (int)foundedBlobs.size();
         
         foundedBlobs.push_back(blobs[i]);
         
@@ -266,7 +266,7 @@ namespace cvl::blobsplitting {
 #endif
 
     // ciclo sui blob di partenza
-    for(uint32_t i=0; i<blobs.size(); ++i) {
+    for(size_t i=0; i<blobs.size(); ++i) {
       
       // mi calcolo un raggio doppio che lo racchiude
       double r = sqrt(blobs[i].size() / M_PI) * 2.0;

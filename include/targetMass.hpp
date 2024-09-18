@@ -62,9 +62,9 @@ namespace cvl::targetmass {
     std::vector<blob_t> tmpBlobs;
     
     // provo a dividere ogni blob
-    for(uint32_t i=0; i<blobs.size(); ++i) {
+    for(size_t i=0; i<blobs.size(); ++i) {
       
-      int mass = (uint32_t)blobs[i].size();
+      int mass = (int)blobs[i].size();
       
       // se e' piu' grande della massa di entrata lo provo a dividere
       if(mass > targetMass) {
@@ -84,7 +84,7 @@ namespace cvl::targetmass {
           
           if(mass - contours.size() >= minMass) {
             
-            for(uint32_t j=0; j<contours.size(); ++j)
+            for(size_t j=0; j<contours.size(); ++j)
               thrsImg.at<uchar>(contours[j]) = 0;
             
             mass -= contours.size();
@@ -133,12 +133,12 @@ namespace cvl::targetmass {
       cv::Mat blobImg = cv::Mat(blob.getImageSize(), CV_8UC1);
       cv::Mat thrsImg = cv::Mat(blob.getImageSize(), CV_8UC1);
       
-      uint32_t threshold;
+      int threshold;
       
-      uint32_t targetThreshold;
+      int targetThreshold;
       
       // ciclo su tutti i blob
-      for(uint32_t i=0; i<blobsToSplit.size(); ++i) {
+      for(size_t i=0; i<blobsToSplit.size(); ++i) {
         
         // in base se devo andare verso il nero o meno
         if(toDark){
@@ -189,7 +189,7 @@ namespace cvl::targetmass {
         } // ciclo sulla soglia
         
         // ciclo su tutti i blob trovati
-        for(uint32_t j=0; j<tmpBlobs.size(); ++j){
+        for(size_t j=0; j<tmpBlobs.size(); ++j){
           
           // se ha ragiunto la massa giusta
           if(tmpBlobs[j].size() <= targetMass || toAdd){
@@ -217,7 +217,7 @@ namespace cvl::targetmass {
     std::vector<blob_t> foundedBlobs;
     
     // provo a dividere ogni blob
-    for(uint32_t i=0; i<blobs.size(); ++i) {
+    for(size_t i=0; i<blobs.size(); ++i) {
       
       // se e' piu' grande della massa di entrata lo provo a dividere
       if(blobs[i].size() > targetMass){
@@ -228,9 +228,9 @@ namespace cvl::targetmass {
         utils::try2split(blobs[i], src, tmpBlobs, targetMass, toDark, minMass, labelingNeighboursType);
         
         // ciclo su tutti i blob trovati
-        for(uint32_t j=0; j<tmpBlobs.size(); ++j) {
+        for(size_t j=0; j<tmpBlobs.size(); ++j) {
           
-          tmpBlobs[j].label = (int32_t) foundedBlobs.size();
+          tmpBlobs[j].label = (int)foundedBlobs.size();
           
           foundedBlobs.push_back(tmpBlobs[j]);
           
@@ -238,7 +238,7 @@ namespace cvl::targetmass {
         
       } else {
         
-        blobs[i].label = (int32_t) foundedBlobs.size();
+        blobs[i].label = (int)foundedBlobs.size();
         
         foundedBlobs.push_back(blobs[i]);
         

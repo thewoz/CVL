@@ -50,7 +50,7 @@ namespace cvl::labeling {
       
       if(matrixLabel != NULL) {
         
-        for(uint32_t i=0; i<size.height; ++i)
+        for(size_t i=0; i<size.height; ++i)
           free(matrixLabel[i]);
         
         free(matrixLabel);
@@ -73,7 +73,7 @@ namespace cvl::labeling {
         exit(EXIT_FAILURE);
       }
       
-      for(uint32_t i=0; i<size.height; ++i){
+      for(size_t i=0; i<size.height; ++i){
         
         matrixLabel[i] = (int *) malloc(size.width * sizeof(int));
         
@@ -176,9 +176,9 @@ namespace cvl::labeling {
     
     int neighbors[4];
     
-    for(uint32_t y=1; y<workImageSize.height-1; ++y) {
+    for(size_t y=1; y<workImageSize.height-1; ++y) {
       
-      for(uint32_t x=1; x<workImageSize.width-1; ++x) {
+      for(size_t x=1; x<workImageSize.width-1; ++x) {
         
         /* if the pixel is not a background pixel */
         if(src.at<uchar>(y-1,x-1) != 0){
@@ -222,19 +222,19 @@ namespace cvl::labeling {
             int min_label = INT_MAX;
             
             /* find the neighbours with the minimum label */
-            for(uint32_t i=0; i<neighbors_found; ++i)
+            for(size_t i=0; i<neighbors_found; ++i)
               if(min_label > neighbors[i]) min_label = neighbors[i];
             
             matrixLabel[y][x] = min_label;
             
             labelMass[min_label] += 1;
             
-            for(uint32_t i=0; i<neighbors_found; ++i)
-              for(int32_t j=i-1; j>=0; --j)
+            for(size_t i=0; i<neighbors_found; ++i)
+              for(int j=i-1; j>=0; --j)
                 if(neighbors[i] == neighbors[j])
                   neighbors[i] = -1;
             
-            for(uint32_t i=0; i<neighbors_found; ++i)
+            for(size_t i=0; i<neighbors_found; ++i)
               if(neighbors[i] != min_label && neighbors[i] != -1)
                 MERGE_MASS_LABEL(neighbors[i], min_label);
             
@@ -246,12 +246,12 @@ namespace cvl::labeling {
       
     }
     
-    std::map<uint32_t,std::vector<cv::Point>> foundBlobs;
-    std::map<uint32_t,std::vector<cv::Point>>::iterator blobsIter;
+    std::map<size_t,std::vector<cv::Point>> foundBlobs;
+    std::map<size_t,std::vector<cv::Point>>::iterator blobsIter;
     
-    for(uint32_t y=1; y<workImageSize.height-1; ++y) {
+    for(size_t y=1; y<workImageSize.height-1; ++y) {
       
-      for(uint32_t x=1; x<workImageSize.width-1; ++x) {
+      for(size_t x=1; x<workImageSize.width-1; ++x) {
         
         if(matrixLabel[y][x] != 0) {
           
@@ -284,7 +284,7 @@ namespace cvl::labeling {
       for(size_t i=0; i<blobsIter->second.size(); ++i)
         blob.add(blobsIter->second[i].x+offset.x, blobsIter->second[i].y+offset.y, original.at<uchar>(blobsIter->second[i].y+offset.y, blobsIter->second[i].x+offset.x));
       
-      blob.label = (uint32_t) blobs.size();
+      blob.label = (int)blobs.size();
       
       blob.finalize();
       
@@ -335,9 +335,9 @@ namespace cvl::labeling {
     
     int neighbors[4];
     
-    for(uint32_t y=1; y<workImageSize.height-1; ++y) {
+    for(size_t y=1; y<workImageSize.height-1; ++y) {
       
-      for(uint32_t x=1; x<workImageSize.width-1; ++x) {
+      for(size_t x=1; x<workImageSize.width-1; ++x) {
         
         /* if the pixel is not a background pixel */
         if(src.at<uchar>(y-1,x-1) != 0){
@@ -381,19 +381,19 @@ namespace cvl::labeling {
             int min_label = INT_MAX;
             
             /* find the neighbours with the minimum label */
-            for(uint32_t i=0; i<neighbors_found; ++i)
+            for(size_t i=0; i<neighbors_found; ++i)
               if(min_label > neighbors[i]) min_label = neighbors[i];
             
             matrixLabel[y][x] = min_label;
             
             labelMass[min_label] += 1;
             
-            for(uint32_t i=0; i<neighbors_found; ++i)
-              for(int32_t j=i-1; j>=0; --j)
+            for(size_t i=0; i<neighbors_found; ++i)
+              for(int j=i-1; j>=0; --j)
                 if(neighbors[i] == neighbors[j])
                   neighbors[i] = -1;
             
-            for(uint32_t i=0; i<neighbors_found; ++i)
+            for(size_t i=0; i<neighbors_found; ++i)
               if(neighbors[i] != min_label && neighbors[i] != -1)
                 MERGE_MASS_LABEL(neighbors[i], min_label);
             
@@ -405,12 +405,12 @@ namespace cvl::labeling {
       
     }
     
-    std::map<uint32_t,std::vector<cv::Point>> foundBlobs;
-    std::map<uint32_t,std::vector<cv::Point>>::iterator blobsIter;
+    std::map<size_t,std::vector<cv::Point>> foundBlobs;
+    std::map<size_t,std::vector<cv::Point>>::iterator blobsIter;
     
-    for(uint32_t y=1; y<workImageSize.height-1; ++y) {
+    for(size_t y=1; y<workImageSize.height-1; ++y) {
       
-      for(uint32_t x=1; x<workImageSize.width-1; ++x) {
+      for(size_t x=1; x<workImageSize.width-1; ++x) {
         
         if(matrixLabel[y][x] != 0) {
           
