@@ -117,7 +117,7 @@ namespace cvl {
         
         baricenter += blobs[i].baricenter;
         
-        blobs[i].label = i;
+        blobs[i].label = (int)i;
         
       }
       

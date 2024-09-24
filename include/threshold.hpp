@@ -133,7 +133,7 @@ namespace cvl::threshold {
       
       float maxFreq = 0;
 
-      int moda;
+      int moda = -1;
       
       for(int color=0; color<256; ++color) {
         

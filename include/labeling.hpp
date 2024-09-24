@@ -176,9 +176,9 @@ namespace cvl::labeling {
     
     int neighbors[4];
     
-    for(size_t y=1; y<workImageSize.height-1; ++y) {
+    for(int y=1; y<workImageSize.height-1; ++y) {
       
-      for(size_t x=1; x<workImageSize.width-1; ++x) {
+      for(int x=1; x<workImageSize.width-1; ++x) {
         
         /* if the pixel is not a background pixel */
         if(src.at<uchar>(y-1,x-1) != 0){
@@ -229,7 +229,7 @@ namespace cvl::labeling {
             
             labelMass[min_label] += 1;
             
-            for(size_t i=0; i<neighbors_found; ++i)
+            for(int i=0; i<neighbors_found; ++i)
               for(int j=i-1; j>=0; --j)
                 if(neighbors[i] == neighbors[j])
                   neighbors[i] = -1;
@@ -249,9 +249,9 @@ namespace cvl::labeling {
     std::map<size_t,std::vector<cv::Point>> foundBlobs;
     std::map<size_t,std::vector<cv::Point>>::iterator blobsIter;
     
-    for(size_t y=1; y<workImageSize.height-1; ++y) {
+    for(int y=1; y<workImageSize.height-1; ++y) {
       
-      for(size_t x=1; x<workImageSize.width-1; ++x) {
+      for(int x=1; x<workImageSize.width-1; ++x) {
         
         if(matrixLabel[y][x] != 0) {
           
@@ -339,9 +339,9 @@ namespace cvl::labeling {
     
     int neighbors[4];
     
-    for(size_t y=1; y<workImageSize.height-1; ++y) {
+    for(int y=1; y<workImageSize.height-1; ++y) {
       
-      for(size_t x=1; x<workImageSize.width-1; ++x) {
+      for(int x=1; x<workImageSize.width-1; ++x) {
         
         /* if the pixel is not a background pixel */
         if(src.at<uchar>(y-1,x-1) != 0){
@@ -392,7 +392,7 @@ namespace cvl::labeling {
             
             labelMass[min_label] += 1;
             
-            for(size_t i=0; i<neighbors_found; ++i)
+            for(int i=0; i<neighbors_found; ++i)
               for(int j=i-1; j>=0; --j)
                 if(neighbors[i] == neighbors[j])
                   neighbors[i] = -1;
@@ -412,9 +412,9 @@ namespace cvl::labeling {
     std::map<size_t,std::vector<cv::Point>> foundBlobs;
     std::map<size_t,std::vector<cv::Point>>::iterator blobsIter;
     
-    for(size_t y=1; y<workImageSize.height-1; ++y) {
+    for(int y=1; y<workImageSize.height-1; ++y) {
       
-      for(size_t x=1; x<workImageSize.width-1; ++x) {
+      for(int x=1; x<workImageSize.width-1; ++x) {
         
         if(matrixLabel[y][x] != 0) {
           
