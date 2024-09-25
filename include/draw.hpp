@@ -37,6 +37,11 @@ namespace cvl::draw {
   //****************************************************************************/
   void dashedCircle(cv::Mat & image, cv::Point center, int radius, int dashWidth, int dashSpacing, const cv::Scalar & color, int thickness = 1) {
     
+    if(image.type() != CV_8UC3) {
+      fprintf(stderr, "cvl::draw::dashedCircle() error: destination type image must be CV_8UC3\n");
+      abort();
+    }
+    
     const double PI = 3.14159265358979323846;
     double circumference = 2 * PI * radius;
     int numSegments = static_cast<int>(circumference / (dashWidth + dashSpacing));
@@ -65,8 +70,13 @@ namespace cvl::draw {
   template <class T>
   void cross(cv::Mat & image, cv::Point_<T> & center, int lenght, const cv::Scalar & color, int thickness = 1) {
     
-    cv::line(img, cv::Point(center.x-lenght, center.y-lenght), cv::Point(center.x+lenght, center.y+lenght), color, thickness);
-    cv::line(img, cv::Point(center.x+lenght, center.y-lenght), cv::Point(center.x-lenght, center.y+lenght), color, thickness);
+    if(image.type() != CV_8UC3) {
+      fprintf(stderr, "cvl::draw::cross() error: destination type image must be CV_8UC3\n");
+      abort();
+    }
+    
+    cv::line(image, cv::Point(center.x-lenght, center.y-lenght), cv::Point(center.x+lenght, center.y+lenght), color, thickness);
+    cv::line(image, cv::Point(center.x+lenght, center.y-lenght), cv::Point(center.x-lenght, center.y+lenght), color, thickness);
     
   }
   
