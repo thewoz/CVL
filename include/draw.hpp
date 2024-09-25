@@ -30,13 +30,13 @@
 //****************************************************************************/
 // namespace
 //****************************************************************************/
-namespace cv {
+namespace cvl::draw {
 
   //****************************************************************************/
   // dashedCircle() - ChatGPT
   //****************************************************************************/
   void dashedCircle(cv::Mat & image, cv::Point center, int radius, int dashWidth, int dashSpacing, const cv::Scalar & color, int thickness = 1) {
-
+    
     const double PI = 3.14159265358979323846;
     double circumference = 2 * PI * radius;
     int numSegments = static_cast<int>(circumference / (dashWidth + dashSpacing));
@@ -55,6 +55,18 @@ namespace cv {
       cv::line(image, pt1, pt2, color, thickness, cv::LINE_AA);
       
     }
+    
+  }
+    
+    
+  //****************************************************************************/
+  // cross()
+  //****************************************************************************/
+  template <class T>
+  void cross(cv::Mat & image, cv::Point_<T> & center, int lenght, const cv::Scalar & color, int thickness = 1) {
+    
+    cv::line(img, cv::Point(center.x-lenght, center.y-lenght), cv::Point(center.x+lenght, center.y+lenght), color, thickness);
+    cv::line(img, cv::Point(center.x+lenght, center.y-lenght), cv::Point(center.x-lenght, center.y+lenght), color, thickness);
     
   }
   
