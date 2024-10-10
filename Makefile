@@ -4,10 +4,7 @@ LIBRARY_INSTALL_PATH=/usr/local/lib
 LIBRARY_NAME=cvl
 
 
-all:
-
-
-setup:
+all: development
 
 
 development:
@@ -19,9 +16,5 @@ install:
 	@mkdir -p $(INCLUDE_INSTALL_PATH)/$(LIBRARY_NAME)
 	@cp -R ./include/* $(INCLUDE_INSTALL_PATH)/$(LIBRARY_NAME)
 
-
 uninstall:
 	@rm -rf $(INCLUDE_INSTALL_PATH)/$(LIBRARY_NAME)
-
-
-clean:
