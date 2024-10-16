@@ -163,8 +163,6 @@ namespace cvl::labeling {
     std::vector<int> labelMass(1,0);
 
     int label = 0;
-
-    blobs.clear();
     
     cv::Size workImageSize;
     
@@ -275,6 +273,8 @@ namespace cvl::labeling {
       
     }
     
+    blobs.clear();
+    
     for(blobsIter=foundBlobs.begin(); blobsIter!=foundBlobs.end(); blobsIter++){
       
       if(blobsIter->second.size() < minClusterMass) continue;
@@ -284,24 +284,18 @@ namespace cvl::labeling {
       for(size_t i=0; i<blobsIter->second.size(); ++i)
         blob.add(blobsIter->second[i].x+offset.x, blobsIter->second[i].y+offset.y, original.at<uchar>(blobsIter->second[i].y+offset.y, blobsIter->second[i].x+offset.x));
       
-      blob.label = (int)blobs.size();
-      
-      blob.finalize();
-      
       blobs.add(blob);
       
     }
-    
-    // non so perchè prima li ordinavo per la massa tolto nel 18/09/2024
-    //if(blobs.size() > 0) std::sort(blobs.begin(), blobs.end(), [] (const blob_t & blA, const blob_t & blB) { return blA.size() > blB.size(); } );
-    
-    // messo il 18/09/2024
+
     blobs.finalize();
     
     utils::freeMatrix(matrixLabel, workImageSize);
     
   }
   
+#if(0)
+
   //*****************************************************************************/
   // get
   //*****************************************************************************/
@@ -454,6 +448,8 @@ namespace cvl::labeling {
     utils::freeMatrix(matrixLabel, workImageSize);
     
   }
+
+#endif
 
 } /* namespace cvl::labeling */
 

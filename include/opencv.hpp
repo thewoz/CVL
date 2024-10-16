@@ -389,14 +389,27 @@ namespace cvl {
   //*****************************************************************************/
   // getRandomColor
   //*****************************************************************************/
-  cv::Vec3b getRandomColor() {
+  cv::Vec3b getRandomColor(double minBright = -1) {
+
+    if(minBright != -1 && minBright < 0) minBright = 0;
+    if(minBright > 255) minBright = 255;
 
     cv::Vec3b color;
+    
+    for(;;) {
+      
+      color.val[0] = (uchar)((rand() / (double) RAND_MAX) * 255);
+      color.val[1] = (uchar)((rand() / (double) RAND_MAX) * 255);
+      color.val[2] = (uchar)((rand() / (double) RAND_MAX) * 255);
+      
+      if(minBright == -1) break;
+      
+      double Y = 0.299 * color.val[0] + 0.587 * color.val[1] + 0.114 * color.val[2];
 
-    color.val[0] = (uchar)((rand() / (double) RAND_MAX) * 255);
-    color.val[1] = (uchar)((rand() / (double) RAND_MAX) * 255);
-    color.val[2] = (uchar)((rand() / (double) RAND_MAX) * 255);
-
+      if(Y >= minBright) break;
+      
+    }
+      
     return color;
         
   }

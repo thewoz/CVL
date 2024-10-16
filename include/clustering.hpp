@@ -78,7 +78,7 @@ namespace cvl::clustering {
     for(size_t i=0; i<clusters.size(); ++i) {
       
       // mi calcolo la distanza tra il cluster vecchio e quelli nuovi
-      double dist = cv::norm(coords - clusters[i].getBaricenter());
+      double dist = cv::norm(coords - clusters[i].baricenter);
       
       // mi prendo il piu vicino a quelo vecchio
       if(dist < nearDist) {
@@ -90,10 +90,9 @@ namespace cvl::clustering {
     
     blobs = clusters[nearIndex];
     
-    for(int i=0; i<blobs.size(); ++i)
-      blobs[i].label = i;
-    
-    return clusters[nearIndex].getBaricenter();
+    blobs.finalize();
+        
+    return clusters[nearIndex].baricenter;
     
   }
   

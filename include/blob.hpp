@@ -119,6 +119,23 @@ namespace cvl {
       
     }
     
+    //*****************************************************************************
+    // print()
+    //*****************************************************************************
+    void print(FILE * out = stdout) {
+      
+      fprintf(out, "label: %d\n", label);
+      fprintf(out, "roi: %d %d - %d %d\n", roi.x, roi.y, roi.width, roi.height);
+      fprintf(out, "offset: %f %f\n", offset.x, offset.y);
+      fprintf(out, "baricenter: %f %f\n", baricenter.x, baricenter.y);
+      fprintf(out, "iMin: %d iMax: %d\n", iMin, iMax);
+      fprintf(out, "size: %lu\n", pixels.size());
+      fprintf(out, "pixels:\n");
+      for(int i=0; i<pixels.size(); ++i) fprintf(out, "\t%d) %d %d - %d\n", i, pixels[i].x, pixels[i].y, pixels[i].z);
+      fprintf(out, "\n");
+      
+    }
+    
 //    //*****************************************************************************
 //    // draw
 //    //*****************************************************************************
@@ -159,14 +176,7 @@ namespace cvl {
     void draw(cv::Mat & dst, const cv::Vec3b & color, const cv::Point & offset = cv::Point(0,0)) const {
       
       bool status = false;
-      
-      if(dst.type() == CV_32SC1) {
-        for(size_t i=0; i<pixels.size(); i++){
-          dst.at<int>(pixels[i].y-offset.y, pixels[i].x-offset.x) = color[0];
-        }
-        status = true;
-      }
-      
+
       if(dst.type() == CV_8UC1) {
         for(size_t i=0; i<pixels.size(); i++){
           dst.at<uchar>(pixels[i].y-offset.y, pixels[i].x-offset.x) = color[0];
@@ -177,6 +187,27 @@ namespace cvl {
       if(dst.type() == CV_8UC3) {
         for(size_t i=0; i<pixels.size(); i++)
           dst.at<cv::Vec3b>(pixels[i].y-offset.y, pixels[i].x-offset.x) = color;
+        status = true;
+      }
+       
+      if(!status) {
+        fprintf(stderr, "blob_t::draw() error: image type not recognized\n");
+        abort();
+      }
+
+    }
+    
+    //*****************************************************************************
+    // draw
+    //*****************************************************************************
+    void draw(cv::Mat & dst, int color, const cv::Point & offset = cv::Point(0,0)) const {
+      
+      bool status = false;
+      
+      if(dst.type() == CV_32SC1) {
+        for(size_t i=0; i<pixels.size(); i++){
+          dst.at<int>(pixels[i].y-offset.y, pixels[i].x-offset.x) = color;
+        }
         status = true;
       }
        
