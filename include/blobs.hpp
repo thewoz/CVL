@@ -181,9 +181,12 @@ namespace cvl {
       if(dst.channels() !=3)
         mpl::log::error("The destination image is not a three channel image.\n");
       
-      for(size_t i=0; i<blobs.size(); ++i)
-        dst.at<cv::Vec3b>(cv::Point2i(blobs[i].baricenter.x*scaleFactor,blobs[i].baricenter.y*scaleFactor)) = color;
-      
+      for(size_t i=0; i<blobs.size(); ++i) {
+        cv::Point2i coord = cv::Point2i(blobs[i].baricenter.x * scaleFactor, blobs[i].baricenter.y * scaleFactor);
+        if(coord.x < 0 || coord.x >= dst.cols) continue;
+        if(coord.y < 0 || coord.y >= dst.rows) continue;
+        dst.at<cv::Vec3b>(coord.y, coord.x) = color;
+      }
       
     }
     
