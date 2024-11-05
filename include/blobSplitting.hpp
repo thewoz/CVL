@@ -165,7 +165,7 @@ namespace cvl::blobsplitting {
           for(size_t j=0; j<tmpBlobs.size(); ++j) {
               
             // se il blob trovato e' ancora abbastanza grande e lo splitig e' ricorsivo lo aggiungo ai blob da dividere
-            if(tmpBlobs[j].size() > enterMass && recursiveSplitting && false) {
+            if(tmpBlobs[j].size() > enterMass && recursiveSplitting) {
               blobsToSplit.add(tmpBlobs[j]);
             // altrimenti lo aggiungo al risultato
             } else {
