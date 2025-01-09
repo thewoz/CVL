@@ -120,6 +120,11 @@ namespace cvl {
         
         blobs[i].finalize();
         
+        if(!std::isnormal(blobs[i].baricenter.x) || !std::isnormal(blobs[i].baricenter.y)) {
+          fprintf(stderr, "error: bad baricenter\n", i);
+          abort();
+        }
+        
         baricenter += blobs[i].baricenter;
         
         blobs[i].label = (int)i;

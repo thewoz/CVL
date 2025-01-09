@@ -64,6 +64,8 @@ namespace cvl {
     
     cv::Point2d offset;
     
+    //cv::RotatedRect rotatedRect;
+    
     //*****************************************************************************
     // blob_t
     //*****************************************************************************
@@ -99,6 +101,8 @@ namespace cvl {
       
       iMin = INT_MAX; iMax = 0;
       
+      //std::vector<cv::Point2f> tmpPixels;
+      
       for(size_t i=0; i<pixels.size(); i++) {
         
         if(pixels[i].x > xMax) xMax = pixels[i].x;
@@ -109,13 +113,17 @@ namespace cvl {
         if(pixels[i].z > iMax) iMax = pixels[i].z;
         if(pixels[i].z < iMin) iMin = pixels[i].z;
         
+        //tmpPixels.push_back(cv::Point2d(pixels[i].x, pixels[i].y));
+        
       }
       
       offset = cv::Point(xMin, yMin);
       
-      roi  = cv::Rect(xMin, yMin, xMax - xMin + 1, yMax - yMin + 1);
+      roi = cv::Rect(xMin, yMin, xMax - xMin + 1, yMax - yMin + 1);
       
       baricenter = cvl::baricenter::get(pixels, baricenterType);
+      
+      //rotatedRect = cv::minAreaRect(tmpPixels);
       
     }
     
@@ -366,6 +374,20 @@ namespace cvl {
         fprintf(output, "%d %d ", pixels[i].x, pixels[i].y);
       
       fprintf(output, "\n\n\n");
+      
+    }
+    
+    //*****************************************************************************
+    // println
+    //*****************************************************************************
+    void println(FILE * output = stdout) const {
+      
+      fprintf(output, "%d %d %lu\n", frame, label, pixels.size());
+      
+      for(size_t i=0; i<pixels.size(); ++i)
+        fprintf(output, "\t %d %d\n", pixels[i].x, pixels[i].y);
+      
+      fprintf(output, "\n");
       
     }
         
