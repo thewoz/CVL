@@ -285,8 +285,8 @@ namespace cvl::blobsplitting {
     cv::Mat wshed(markers.size(), CV_8UC3);
   #endif
     
-    // pulisco i pixel che facevano parte dei blob
-    for(int i=0; i<newBlobs.size(); ++i) newBlobs[i].clear();
+    // vettore dove metto i nuovi i pixels dei vari blob
+    std::vector<std::vector<cv::Point3i>> tmpPixels(newBlobs.size());
     
     // ciclo sull'immagine
     for(int i=0; i<markers.rows; ++i) {
@@ -308,7 +308,8 @@ namespace cvl::blobsplitting {
   #endif
         
         if(index > 0 && index <= newBlobs.size()) {
-          newBlobs[index-1].add(j, i, original.at<uchar>(i,j));
+          //newBlobs[index-1].add(j, i, original.at<uchar>(i,j));
+          tmpPixels[index-1].push_back(cv::Point3i(j, i, original.at<uchar>(i,j)));
         }
         
       }
@@ -320,12 +321,21 @@ namespace cvl::blobsplitting {
     cv::imshow("markers", wshed); if(runFrame==debugFrame||debugFrame==-1) cv::waitKey(0);
   #endif
     
-    // se per qualche motivo il watershed mi ha ucciso un blob rimetto quello originale
+    // se il watershed mi ha ucciso un blob rimetto quello originale
     // questo caso è successo sicuramente una volta in 20241206_ACQ4 CAM3 frame 1092
     // quando un blob, che era solo una riga (4x1), accanto al bordo, y=0, veniva ucciso
-    for(int i=0; i<newBlobs.size(); ++i)
-      if(newBlobs[i].pixels.size() == 0)
-        newBlobs[i].pixels = blobs[i].pixels;
+    for(int i=0; i<newBlobs.size(); ++i) {
+      
+      // solo se ci stanno i pixel nuovi
+      if(tmpPixels[i].size() != 0) {
+   
+        newBlobs[i].clear();
+        
+        newBlobs[i].pixels = tmpPixels[i];
+        
+      }
+      
+    }
 
     blobs = newBlobs;
     

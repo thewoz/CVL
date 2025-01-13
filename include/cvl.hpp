@@ -21,7 +21,7 @@
 #ifndef _H_CVL_H_
 #define _H_CVL_H_
 
-#define CVL_LIB_VERSION "Cvl Lib v3.1.4"
+#define CVL_LIB_VERSION "Cvl Lib v3.1.5"
 
 #include <cvl/opencv.hpp>
 #include <cvl/background.hpp>
