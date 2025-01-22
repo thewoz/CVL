@@ -159,19 +159,21 @@ namespace cvl::threshold {
       if(!mask.empty() || valueToSkip != -1) {
         
         // se la maschera è vuota la definisco
-        if(!mask.empty()) mask = cv::Mat::zeros(src.size(), CV_8UC1);
+        if(mask.empty()) mask = cv::Mat::zeros(src.size(), CV_8UC1);
         
         countNonZero = 0;
         
         for(int y=0; y<src.rows; ++y) {
+          
           for(int x=0; x<src.cols; ++x) {
             
             // se il valore lo devo ignorare modifico la maschera
-            if(src.at<uchar>(y,x) == src.at<uchar>(y,x)) mask.at<uchar>(y,x) = 0;
+            if(src.at<uchar>(y,x) == valueToSkip) mask.at<uchar>(y,x) = 0;
             
             if(mask.at<uchar>(y,x) != 0) ++countNonZero;
               
           }
+          
         }
         
       }
@@ -180,7 +182,7 @@ namespace cvl::threshold {
       cvl::histogram(src, histo, mask);
       
       int medianPixel = std::round(countNonZero * 0.5);
-      
+            
       int comulativePixel = 0;
 
       for(int color=0; color<256; ++color) {
@@ -208,7 +210,7 @@ namespace cvl::threshold {
       if(!mask.empty() || valueToSkip != -1) {
         
         // se la maschera è vuota la definisco
-        if(!mask.empty()) mask = cv::Mat::zeros(src.size(), CV_8UC1);
+        if(mask.empty()) mask = cv::Mat::zeros(src.size(), CV_8UC1);
         
         countNonZero = 0;
         
@@ -216,7 +218,7 @@ namespace cvl::threshold {
           for(int x=0; x<src.cols; ++x) {
             
             // se il valore lo devo ignorare modifico la maschera
-            if(src.at<uchar>(y,x) == src.at<uchar>(y,x)) mask.at<uchar>(y,x) = 0;
+            if(src.at<uchar>(y,x) == valueToSkip) mask.at<uchar>(y,x) = 0;
             
             if(mask.at<uchar>(y,x) != 0) ++countNonZero;
               
@@ -317,16 +319,16 @@ namespace cvl::threshold {
   // median
   //*****************************************************************************/
   double median(cv::Mat & src, cv::Mat & dst, double factor, int valueToSkip, const cv::Mat & mask = cv::Mat()) {
-    
+        
     double threshold = utils::median(src, mask, valueToSkip);
-    
+        
     if(threshold == 0) {
       threshold = factor;
     } else {
       threshold *= factor;
     }
     
-    // TODO: qua dovrei controlalre che è grande uguale e dello stesso tipo
+    // TODO: qua dovrei controllare che è grande uguale e dello stesso tipo
     if(dst.empty()) {
       dst = cv::Mat(src.size(), CV_8UC1);
     }
