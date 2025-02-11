@@ -21,7 +21,7 @@
 #ifndef _H_CVL_H_
 #define _H_CVL_H_
 
-#define CVL_LIB_VERSION "Cvl Lib v3.1.6"
+#define CVL_LIB_VERSION "Cvl Lib v3.1.7"
 
 #include <cvl/opencv.hpp>
 #include <cvl/background.hpp>
@@ -44,5 +44,6 @@
 #include <cvl/window.hpp>
 #include <cvl/pose.hpp>
 #include <cvl/draw.hpp>
+#include <cvl/convert.hpp>
 
 #endif /* _H_CVL_H_ */
