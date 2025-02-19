@@ -30,13 +30,18 @@
 //*****************************************************************************/
 namespace cvl::convert {
 
-  enum { LINEAR, LINEAR_MINMAX, LINEAR_CUTWINGS, LINEAR_CUTEXTREMAL };
+  enum { LINEAR, LINEAR_MINMAX, LINEAR_CUTWINGS, LINEAR_CUTEXTREMAL, UPPER, LOWER };
 
   //****************************************************************************/
   // from16to8()
   //****************************************************************************/
   void from16to8(const cv::Mat & src, cv::Mat & dst, int mode, double alpha, double beta) {
 
+    if(src.empty() || src.type() != CV_16UC1) {
+      fprintf(stderr, "error in cvl::from16to8(): the input image must be a non empty CV_16UC1 image\n");
+      abort();
+    }
+    
     src.convertTo(dst, CV_8UC1, alpha, beta);
 
   }
@@ -46,10 +51,15 @@ namespace cvl::convert {
   //****************************************************************************/
   std::pair<double,double> from16to8(const cv::Mat & src, cv::Mat & dst, int mode, double value = 0) {
   
+    if(src.empty() || src.type() != CV_16UC1) {
+      fprintf(stderr, "error in cvl::from16to8(): the input image must be a non empty CV_16UC1 image\n");
+      abort();
+    }
+    
     if(mode == LINEAR) {
       double alpha = 255 / 65535.0;
       double beta  = 0;
-      src.convertTo(dst, CV_8UC1, alpha, beta);
+      src.convertTo(dst, CV_8U, alpha, beta);
       return std::pair<double,double>(alpha, beta);
     }
     
@@ -66,7 +76,7 @@ namespace cvl::convert {
       double alpha = 255 / (max-min);
       double beta  = - (255*min) / (max-min);
       
-      src.convertTo(dst, CV_8UC1, alpha, beta);
+      src.convertTo(dst, CV_8U, alpha, beta);
       
       return std::pair<double,double>(alpha, beta);
 
@@ -102,7 +112,7 @@ namespace cvl::convert {
       double alpha = 255 / (max-min);
       double beta  = - (255*min) / (max-min);
       
-      src.convertTo(dst, CV_8UC1, alpha, beta);
+      src.convertTo(dst, CV_8U, alpha, beta);
       
       return std::pair<double,double>(alpha, beta);
 
@@ -137,12 +147,32 @@ namespace cvl::convert {
       double alpha = 255 / (max-min);
       double beta  = - (255*min) / (max-min);
       
-      src.convertTo(dst, CV_8UC1, alpha, beta);
+      src.convertTo(dst, CV_8U, alpha, beta);
       
       return std::pair<double,double>(alpha, beta);
 
     }
     
+    if(mode == LOWER) {
+      
+      // Estrae gli 8 bit meno significativi usando un'operazione di mascheramento
+      dst = src & 0x00FF;
+
+      dst.convertTo(dst, CV_8U);
+      
+      return std::pair<double,double>(INFINITY, INFINITY);
+
+    }
+    
+    if(mode == UPPER) {
+   
+      // Shift a destra di 8 bit per prendere solo i bit più alti
+      src.convertTo(dst, CV_8U, 1.0 / 256.0);
+      
+      return std::pair<double,double>(INFINITY, INFINITY);
+
+    }
+
     fprintf(stderr, "error in cvl::from16to8(): mode not recognized\n");
     abort();
     

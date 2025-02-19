@@ -529,9 +529,14 @@ namespace cvl {
   //****************************************************************************/
   void histogram8bit(const cv::Mat & src, cv::Mat & histo, cv::Mat & mask, int valueToSkip = -1) {
     
-    if(src.channels() > 1){
-      fprintf(stderr, "The input image must have one channel.\n");
-      exit(EXIT_FAILURE);
+    if(src.empty() || src.type() != CV_8UC1) {
+      fprintf(stderr, "error in cvl::histogram8bit(): the input image must be a non empty CV_8UC1 image\n");
+      abort();
+    }
+    
+    if(!mask.empty() || mask.type() != CV_8UC1) {
+      fprintf(stderr, "error in cvl::histogram8bit(): the mask image must be a CV_8UC1 image\n");
+      abort();
     }
     
     //FIXME: devo controllare che sia ad 8bit
@@ -570,13 +575,11 @@ namespace cvl {
 //****************************************************************************/
 void histogram16bit(const cv::Mat & src, cv::Mat & histogram) {
   
-  if(src.channels() > 1){
-    fprintf(stderr, "The input image must have one channel.\n");
-    exit(EXIT_FAILURE);
+  if(src.empty() || src.type() != CV_16UC1) {
+    fprintf(stderr, "error in cvl::histogram16bit(): the input image must be a non empty CV_16UC1 image\n");
+    abort();
   }
-  
-  //FIXME: devo controllare che sia ad 16bit
-  
+    
   int histSize = 65536;
   float range[] = { 0, 65536 };
   const float * histRange = { range };
