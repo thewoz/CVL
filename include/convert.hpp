@@ -29,50 +29,123 @@
 // namespace cvl::convert
 //*****************************************************************************/
 namespace cvl::convert {
-  
+
+  enum { LINEAR, LINEAR_MINMAX, LINEAR_CUTWINGS, LINEAR_CUTEXTREMAL };
+
   //****************************************************************************/
   // from16to8()
   //****************************************************************************/
-  void from16to8(const cv::Mat & src, cv::Mat & dst) {
-    
-    static bool firstImage = true;
-    
-    static double MinPix = INT_MAX;
-    static double MaxPix = 0;
+  void from16to8(const cv::Mat & src, cv::Mat & dst, int mode, double alpha, double beta) {
 
-    if(firstImage) {
-      
-      int nHistSize = 65536;
-      float fRange[] = { 0.0, 65536};
-      const float * fHistRange = { fRange };
+    src.convertTo(dst, CV_8UC1, alpha, beta);
 
-      cv::Mat matHist;
-      cv::calcHist(&src, 1, 0, cv::Mat(), matHist, 1, &nHistSize, &fHistRange);
+  }
+
+  //****************************************************************************/
+  // from16to8()
+  //****************************************************************************/
+  std::pair<double,double> from16to8(const cv::Mat & src, cv::Mat & dst, int mode, double value = 0) {
+  
+    if(mode == LINEAR) {
+      double alpha = 255 / 65535.0;
+      double beta  = 0;
+      src.convertTo(dst, CV_8UC1, alpha, beta);
+      return std::pair<double,double>(alpha, beta);
+    }
+    
+    
+    if(mode == LINEAR_MINMAX) {
+
+      double min, max;
       
-      for(int i=0; i<matHist.rows; ++i) {
-        MinPix = i;
-        if(matHist.at<float>(i) != 0) break;
+      cv::Mat histogram;
+      cvl::histogram16bit(src, histogram, min, max);
+      
+      //printf("LINEAR_MINMAX min %f max %f\n", min, max);
+      
+      double alpha = 255 / (max-min);
+      double beta  = - (255*min) / (max-min);
+      
+      src.convertTo(dst, CV_8UC1, alpha, beta);
+      
+      return std::pair<double,double>(alpha, beta);
+
+    }
+    
+    if(mode == LINEAR_CUTWINGS) {
+      
+      cv::Mat histogram;
+      cvl::histogram16bit(src, histogram);
+      
+      double min = 0;
+      double counterMin = 0;
+      
+      double max = 65535;
+      double counterMax = 0;
+
+      double target = (src.rows * src.cols) * value;
+      
+      for(int i=0; i<histogram.rows; ++i) {
+        min = i;
+        counterMin += histogram.at<float>(i);
+        if(counterMin >= target) break;
+      }
+
+      for(int i=histogram.rows-1; i>=0; --i) {
+        max = i;
+        counterMax += histogram.at<float>(i);
+        if(counterMax >= target) break;
       }
       
-      MinPix -= MinPix * 0.2;
+      //printf("LINEAR_CUTWINGS min %f max %f\n", min, max);
+      
+      double alpha = 255 / (max-min);
+      double beta  = - (255*min) / (max-min);
+      
+      src.convertTo(dst, CV_8UC1, alpha, beta);
+      
+      return std::pair<double,double>(alpha, beta);
+
+    }
+  
+    if(mode == LINEAR_CUTEXTREMAL) {
+      
+      cv::Mat histogram;
+      cvl::histogram16bit(src, histogram);
+      
+      double min = 0;
+      double max = 65535;
       
       int skip = 0;
       
-      for(int i=matHist.rows-1; i>=0; --i) {
-        MaxPix = i;
-        if(matHist.at<float>(i) != 0) skip++;
+      for(int i=0; i<histogram.rows; ++i) {
+        min = i;
+        if(histogram.at<float>(i) != 0) skip++;
         if(skip == 2) break;
       }
       
-      firstImage = false;
-          
-    }
-   
-    double alpha = 255 / (MaxPix-MinPix);
-    double beta = -255*MinPix/(MaxPix-MinPix);
-    
-    src.convertTo(dst, CV_8UC1, alpha, beta);
+      skip = 0;
       
+      for(int i=histogram.rows-1; i>=0; --i) {
+        max = i;
+        if(histogram.at<float>(i) != 0) skip++;
+        if(skip == 2) break;
+      }
+      
+      //printf("LINEAR_CUTEXTREMAL min %f max %f\n", min, max);
+      
+      double alpha = 255 / (max-min);
+      double beta  = - (255*min) / (max-min);
+      
+      src.convertTo(dst, CV_8UC1, alpha, beta);
+      
+      return std::pair<double,double>(alpha, beta);
+
+    }
+    
+    fprintf(stderr, "error in cvl::from16to8(): mode not recognized\n");
+    abort();
+    
   }
 
 } /* namespace cvl::convert */

@@ -129,7 +129,7 @@ namespace cvl::threshold {
     int moda(const cv::Mat & src, cv::Mat mask = cv::Mat(), int valueToSkip = -1) {
       
       cv::Mat histo;
-      cvl::histogram(src, histo, mask, valueToSkip);
+      cvl::histogram8bit(src, histo, mask, valueToSkip);
       
       float maxFreq = 0;
 
@@ -179,7 +179,7 @@ namespace cvl::threshold {
       }
             
       cv::Mat histo;
-      cvl::histogram(src, histo, mask);
+      cvl::histogram8bit(src, histo, mask);
       
       int medianPixel = std::round(countNonZero * 0.5);
             
@@ -230,7 +230,7 @@ namespace cvl::threshold {
       _percentile = std::round((countNonZero / 100.0) * _percentile);
       
       cv::Mat histo;
-      cvl::histogram(src, histo, mask);
+      cvl::histogram8bit(src, histo, mask);
       
       int comulativePixel = 0;
       

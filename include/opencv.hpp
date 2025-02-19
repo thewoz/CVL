@@ -527,12 +527,14 @@ namespace cvl {
   //****************************************************************************/
   // histogram
   //****************************************************************************/
-  void histogram(const cv::Mat & src, cv::Mat & histo, cv::Mat & mask, int valueToSkip = -1) {
+  void histogram8bit(const cv::Mat & src, cv::Mat & histo, cv::Mat & mask, int valueToSkip = -1) {
     
     if(src.channels() > 1){
       fprintf(stderr, "The input image must have one channel.\n");
       exit(EXIT_FAILURE);
     }
+    
+    //FIXME: devo controllare che sia ad 8bit
     
     int histSize = 256;
     float range[] = { 0, 256 };
@@ -553,16 +555,58 @@ namespace cvl {
   }
 
   //****************************************************************************/
-  // histogram
+  // histogram8bit
   //****************************************************************************/
-  void histogram(const cv::Mat & src, cv::Mat & histo, int valueToSkip = -1) {
+  void histogram8bit(const cv::Mat & src, cv::Mat & histo, int valueToSkip = -1) {
     
     cv::Mat mask = cv::Mat();
     
-    histogram(src, histo, mask, valueToSkip);
+    histogram8bit(src, histo, mask, valueToSkip);
     
   }
 
+//****************************************************************************/
+// histogram16bit
+//****************************************************************************/
+void histogram16bit(const cv::Mat & src, cv::Mat & histogram) {
+  
+  if(src.channels() > 1){
+    fprintf(stderr, "The input image must have one channel.\n");
+    exit(EXIT_FAILURE);
+  }
+  
+  //FIXME: devo controllare che sia ad 16bit
+  
+  int histSize = 65536;
+  float range[] = { 0, 65536 };
+  const float * histRange = { range };
+  
+  cv::calcHist(&src, 1, 0, cv::Mat(), histogram, 1, &histSize, &histRange);
+
+}
+
+//****************************************************************************/
+// histogram16bit
+//****************************************************************************/
+template <typename T>
+void histogram16bit(const cv::Mat & src, cv::Mat & histogram, T & min, T & max) {
+
+  histogram16bit(src, histogram);
+  
+  min = 0;
+  max = 65535;
+
+  for(int i=0; i<histogram.rows; ++i) {
+    min = i;
+    if(histogram.at<float>(i) != 0) break;
+  }
+
+  for(int i=histogram.rows-1; i>=0; --i) {
+    max = i;
+    if(histogram.at<float>(i) != 0) break;
+  }
+  
+}
 
 
 //// 2D cross product of OA and OB vectors, i.e. z-component of their 3D cross product.
