@@ -35,14 +35,14 @@ namespace cvl::convert {
   //****************************************************************************/
   // from16to8()
   //****************************************************************************/
-  void from16to8(const cv::Mat & src, cv::Mat & dst, int mode, double alpha, double beta) {
+  void from16to8(const cv::Mat & src, cv::Mat & dst, double alpha, double beta) {
 
     if(src.empty() || src.type() != CV_16UC1) {
       fprintf(stderr, "error in cvl::from16to8(): the input image must be a non empty CV_16UC1 image\n");
       abort();
     }
     
-    src.convertTo(dst, CV_8UC1, alpha, beta);
+    src.convertTo(dst, CV_8U, alpha, beta);
 
   }
 
