@@ -326,7 +326,7 @@ namespace cvl {
         fprintf(outputPoints, "%d %04d %04d %.4f %.4f %03lu\n", camera, frame, blobs[i].label, blobs[i].baricenter.x, blobs[i].baricenter.y, blobs[i].size());
       
       if(outputFrame != NULL) {
-        fprintf(outputFrame, "%d %04d %04lu\n", camera, frame, blobs.size());
+        fprintf(outputFrame, "%04d %04lu\n", frame, blobs.size());
         fflush(outputFrame);
       }
       
