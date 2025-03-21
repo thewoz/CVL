@@ -49,7 +49,7 @@ namespace cvl::threshold {
         abort();
       }
 
-      // per restire che non voglio escudere nulla (messo da me)
+      // per gestire che non voglio escudere nulla (messo da me)
       if(excludeValue < 0 || excludeValue > 255)
         excludeValue = 256;
       
