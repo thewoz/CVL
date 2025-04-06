@@ -473,6 +473,30 @@ namespace cvl {
   //*****************************************************************************/
   // open
   //*****************************************************************************/
+  cv::Mat open16bitC1(std::string str){
+    
+    mpl::io::expandPath(str);
+    
+    cv::Mat image = cv::imread(str, cv::IMREAD_UNCHANGED);
+    
+    // controllo che l'immagine sia buona
+    if(image.empty()) {
+      fprintf(stderr, "error: in opening the image: '%s'\n", str.c_str());
+      exit(EXIT_FAILURE);
+    }
+    
+    // controllo che l'immagine sia buona
+    if(image.type() != CV_16UC1) {
+      fprintf(stderr, "warning: is not a CV_16UC1 image: '%s'\n", str.c_str());
+    }
+    
+    return image;
+    
+  }
+
+  //*****************************************************************************/
+  // open
+  //*****************************************************************************/
 //  void open(std::string str, cv::Mat & image, uint32_t mode = cv::IMREAD_UNCHANGED){
 //    
 //    mpl::io::expandPath(str);
