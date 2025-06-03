@@ -473,6 +473,12 @@ namespace cvl {
     }
     
     //*****************************************************************************
+    //  operator []
+    //*****************************************************************************
+    const cv::Point3i & operator [] (size_t index) const { return pixels[index]; }
+          cv::Point3i & operator [] (size_t index)       { return pixels[index]; }
+    
+    //*****************************************************************************
     // getContour
     //*****************************************************************************
     //void getContour(bool mode, std::vector<cv::Point> & contours) const {
