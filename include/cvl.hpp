@@ -41,6 +41,7 @@
 #include <cvl/subpixel.hpp>
 #include <cvl/targetMass.hpp>
 #include <cvl/threshold.hpp>
+#include <cvl/toolsbar.hpp>
 #include <cvl/window.hpp>
 #include <cvl/pose.hpp>
 #include <cvl/draw.hpp>
