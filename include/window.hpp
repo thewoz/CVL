@@ -28,6 +28,7 @@
 
 #include <opencv2/opencv.hpp>
 
+
 //****************************************************************************/
 // namescape cvl
 //****************************************************************************/
@@ -67,6 +68,8 @@ namespace cvl {
 
     //cv::Mat image;
     
+    //cvl::toolsbar_t toolsbar;
+    
     //****************************************************************************/
     // mouseHandler
     //****************************************************************************/
@@ -76,6 +79,8 @@ namespace cvl {
       if(event == cv::EVENT_RBUTTONDOWN || event == cv::EVENT_RBUTTONUP || event == cv::EVENT_RBUTTONDBLCLK) flags -= cv::EVENT_FLAG_RBUTTON;
       if(event == cv::EVENT_MBUTTONDOWN || event == cv::EVENT_MBUTTONUP || event == cv::EVENT_MBUTTONDBLCLK) flags -= cv::EVENT_FLAG_MBUTTON;
       if(event == cv::EVENT_MOUSEMOVE) flags -= 2;
+      
+      //((window_t*)window)->toolsbar.processMouseEvent(event, x, y, flags);
       
       ((window_t*)window)->processMouseEvent(event, x, y, flags);
 
@@ -182,10 +187,10 @@ namespace cvl {
     //****************************************************************************/
     // show()
     //****************************************************************************/
-    int show(const cv::Mat & _image, const std::string & str, int time = 0) {
+    int show(cv::Mat & _image, const std::string & str, int time = 0) {
       
       setTitle(str);
-      
+            
       return show(_image, time);
       
     }
@@ -193,13 +198,15 @@ namespace cvl {
     //****************************************************************************/
     // show()
     //****************************************************************************/
-    int show(const cv::Mat & _image, int time = 0) {
+    int show(cv::Mat & _image, int time = 0) {
       
       if(!isInit) {
         fprintf(stderr, "error the window must be init before\n");
         abort();
       }
 
+      //toolsbar.draw(_image);
+      
       cv::imshow(name, _image);
             
       int key = -1;
@@ -295,7 +302,7 @@ namespace cvl {
     //****************************************************************************/
     // update() -
     //****************************************************************************/
-    void update(const cv::Mat & _image, std::string title = "") {
+    void update(cv::Mat & _image, std::string title = "") {
       
       if(!isInit) {
         fprintf(stderr, "error the window must be init before\n");
@@ -303,6 +310,8 @@ namespace cvl {
       }
       
       if(!title.empty()) setTitle(title);
+      
+      //toolsbar.draw(_image);
       
       cv::imshow(name, _image);
       
@@ -363,6 +372,16 @@ namespace cvl {
 #endif
       
     }
+    
+    //****************************************************************************/
+    // addToolsbarTool() -
+    //****************************************************************************/
+   // void addToolsbarTool(const std::string & icon) { toolsbar.add(icon); }
+    
+    //****************************************************************************/
+    // setToolsbarPosition() -
+    //****************************************************************************/
+    //void setToolsbarPosition(const cv::Point2i & position) { toolsbar.setPosition(position); }
     
   }; /* class window_t */
 
