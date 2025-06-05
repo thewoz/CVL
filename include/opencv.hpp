@@ -140,6 +140,9 @@ namespace cvl {
 
 #endif
   
+#define CV_KEY_MINUS       45
+#define CV_KEY_PLUS        43
+
 #define CV_KEY_0           48
 #define CV_KEY_1           49
 #define CV_KEY_2           50
