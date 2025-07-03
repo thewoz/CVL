@@ -38,12 +38,14 @@
 //*****************************************************************************/
 namespace cvl::clustering {
    
+  constexpr auto distanceOp = [](const blob_t & a, const blob_t & b) { return cv::norm(a.baricenter - b.baricenter); };
+
   //*****************************************************************************/
   // NN
   //*****************************************************************************/
   void NN(const cvl::blobs_t & blobs, std::vector<cvl::blobs_t> & clusters, double factor = 1) {
     
-    std::vector<std::vector<size_t>> clustersIndex = mpl::clustering::byNNDistance(blobs, factor);
+    std::vector<std::vector<size_t>> clustersIndex = mpl::clustering::byMedianFirstNNDistance(blobs, factor, distanceOp);
     
     clusters.clear();
     
