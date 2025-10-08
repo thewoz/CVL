@@ -322,7 +322,7 @@ namespace cvl {
     void save(FILE * outputPoints, int camera, int frame, FILE * outputFrame = NULL) const {
       
       for(size_t i=0; i<blobs.size(); ++i)
-        fprintf(outputPoints, "%d %04d %04d %.4f %.4f %03lu\n", camera, frame, blobs[i].label, blobs[i].baricenter.x, blobs[i].baricenter.y, blobs[i].size());
+        fprintf(outputPoints, "%d %04d %04d %.4f %.4f %.1f\n", camera, frame, blobs[i].label, blobs[i].baricenter.x, blobs[i].baricenter.y, blobs[i].avgIntensity);
       
       if(outputFrame != NULL) {
         fprintf(outputFrame, "%04d %04lu\n", frame, blobs.size());

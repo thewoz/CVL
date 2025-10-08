@@ -64,6 +64,8 @@ namespace cvl {
     
     cv::Point2d offset;
     
+    double avgIntensity;
+    
     //cv::RotatedRect rotatedRect;
     
     //*****************************************************************************
@@ -103,6 +105,8 @@ namespace cvl {
       
       //std::vector<cv::Point2f> tmpPixels;
       
+      avgIntensity = 0;
+      
       for(size_t i=0; i<pixels.size(); i++) {
         
         if(pixels[i].x > xMax) xMax = pixels[i].x;
@@ -113,9 +117,13 @@ namespace cvl {
         if(pixels[i].z > iMax) iMax = pixels[i].z;
         if(pixels[i].z < iMin) iMin = pixels[i].z;
         
+        avgIntensity += pixels[i].z;;
+        
         //tmpPixels.push_back(cv::Point2d(pixels[i].x, pixels[i].y));
         
       }
+      
+      avgIntensity /= (double)pixels.size();
       
       offset = cv::Point(xMin, yMin);
       
