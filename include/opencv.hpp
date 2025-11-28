@@ -112,6 +112,7 @@ namespace cvl {
   const cv::Vec3b White(255, 255, 255);
   const cv::Vec3b Black(0, 0, 0);
   const cv::Vec3b LightGrey(211, 211, 211);
+  const cv::Vec3b darkslategray4(59, 122, 121);
 
   const cv::Scalar Zero(0, 0, 0);
   const cv::Scalar One(255, 255, 255);
