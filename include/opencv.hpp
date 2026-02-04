@@ -274,6 +274,7 @@ namespace cvl {
     //*****************************************************************************/
     // drawDigit
     //*****************************************************************************/
+    /// Draw a 5x3 digit glyph at the given position.
     void drawDigit(cv::Mat & dst, int number, const cv::Point & pos, const cv::Vec3b & color) {
 
       const digit_t & digit = *digits[number];
@@ -308,6 +309,7 @@ namespace cvl {
   //*****************************************************************************/
   // drawString
   //*****************************************************************************/
+  /// Draw a numeric string using the built-in 5x3 glyphs.
   void drawString(cv::Mat & dst, const char * str, cv::Point pos, const cv::Vec3b & color){
     
     if(dst.channels() != 3){
@@ -332,6 +334,7 @@ namespace cvl {
   //*****************************************************************************/
   // drawNumber
   //*****************************************************************************/
+  /// Draw an integer number using built-in digit glyphs.
   void drawNumber(cv::Mat & dst, int number, const cv::Point & pos, const cv::Vec3b & color){
     
     char str[PATH_MAX];
@@ -345,6 +348,7 @@ namespace cvl {
   //*****************************************************************************/
   // drawParabola
   //*****************************************************************************/
+  /// Draw a parabola defined by quadratic coefficients.
   void drawParabola(cv::Mat & dst, cv::Vec3d & coeffs, const cv::Vec3b & color, const cv::Point2d & offset = cv::Point2d(0,0)) {
     
      for(int x=0; x<dst.cols; ++x) {
@@ -366,6 +370,7 @@ namespace cvl {
   //*****************************************************************************/
   // cross
   //*****************************************************************************/
+  /// Draw a small cross marker.
   void cross(cv::Mat & dst, const cv::Point & pos, const cv::Vec3b & color) {
     cv::circle(dst, pos, 1, color);
   }
@@ -373,6 +378,7 @@ namespace cvl {
   //*****************************************************************************/
   // minEnclosureRoi
   //*****************************************************************************/
+  /// Compute the minimal ROI enclosing two rectangles.
   cv::Rect minEnclosureRoi(const cv::Rect & roi1, const cv::Rect & roi2) {
     
     cv::Rect roi;
@@ -393,6 +399,7 @@ namespace cvl {
   //*****************************************************************************/
   // getRandomColor
   //*****************************************************************************/
+  /// Generate a random BGR color optionally above a brightness threshold.
   cv::Vec3b getRandomColor(double minBright = -1) {
 
     if(minBright != -1 && minBright < 0) minBright = 0;
@@ -422,6 +429,7 @@ namespace cvl {
   // RGBtoHex:
   // Function to convert the RGB code to Hex color code
   //*****************************************************************************/
+  /// Convert RGB values to a hex color string (e.g., #RRGGBB).
   std::string RGBtoHex(int R, int G, int B) {
     
     if((R >= 0 && R <= 255) && (G >= 0 && G <= 255) && (B >= 0 && B <= 255)) {
@@ -441,6 +449,7 @@ namespace cvl {
   //*****************************************************************************/
   // save
   //*****************************************************************************/
+  /// Save an image to disk, expanding paths and validating the write.
   bool save(cv::Mat & image, std::string str){
     
     mpl::io::expandPath(str);
@@ -459,6 +468,7 @@ namespace cvl {
   //*****************************************************************************/
   // open
   //*****************************************************************************/
+  /// Open an image from disk with the requested imread mode.
   cv::Mat open(std::string str, int mode = cv::IMREAD_UNCHANGED){
     
     mpl::io::expandPath(str);
@@ -477,6 +487,7 @@ namespace cvl {
   //*****************************************************************************/
   // open
   //*****************************************************************************/
+  /// Open a 16-bit single-channel image from disk.
   cv::Mat open16bitC1(std::string str){
     
     mpl::io::expandPath(str);

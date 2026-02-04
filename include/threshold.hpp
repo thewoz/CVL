@@ -41,6 +41,7 @@ namespace cvl::threshold {
     // otsu() - ChatGPT
     // Funzione per calcolare la soglia di Otsu escludendo un valore specifico
     //****************************************************************************/
+    /// Compute Otsu threshold, optionally excluding a specific value.
     int otsu(const cv::Mat & src, int excludeValue) {
         
       // Controlla che l'immagine sia in scala di grigi
@@ -126,6 +127,7 @@ namespace cvl::threshold {
     //****************************************************************************/
     // moda
     //****************************************************************************/
+    /// Compute the mode (most frequent) intensity.
     int moda(const cv::Mat & src, cv::Mat mask = cv::Mat(), int valueToSkip = -1) {
       
       cv::Mat histo;
@@ -151,6 +153,7 @@ namespace cvl::threshold {
     //****************************************************************************/
     // median
     //****************************************************************************/
+    /// Compute the median intensity.
     int median(const cv::Mat & src, cv::Mat mask = cv::Mat(), int valueToSkip = -1) {
       
       int countNonZero = src.rows * src.cols;
@@ -202,6 +205,7 @@ namespace cvl::threshold {
     //****************************************************************************/
     // percentile
     //****************************************************************************/
+    /// Compute a percentile intensity value.
     int percentile(const cv::Mat & src, float _percentile, cv::Mat mask = cv::Mat(), int valueToSkip = -1) {
       
       int countNonZero = src.rows * src.cols;
@@ -255,6 +259,7 @@ namespace cvl::threshold {
   //****************************************************************************/
   // otsu
   //****************************************************************************/
+  /// Apply Otsu thresholding to the source image.
   double otsu(cv::Mat & src, cv::Mat & dst, const cv::Mat & mask = cv::Mat()) {
     
     // TODO: qua dovrei controlalre che è grande uguale e dello stesso tipo
@@ -274,6 +279,7 @@ namespace cvl::threshold {
   //****************************************************************************/
   // adaptive
   //****************************************************************************/
+  /// Apply adaptive thresholding.
   double adaptive(cv::Mat & src, cv::Mat & dst, int adaptiveMethod, int thresholdType, int blockSize, double C, const cv::Mat & mask = cv::Mat()) {
 
     // TODO: qua dovrei controlalre che è grande uguale e dello stesso tipo
@@ -294,6 +300,7 @@ namespace cvl::threshold {
   // global
   //****************************************************************************/
   // openCV global threshold doesn't use threshold value in a strict way. this means why there is -1 here!!!
+  /// Apply a global threshold using OpenCV's binary threshold.
   double global(cv::Mat & src, cv::Mat & dst, double threshold, const cv::Mat & mask = cv::Mat()) {
     
     if(src.type() > CV_8UC1){
@@ -318,6 +325,7 @@ namespace cvl::threshold {
   //*****************************************************************************/
   // median
   //*****************************************************************************/
+  /// Apply a median-based threshold with scaling.
   double median(cv::Mat & src, cv::Mat & dst, double factor, int valueToSkip, const cv::Mat & mask = cv::Mat()) {
         
     double threshold = utils::median(src, mask, valueToSkip);
@@ -345,6 +353,7 @@ namespace cvl::threshold {
   //*****************************************************************************/
   // moda
   //*****************************************************************************/
+  /// Apply a mode-based threshold with scaling.
   double moda(cv::Mat & src, cv::Mat & dst, double factor, int valueToSkip, const cv::Mat & mask = cv::Mat()) {
     
     double threshold = utils::moda(src, mask, valueToSkip);
@@ -372,6 +381,7 @@ namespace cvl::threshold {
   //*****************************************************************************/
   // percentile
   //*****************************************************************************/
+  /// Apply a percentile-based threshold.
   double percentile(cv::Mat & src, cv::Mat & dst, double percentile, int valueToSkip, const cv::Mat & mask = cv::Mat()) {
     
     double threshold = utils::percentile(src, percentile, mask, valueToSkip);
@@ -393,6 +403,7 @@ namespace cvl::threshold {
   //*****************************************************************************/
   // get
   //*****************************************************************************/
+  /// Dispatch thresholding by name.
   double get(cv::Mat & src, cv::Mat & dst, const std::string & algo, double param1, double param2, int param3, const cv::Mat & mask = cv::Mat()) {
     
     if(algo.compare("GLOBAL") == 0) {
@@ -431,4 +442,3 @@ namespace cvl::threshold {
 } /* namespace */
 
 #endif /* _H_CVL_THRESHOLD_H_ */
-

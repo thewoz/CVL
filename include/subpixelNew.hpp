@@ -66,6 +66,7 @@ static ChessBoardParameters CBparameters;
 
 void rotate(float angle,cv::InputArray img,cv::Size size,cv::OutputArray out)
 {
+    /// Rotate an image by angle (radians) around its center.
     if(angle == 0)
     {
         img.copyTo(out);
@@ -82,6 +83,7 @@ void rotate(float angle,cv::InputArray img,cv::Size size,cv::OutputArray out)
 
 void calcFeatureMap(const cv::Mat &images,cv::Mat& out)
 {
+    /// Compute the feature map used for chessboard corner detection.
     if(images.empty())
         CV_Error(cv::Error::StsBadArg,"no rotation images");
     int type = images.type(), depth = CV_MAT_DEPTH(type);
@@ -169,6 +171,7 @@ void detectImpl(const cv::Mat& _gray_image,
         std::vector<cv::Mat> &feature_maps,
         const cv::Mat &_mask)
 {
+    /// Build rotated images and feature maps across scales.
     if(!_mask.empty())
         CV_Error(cv::Error::StsBadSize, "Mask is not supported");
     CV_CheckTypeEQ(_gray_image.type(), CV_8UC1, "Unsupported image type");
@@ -249,6 +252,7 @@ void detectImpl(const cv::Mat& _gray_image,
 
 inline float calcSubpixel(const float &x_l,const float &x,const float &x_r)
 {
+    /// Compute subpixel location from three samples.
     // prevent zero values
     if(x_l <= 0)
         return 0;
@@ -268,6 +272,7 @@ inline float calcSubpixel(const float &x_l,const float &x,const float &x_r)
 
 void findKeyPoints(const std::vector<cv::Mat> &feature_maps, std::vector<cv::KeyPoint>& keypoints,const cv::Mat& _mask)
 {
+    /// Extract keypoints from the feature map pyramid.
     //TODO check that all feature_maps have the same size
     int num_scales = parameters.max_scale-parameters.min_scale;
     CV_CheckGE(int(feature_maps.size()), num_scales, "missing feature maps");
@@ -366,6 +371,7 @@ void findKeyPoints(const std::vector<cv::Mat> &feature_maps, std::vector<cv::Key
 
 inline float calcSubPos(const float &x_l,const float &x,const float &x_r)
 {
+    /// Compute subpixel offset based on quadratic interpolation.
     float val = 2.0F *(x_l-2.0F*x+x_r);
     if(val == 0.0F)
         return 0.0F;
@@ -380,6 +386,7 @@ static const float RAD2DEG = float(180.0/CV_PI);
 
 std::vector<std::vector<float> > calcAngles(const std::vector<cv::Mat> &rotated_images,std::vector<cv::KeyPoint> &keypoints)
 {
+    /// Compute dominant angles for each keypoint using rotated images.
     // validate rotated_images
     if(rotated_images.empty())
         CV_Error(cv::Error::StsBadArg,"no rotated images");
@@ -494,6 +501,7 @@ std::vector<std::vector<float> > calcAngles(const std::vector<cv::Mat> &rotated_
 
 static bool sortKeyPoint(const cv::KeyPoint &pt1,const cv::KeyPoint &pt2)
 {
+    /// Sort keypoints by response (descending).
     // used as comparison function for partial sort
     // the keypoints with the best score should be first
     return pt1.response > pt2.response;
@@ -502,6 +510,7 @@ static bool sortKeyPoint(const cv::KeyPoint &pt1,const cv::KeyPoint &pt2)
 // returns how many tests fails out of 10
 int testPointSymmetry(const cv::Mat &mat,cv::Point2f pt,float dist,float max_error)
 {
+    /// Count symmetry test failures around a point.
     cv::Rect image_rect(int(0.5*dist),int(0.5*dist),int(mat.cols-0.5*dist),int(mat.rows-0.5*dist));
     cv::Size size(int(0.5*dist),int(0.5*dist));
     int count = 0;
@@ -529,6 +538,7 @@ int testPointSymmetry(const cv::Mat &mat,cv::Point2f pt,float dist,float max_err
 void filterKeyPoints(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints,std::vector<cv::Mat> &feature_maps,
         std::vector<std::vector<float> > &angles ,const cv::Mat& mask)
 {
+    /// Filter keypoints using feature maps, symmetry, and angle checks.
     keypoints.clear();
     angles.clear();
     std::vector<cv::KeyPoint> keypoints_temp;
@@ -580,6 +590,7 @@ void filterKeyPoints(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints,
 
 
 cv::Point2d cornerSubPixNewImpl (const cv::Mat image){
+    /// Compute a single refined corner from a ROI.
 
     std::vector<cv::Mat> rotated_images;
 
@@ -609,6 +620,7 @@ cv::Point2d cornerSubPixNewImpl (const cv::Mat image){
 }
 
 void fitRectangleInImage(const cv::Mat& image, cv::Rect &roi){
+    /// Clamp the ROI to valid image coordinates.
 
     //limiti dell'immagine
     int leftBound = 0, topBound = 0, bottomBound = image.rows, rightBound = image.cols;
@@ -631,6 +643,7 @@ void fitRectangleInImage(const cv::Mat& image, cv::Rect &roi){
 // // subpixelNew
 // //****************************************************************************/
 void cornerSubPixNew(const cv::Mat image, std::vector<cv::Point2f> & corners, int roiSize = 60){
+  /// Refine corner positions using the new chessboard detector.
   
   for(auto & corner : corners){
 

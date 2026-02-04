@@ -41,6 +41,7 @@ namespace cvl::chessboard {
   //****************************************************************************/
   // get() -
   //****************************************************************************/
+  /// Detect a checkerboard or circles grid from an image.
   bool get(const cv::Mat & image, const cv::Size & patternSize, std::vector<cv::Point2f> & corners, const std::string & mode, const std::string & algorithm = "old") {
         
     bool patternfound = false;
@@ -122,6 +123,7 @@ namespace cvl::chessboard {
   //****************************************************************************/
   // get() -
   //****************************************************************************/
+  /// Load an image from disk and detect a checkerboard or circles grid.
   bool get(const std::string & imagePath, const cv::Size & patternSize, std::vector<cv::Point2f> & corners, const std::string & mode, const std::string & algorithm = "old") {
     
     cv::Mat image = cvl::open(imagePath, cv::IMREAD_GRAYSCALE);
@@ -133,6 +135,7 @@ namespace cvl::chessboard {
   //****************************************************************************/
   // saveImage() -
   //****************************************************************************/
+  /// Save an image with detected corners drawn.
   void saveImage(cv::Mat image, const std::string & file, const std::vector<cv::Point2f> & corners, const cv::Size & boardSize, bool status) {
     
     if(image.type()==CV_8UC1) cvtColor(image, image, cv::COLOR_GRAY2RGB);
@@ -148,6 +151,7 @@ namespace cvl::chessboard {
   //****************************************************************************/
   // saveCorners() -
   //****************************************************************************/
+  /// Save detected corners to a stream in a simple text format.
   void saveCorners(FILE * output, const std::string & file, const std::vector<cv::Point2f> & corners, const cv::Size & boardSize) {
 
     //size_t rows = boardSize.height;
@@ -178,6 +182,7 @@ namespace cvl {
   //****************************************************************************/
   // chessboard_t
   //****************************************************************************/
+  /// Helper container for object/image point correspondences.
   class chessboard_t {
     
   public:
@@ -188,6 +193,7 @@ namespace cvl {
     //****************************************************************************/
     // scale
     //****************************************************************************/
+    /// Scale all object points by a constant factor.
     void scale(double factor) {
       
       for(int i=0; i<objectPoints.size(); ++i) {
@@ -207,6 +213,7 @@ namespace cvl {
     //****************************************************************************/
     // load
     //****************************************************************************/
+    /// Load calibration points from a text file.
     void load(std::string filepath) {
       
       mpl::loader loader;
@@ -219,6 +226,7 @@ namespace cvl {
     //****************************************************************************/
     // filler
     //****************************************************************************/
+    /// Loader callback for populating object/image points.
     void filler(const mpl::loader::data & arguments) {
       
       static std::string frame = "";

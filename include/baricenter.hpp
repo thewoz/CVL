@@ -36,6 +36,7 @@ namespace cvl::baricenter {
   //****************************************************************************
 	// geometric
   //****************************************************************************
+  /// Compute the geometric barycenter of a set of pixel coordinates.
   template <class T>
 	cv::Point2d geometric(const std::vector<T> & pixels) {
 
@@ -61,6 +62,7 @@ namespace cvl::baricenter {
 	//****************************************************************************
 	// maxIntensity
 	//****************************************************************************
+  /// Return the coordinates of the pixel with the maximum intensity.
 	cv::Point2d maxIntensity(const std::vector<cv::Point3i> & pixels) {
 		    
     size_t maxPixelIntensity = 0;
@@ -84,6 +86,7 @@ namespace cvl::baricenter {
 	//****************************************************************************
 	// lowIntensity
 	//****************************************************************************
+  /// Return the coordinates of the pixel with the minimum intensity.
 	cv::Point2d lowIntensity(const std::vector<cv::Point3i> & pixels) {
 		
 		size_t lowPixelIntensity = pixels.size() - 1;
@@ -107,6 +110,7 @@ namespace cvl::baricenter {
 	//****************************************************************************
 	// maxIntensityWeighted
 	//****************************************************************************
+  /// Compute a weighted barycenter using intensity as weight.
 	cv::Point2d maxIntensityWeighted(const std::vector<cv::Point3i> & pixels) {
 		
     size_t totalPixelsIntensity = 0;
@@ -140,6 +144,7 @@ namespace cvl::baricenter {
 	//*****************************************************************************
 	// lowIntensityWeighted
 	//*****************************************************************************
+  /// Compute a weighted barycenter using inverted intensity (255 - value) as weight.
 	cv::Point2d lowIntensityWeighted(const std::vector<cv::Point3i> & pixels) {
 
     size_t totalPixelsIntensity = 0;
@@ -173,6 +178,7 @@ namespace cvl::baricenter {
 	//*****************************************************************************
 	// get
 	//*****************************************************************************
+  /// Dispatch barycenter evaluation by name.
   cv::Point2d get(const std::vector<cv::Point3i> & pixels, const std::string & algo) {
 
 		if(algo.compare("MAX_INTENSITY") == 0)
@@ -203,5 +209,4 @@ namespace cvl::baricenter {
 } /* namespace */
 
 #endif /* _H_CVL_BARICENTER_H_ */
-
 

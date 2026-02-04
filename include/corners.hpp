@@ -39,6 +39,7 @@ namespace cvl {
   //****************************************************************************/
   // corners_t
   //****************************************************************************/
+  /// Container for loading and accessing 2D corner tracks from files.
   class corners_t {
     
   public:
@@ -48,6 +49,7 @@ namespace cvl {
     //****************************************************************************/
     // load
     //****************************************************************************/
+    /// Load corner tracks from a text file.
     void load(std::string filepath) {
       
       mpl::loader loader;
@@ -58,11 +60,13 @@ namespace cvl {
     //****************************************************************************/
     // size_t
     //****************************************************************************/
+    /// Return number of frames loaded.
     size_t size() const { return coords.size(); }
     
     //****************************************************************************/
     // operator []
     //****************************************************************************/
+    /// Access per-frame corner coordinates.
     const std::vector<cv::Point2d> & operator [] (size_t index) const { return coords[index]; }
           std::vector<cv::Point2d> & operator [] (size_t index)       { return coords[index]; }
     
@@ -71,6 +75,7 @@ namespace cvl {
     //****************************************************************************/
     // filler
     //****************************************************************************/
+    /// Loader callback for pushing coordinates into frames.
     void filler(const mpl::loader::data & arguments) {
 
       int frame = arguments.get<int>(0);

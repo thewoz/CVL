@@ -35,6 +35,7 @@ namespace cvl::convert {
   //****************************************************************************/
   // from16to8()
   //****************************************************************************/
+  /// Convert a 16-bit grayscale image to 8-bit using explicit scale/offset.
   void from16to8(const cv::Mat & src, cv::Mat & dst, double alpha, double beta) {
 
     if(src.empty() || src.type() != CV_16UC1) {
@@ -49,6 +50,7 @@ namespace cvl::convert {
   //****************************************************************************/
   // from16to8()
   //****************************************************************************/
+  /// Convert a 16-bit grayscale image to 8-bit using the chosen mode.
   std::pair<double,double> from16to8(const cv::Mat & src, cv::Mat & dst, int mode, double value = 0) {
   
     if(src.empty() || src.type() != CV_16UC1) {

@@ -36,6 +36,7 @@ namespace cvl::pose {
   //****************************************************************************/
   // recoverPose()
   //****************************************************************************/
+  /// Recover relative camera pose from matched corners and camera intrinsics.
   void recoverPose(const std::vector<cv::Point2d> & cornersLeft, const std::vector<cv::Point2d> & cornersRight, const cv::Mat leftK, const std::vector<double> & leftDistCoef, const cv::Mat rightK, const std::vector<double> & rightDistCoef, double camDistance, cv::Mat RLeft, cv::Mat TLeft, cv::Mat RRight, cv::Mat TRight) {
     
     cv::Mat E;
@@ -53,6 +54,7 @@ namespace cvl::pose {
   //****************************************************************************/
   // solvePnP()
   //****************************************************************************/
+  /// Solve PnP for left/right views and align right camera to left.
   void solvePnP(const std::vector<cv::Point3d> & objectPoints, const std::vector<cv::Point2d> & cornersLeft, const std::vector<cv::Point2d> & cornersRight, const cv::Mat leftK, const std::vector<double> & leftDistCoef, const cv::Mat rightK, const std::vector<double> & rightDistCoef, cv::Mat RLeft, cv::Mat TLeft, cv::Mat RRight, cv::Mat TRight) {
     
     // risolvo la camera destra
@@ -98,6 +100,7 @@ namespace cvl::pose {
   //****************************************************************************/
   // stereoCalibrate()
   //****************************************************************************/
+  /// Run stereo calibration with fixed intrinsics.
   void stereoCalibrate(const std::vector<cv::Point3d> & _objectPoints, const std::vector<cv::Point2d> & _cornersLeft, const std::vector<cv::Point2d> & _cornersRight, const cv::Mat leftK, const std::vector<double> & leftDistCoef, const cv::Mat rightK, const std::vector<double> & rightDistCoef, cv::Size imageSize, cv::Mat RLeft, cv::Mat TLeft, cv::Mat RRight, cv::Mat TRight) {
     
     cv::Mat E, F, perViewErrors;

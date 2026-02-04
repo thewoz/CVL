@@ -39,6 +39,7 @@ namespace cvl::targetmass {
   //****************************************************************************/
   // fixed
   //*****************************************************************************/
+  /// Draw fixed-radius target circles for each blob barycenter.
   void fixed(cvl::blobs_t & blobs, cv::Mat & dst, int radius) {
     
     dst.setTo(cv::Scalar(0,0,0));
@@ -54,6 +55,7 @@ namespace cvl::targetmass {
   //*****************************************************************************/
   // erode
   //*****************************************************************************/
+  /// Erode blobs until they approach a target mass.
   void erode(cvl::blobs_t & blobs, const cv::Mat & src, size_t targetMass, size_t minMass = 1, int labelingNeighboursType = cvl::labeling::NEXT_NEAREST_NEIGHBOURS) {
     
     cvl::blobs_t newBlobs;
@@ -119,6 +121,7 @@ namespace cvl::targetmass {
     //*****************************************************************************/
     // try2split
     //*****************************************************************************/
+    /// Attempt to split a blob by thresholding toward dark or light pixels.
     void try2split(cvl::blob_t & blob, const cv::Mat & src, cvl::blobs_t & blobsFound, size_t targetMass, bool toDark, size_t minMass = 1, int labelingNeighboursType = cvl::labeling::NEXT_NEAREST_NEIGHBOURS) {
       
       // vettore che contiene i vari blob che vanno divisi
@@ -212,6 +215,7 @@ namespace cvl::targetmass {
   //*****************************************************************************/
   // split
   //*****************************************************************************/
+  /// Split blobs until they are at or below the target mass.
   void split(cvl::blobs_t & blobs, const cv::Mat & src, size_t targetMass, bool toDark, size_t minMass = 1, int labelingNeighboursType = cvl::labeling::NEXT_NEAREST_NEIGHBOURS) {
     
     // vettore di appoggio con il risultato finale

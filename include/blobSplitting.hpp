@@ -64,6 +64,7 @@ namespace cvl::blobsplitting {
   //    // se devo continuare a dividire una volta diviso
   //    bool recursiveSplitting;
   //*****************************************************************************
+  /// Split a single blob into smaller ones by iteratively thresholding.
   void split(const cvl::blob_t & blob, const cv::Mat & splitOn, const cv::Mat & original, cvl::blobs_t & blobsFound, bool toDark, int enterMass, int exitMass, int minMass, bool recursiveSplitting, int labelingNeighboursType) {
     
     if(exitMass < minMass) {
@@ -187,6 +188,7 @@ namespace cvl::blobsplitting {
   //****************************************************************************
   // get
   //****************************************************************************
+  /// Split blobs using the chosen mode and refine with watershed segmentation.
   void get(cvl::blobs_t & blobs, const cv::Mat & splitOn, const cv::Mat & original, const std::string & mode, int enterMass, int exitMass, int minMass, bool recursiveSplitting, int labelingNeighboursType){
     
   #ifdef _DEBUG_CVL_BLOBSPLITTING_
@@ -351,5 +353,4 @@ namespace cvl::blobsplitting {
 
 
 #endif /* _H_CVL_BLOBSPLITTING_H_ */
-
 

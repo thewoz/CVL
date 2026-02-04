@@ -32,6 +32,7 @@
 //***************************************************************************************************//
 // asDeflickering
 //***************************************************************************************************//
+/// Temporal deflickering utility operating on a sliding window of frames.
 class asDeflickering {
 
 private:
@@ -58,12 +59,14 @@ public:
   //***************************************************************************************************//
   // asDeflickering
   //***************************************************************************************************//
+  /// Construct an uninitialized deflickering helper.
   asDeflickering() { inited = false; }
   
 
   //***************************************************************************************************//
   // init
   //***************************************************************************************************//
+  /// Initialize deflickering parameters, mask, and input image list.
   void init(std::vector<cv::Mat> & images, uint32_t _deflickerWindows, uint32_t _deflickerTime, uint32_t _deflickerMatrixSize, std::string maskPath, bool _invert) {
 
     for(uint32_t i=0; i<deflickerWindows; ++i)
@@ -150,6 +153,7 @@ public:
   //***************************************************************************************************//
   // deflicker
   //***************************************************************************************************//
+  /// Apply deflickering to the provided images using the configured window.
   void deflicker(std::vector<cv::Mat> & images){
 
     if(!inited){
@@ -218,6 +222,7 @@ private:
   //***************************************************************************************************//
   // getFromTo
   //***************************************************************************************************//
+  /// Compute temporal window bounds for the given index.
   void getFromTo(uint32_t i, uint32_t & from, uint32_t & to) {
 
     from = i - halfDeflickerTime;
@@ -233,6 +238,7 @@ private:
   //***************************************************************************************************//
   // getCenteredROI
   //***************************************************************************************************//
+  /// Compute a centered ROI around (x, y), clamped to image bounds.
   void getCenteredROI(uint32_t x, uint32_t y, uint32_t & xS, uint32_t & xE, uint32_t & yS, uint32_t & yE) {
 
     xS = x - halfDeflickerMatrixSize;
@@ -254,6 +260,7 @@ private:
   //***************************************************************************************************//
   // getAvg
   //***************************************************************************************************//
+  /// Compute average intensity within the provided ROI.
   double getAvg(uint32_t xS, uint32_t xE, uint32_t yS, uint32_t yE, const cv::Mat & image) const {
 
     double avg = 0;
