@@ -38,6 +38,7 @@ namespace cvl::contours {
  	//*****************************************************************************/
   // get
   //*****************************************************************************/
+  /// Extract external or internal contour pixels from a binary image.
   void get(const cv::Mat & image, bool mode, std::vector<cv::Point> & contours) {
     
     if(image.channels() != 1)
@@ -125,5 +126,4 @@ namespace cvl::contours {
 } /* namespace */
 
 #endif /* _H_CVL_COUNTOURS_H_ */
-
 

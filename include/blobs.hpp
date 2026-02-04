@@ -42,6 +42,7 @@ namespace cvl {
   //*****************************************************************************
   // class blobs_t
   //*****************************************************************************
+  /// Collection of blobs with utilities for drawing and geometry.
   class blobs_t {
   
   private:
@@ -55,59 +56,70 @@ namespace cvl {
     //*****************************************************************************
     // blobs_t
     //*****************************************************************************
+    /// Create an empty blob collection.
     blobs_t() { clear(); }
     
     //*****************************************************************************
     //  operator []
     //*****************************************************************************
+    /// Access a blob by index.
     const cvl::blob_t & operator [] (size_t index) const { return blobs[index]; }
           cvl::blob_t & operator [] (size_t index)       { return blobs[index]; }
 
     //*****************************************************************************
     // size
     //*****************************************************************************
+    /// Return number of blobs.
     size_t size() const { return blobs.size(); }
     
     //*****************************************************************************
     // clear
     //*****************************************************************************
+    /// Remove all blobs.
     void clear() { return blobs.clear(); }
     
     //*****************************************************************************
     // erase
     //*****************************************************************************
+    /// Remove blob at the given index.
     void erase(size_t index) { blobs.erase(blobs.begin() + index); }
     
     //*****************************************************************************
     // add
     //*****************************************************************************
+    /// Append a blob.
     void add(const cvl::blob_t & blob) { blobs.push_back(blob); }
     
     //*****************************************************************************
     // add
     //*****************************************************************************
+    /// Append all blobs from another collection.
     void add(const cvl::blobs_t & _blobs) { blobs.insert(blobs.end(), _blobs.begin(), _blobs.end()); }
     
     //*****************************************************************************
     // insert
     //*****************************************************************************
+    /// Insert a blob at the given index.
     void insert(size_t index, const cvl::blob_t & blob) { blobs.insert(blobs.begin() + index, blob); }
     
     //*****************************************************************************
     // begin
     //*****************************************************************************
+    /// Iterator to the first blob.
     std::vector<cvl::blob_t>::const_iterator begin() const { return blobs.begin(); }
     std::vector<cvl::blob_t>::iterator       begin()       { return blobs.begin(); }
     
     //*****************************************************************************
     // end
     //*****************************************************************************
+    /// Iterator to the end of the collection.
     std::vector<cvl::blob_t>::const_iterator end() const { return blobs.end(); }
     std::vector<cvl::blob_t>::iterator       end()       { return blobs.end(); }
 
     //*****************************************************************************
     // finalize
     //*****************************************************************************
+    /// Sort blobs, recompute stats, labels, and global barycenter.
     void finalize() {
       
       // ordino i punti
@@ -138,6 +150,7 @@ namespace cvl {
     //*****************************************************************************
     // draw
     //*****************************************************************************
+    /// Draw all blobs using a single color.
     void draw(cv::Mat & dst, const cv::Vec3b & color) const {
       
       if(dst.channels() != 1 && dst.channels() !=3)
@@ -151,6 +164,7 @@ namespace cvl {
     //*****************************************************************************
     // draw
     //*****************************************************************************
+    /// Draw blobs with their stored intensities.
     void draw(cv::Mat & dst, bool mode = true) const {
       
       if(dst.channels() != 1 && dst.channels() !=3)
@@ -166,6 +180,7 @@ namespace cvl {
     //*****************************************************************************
     // drawMask
     //*****************************************************************************
+    /// Draw a white mask for all blobs.
     void drawMask(cv::Mat & dst, bool mode = true) const {
       
       if(dst.channels() != 1)
@@ -181,6 +196,7 @@ namespace cvl {
     //*****************************************************************************
     // drawBaricenters
     //*****************************************************************************
+    /// Draw barycenters for each blob.
     void drawBaricenters(cv::Mat & dst, const cv::Vec3b & color = cvl::Red, int scaleFactor = 1) const {
       
       if(dst.channels() !=3)
@@ -198,6 +214,7 @@ namespace cvl {
     //*****************************************************************************
     // drawLabels
     //*****************************************************************************
+    /// Draw labels for each blob.
     void drawLabels(cv::Mat & dst, const cv::Vec3b & color = cvl::Yellow, int scaleFactor = 1) const {
       
       if(dst.channels() !=3)
@@ -211,6 +228,7 @@ namespace cvl {
     //*****************************************************************************
     // drawContours
     //*****************************************************************************
+    /// Draw external contours of the blob mask.
     void drawContours(cv::Mat & dst, const cv::Vec3b & color = cvl::Blue) const {
       
       if(dst.channels() !=3)
@@ -235,6 +253,7 @@ namespace cvl {
     //*****************************************************************************
     // enclosingCircle
     //*****************************************************************************
+    /// Compute a minimum enclosing circle of blob barycenters.
     void enclosingCircle(cv::Point2f & center, float & radius) const {
       
       std::vector<cv::Point2f> points(blobs.size());
@@ -249,6 +268,7 @@ namespace cvl {
     //*****************************************************************************
     // getConvexHull
     //*****************************************************************************
+    /// Compute the convex hull of blob barycenters.
     void getConvexHull(std::vector<cv::Point2f> & hull) const {
       
       std::vector<cv::Point2f> points(blobs.size());
@@ -263,6 +283,7 @@ namespace cvl {
     //*****************************************************************************
     // boundingRect
     //*****************************************************************************
+    /// Compute a bounding box around blob barycenters.
     void boundingRect(cv::Rect & roi) const{
       
       std::vector<cv::Point2f> points(blobs.size());
@@ -282,6 +303,7 @@ namespace cvl {
     //*****************************************************************************
     // getBarycenters
     //*****************************************************************************
+    /// Fill a vector with all blob barycenters.
     void getBarycenters(std::vector<cv::Point2f> & barycenters) const {
       
       barycenters.resize(blobs.size());
@@ -319,6 +341,7 @@ namespace cvl {
     //*****************************************************************************
     // save
     //*****************************************************************************
+    /// Save blob barycenters and optional frame summary to streams.
     void save(FILE * outputPoints, int camera, int frame, FILE * outputFrame = NULL) const {
       
       for(size_t i=0; i<blobs.size(); ++i)
@@ -336,6 +359,7 @@ namespace cvl {
     //*****************************************************************************
     // saveContours
     //*****************************************************************************
+    /// Save contours for all blobs.
     void saveContours(FILE * output, int camera, int frame) const {
       
       for(size_t i=0; i<blobs.size(); ++i)
@@ -351,5 +375,4 @@ namespace cvl {
 } /* namespace */
 
 #endif /* _H_CVL_BLOBS_H_ */
-
 

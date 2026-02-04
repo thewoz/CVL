@@ -42,6 +42,7 @@ namespace cvl {
   //*****************************************************************************
   // blob_t
   //*****************************************************************************
+  /// Container for a connected component with pixel list and derived statistics.
   class blob_t : public mpl::graph::node_t {
     
   public:
@@ -71,31 +72,37 @@ namespace cvl {
     //*****************************************************************************
     // blob_t
     //*****************************************************************************
+    /// Create an empty blob with label -1.
     blob_t() { pixels.clear(); label = -1; }
     
     //*****************************************************************************
     // add
     //*****************************************************************************
+    /// Append a pixel (x, y, intensity) to the blob.
     void add(int x, int y, int i) { pixels.push_back(cv::Point3i(x,y,i)); }
     
     //*****************************************************************************
     // size
     //*****************************************************************************
+    /// Return the number of pixels in the blob.
     size_t size() const { return pixels.size(); }
     
     //*****************************************************************************
     // getImageSize
     //*****************************************************************************
+    /// Return the width/height of the blob bounding box.
     cv::Size getImageSize() const { return cv::Size(roi.width, roi.height); }
     
     //*****************************************************************************
     // clear
     //*****************************************************************************
+    /// Remove all pixels from the blob.
     void clear() { pixels.clear(); }
     
     //*****************************************************************************
     // finalize
     //*****************************************************************************
+    /// Compute min/max, average intensity, ROI, and barycenter for the blob.
     void finalize() {
       
       int xMin = INT_MAX; int xMax = 0;
@@ -138,6 +145,7 @@ namespace cvl {
     //*****************************************************************************
     // print()
     //*****************************************************************************
+    /// Print blob information to the provided stream.
     void print(FILE * out = stdout) {
       
       fprintf(out, "label: %d\n", label);
@@ -189,6 +197,7 @@ namespace cvl {
     //*****************************************************************************
     // draw
     //*****************************************************************************
+    /// Draw the blob onto dst using the provided color (8-bit 1 or 3 channel).
     void draw(cv::Mat & dst, const cv::Vec3b & color, const cv::Point & offset = cv::Point(0,0)) const {
       
       bool status = false;
@@ -216,6 +225,7 @@ namespace cvl {
     //*****************************************************************************
     // draw
     //*****************************************************************************
+    /// Draw the blob onto an int label image.
     void draw(cv::Mat & dst, int color, const cv::Point & offset = cv::Point(0,0)) const {
       
       bool status = false;
@@ -237,6 +247,7 @@ namespace cvl {
     //*****************************************************************************
     // draw
     //*****************************************************************************
+    /// Draw the blob using stored intensity values.
     void draw(cv::Mat & dst, const cv::Point & offset = cv::Point(0,0)) const {
       
       bool status = false;
@@ -263,6 +274,7 @@ namespace cvl {
     //*****************************************************************************
     // draw
     //*****************************************************************************
+    /// Draw the blob by sampling pixel values from the original image.
     void draw(cv::Mat & dst, const cv::Mat & ori, const cv::Point & offset = cv::Point(0,0)) const {
       
       bool status = false;
@@ -301,6 +313,7 @@ namespace cvl {
     //*****************************************************************************
     // drawInv
     //*****************************************************************************
+    /// Draw the blob with inverted intensity values.
     void drawInv(cv::Mat & dst, const cv::Point & offset = cv::Point(0,0)) const {
       
       bool status = false;
@@ -327,6 +340,7 @@ namespace cvl {
     //*****************************************************************************
     // drawInv
     //*****************************************************************************
+    /// Draw the blob with inverted intensity values from the original image.
     void drawInv(cv::Mat & dst, const cv::Mat & ori, const cv::Point & offset = cv::Point(0,0)) const {
       
       bool status = false;
@@ -360,11 +374,13 @@ namespace cvl {
     //*****************************************************************************
     // drawMask
     //*****************************************************************************
+    /// Draw a white mask of the blob.
     void drawMask(cv::Mat & dst, const cv::Point & offset = cv::Point(0,0)) const { draw(dst, cv::Vec3b(255,255,255), offset); }
     
     //*****************************************************************************
     // drawLabel
     //*****************************************************************************
+    /// Draw the blob label at its barycenter.
     void drawLabel(cv::Mat & dst, const cv::Vec3b & color = cvl::Yellow, int scaleFactor = 1) const {
       
       cvl::drawNumber(dst, label, cv::Point2i((baricenter.x*scaleFactor) + roi.width * 0.5, (baricenter.y*scaleFactor) + roi.height * 0.5), color);
@@ -374,6 +390,7 @@ namespace cvl {
     //*****************************************************************************
     // saveContours
     //*****************************************************************************
+    /// Save blob contour points to a stream.
     void saveContours(FILE * output, int camera, int frame) const {
       
       fprintf(output, "%d %d %d %lu ", camera, frame, label, pixels.size());
@@ -388,6 +405,7 @@ namespace cvl {
     //*****************************************************************************
     // println
     //*****************************************************************************
+    /// Print blob pixel coordinates in a simple text format.
     void println(FILE * output = stdout) const {
       
       fprintf(output, "%d %d %lu\n", frame, label, pixels.size());
@@ -469,6 +487,7 @@ namespace cvl {
     //*****************************************************************************
     // operator <
     //*****************************************************************************
+    /// Sort blobs by barycenter position (row-major).
     inline bool operator < (const cvl::blob_t & blob) const {
       
            if(baricenter.y < blob.baricenter.y) return true;
@@ -483,6 +502,7 @@ namespace cvl {
     //*****************************************************************************
     //  operator []
     //*****************************************************************************
+    /// Access a pixel by index.
     const cv::Point3i & operator [] (size_t index) const { return pixels[index]; }
           cv::Point3i & operator [] (size_t index)       { return pixels[index]; }
     
@@ -553,6 +573,7 @@ namespace cvl {
   //*****************************************************************************
   // operator -
   //*****************************************************************************
+  /// Return Euclidean distance between two blob barycenters.
   double operator - (const cvl::blob_t & A, const cvl::blob_t & B) {
     
     return cv::sqrt(((A.baricenter.x-B.baricenter.x)*(A.baricenter.x-B.baricenter.x)) + ((A.baricenter.y-B.baricenter.y)*(A.baricenter.y-B.baricenter.y)));
@@ -565,5 +586,4 @@ namespace cvl {
 
 
 #endif /* _H_CVL_BLOB_H_ */
-
 

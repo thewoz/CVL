@@ -46,6 +46,7 @@ namespace cvl::labeling {
     //*****************************************************************************/
     // freeMatrix
     //*****************************************************************************/
+    /// Free a 2D label matrix.
     void freeMatrix(int ** matrixLabel, const cv::Size & size){
       
       if(matrixLabel != NULL) {
@@ -62,6 +63,7 @@ namespace cvl::labeling {
     //*****************************************************************************/
     // allocMatrix
     //*****************************************************************************/
+    /// Allocate or resize a 2D label matrix.
     void allocMatrix(int ** & matrixLabel, const cv::Size & size) {
       
       if(matrixLabel != NULL) freeMatrix(matrixLabel, size);
@@ -91,6 +93,7 @@ namespace cvl::labeling {
     //*****************************************************************************/
     // init
     //*****************************************************************************/
+    /// Initialize or reset the label matrix with padding.
     void init(const cv::Size & imgSize, cv::Size & workImageSize, int **  & matrixLabel) {
 
       if(matrixLabel == NULL){
@@ -125,6 +128,7 @@ namespace cvl::labeling {
     //*****************************************************************************/
     // findRoot
     //*****************************************************************************/
+    /// Find the root label in the union-find structure.
     inline int findRoot(int startLabel, const std::vector<int> & labelMass) {
       
       while(labelMass[startLabel] < 0)
@@ -142,6 +146,7 @@ namespace cvl::labeling {
   //*****************************************************************************/
   // get
   //*****************************************************************************/
+  /// Label connected components and return them as blobs.
   void get(cv::Mat & src, int neighboursType, size_t minClusterMass, cvl::blobs_t & blobs, const cv::Mat & original, const cv::Point & offset = cv::Point(0,0)) {
     
     bool eight_connectivity = true;
@@ -455,5 +460,4 @@ namespace cvl::labeling {
 
 
 #endif /* _H_CVL_LABELING_H_ */
-
 

@@ -43,6 +43,7 @@ namespace cvl::clustering {
   //*****************************************************************************/
   // NN
   //*****************************************************************************/
+  /// Cluster blobs using nearest-neighbor distances (median-based threshold).
   void NN(const cvl::blobs_t & blobs, std::vector<cvl::blobs_t> & clusters, double factor = 1) {
     
     std::vector<std::vector<size_t>> clustersIndex = mpl::clustering::byMedianFirstNNDistance(blobs, factor, distanceOp);
@@ -68,6 +69,7 @@ namespace cvl::clustering {
   //*****************************************************************************/
   // follow
   //*****************************************************************************/
+  /// Re-cluster and return the barycenter of the cluster closest to coords.
   cv::Point2d follow(cvl::blobs_t & blobs, const cv::Point2d & coords, std::vector<cvl::blobs_t> & clusters, double factor = 1) {
     
     // Clusterizzo

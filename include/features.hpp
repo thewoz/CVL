@@ -36,6 +36,7 @@ namespace cvl::features {
   //****************************************************************************/
   // findCircles
   //****************************************************************************/
+  /// Detect circles using Hough transform (debug visualization included).
   std::vector<cv::Vec3f> findCircles(cv::Mat & image, double minDist, double higherThreshold = 100, double accumulatorThreshold = 100, double minRadius = 0, double maxRadius = 0) {
     
     cv::namedWindow("detected circles", cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_NORMAL);

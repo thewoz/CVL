@@ -36,6 +36,7 @@ namespace cvl {
   //****************************************************************************/
   // class window_t
   //****************************************************************************/
+  /// Simple OpenCV window wrapper with event hooks.
   class window_t {
   
   protected:
@@ -70,6 +71,7 @@ namespace cvl {
     //****************************************************************************/
     // mouseHandler
     //****************************************************************************/
+    /// Static mouse callback that dispatches to the instance handler.
     static void mouseHandler(int event, int x, int y, int flags, void * window) {
       
       if(event == cv::EVENT_LBUTTONDOWN || event == cv::EVENT_LBUTTONUP || event == cv::EVENT_LBUTTONDBLCLK) flags -= cv::EVENT_FLAG_LBUTTON;
@@ -84,11 +86,13 @@ namespace cvl {
     //****************************************************************************/
     // processMouseEvent
     //****************************************************************************/
+    /// Override to handle mouse events.
     virtual void processMouseEvent(int event, int x, int y, int flags) { }
     
     //****************************************************************************/
     // processKeyboardEvent
     //****************************************************************************/
+    /// Override to handle keyboard events.
     virtual void processKeyboardEvent(int key) { }
     
     //****************************************************************************/
@@ -99,11 +103,13 @@ namespace cvl {
     //****************************************************************************/
     // processBroadcastEvent
     //****************************************************************************/
+    /// Override to respond to broadcast events from other windows.
     virtual void processBroadcastEvent() { }
     
     //****************************************************************************/
     // processKeyboardEvent
     //****************************************************************************/
+    /// Internal keyboard event dispatcher to all windows.
     void _processKeyboardEvent(int key) {
       
       // ciclo sulle finestre
@@ -126,21 +132,25 @@ namespace cvl {
     //****************************************************************************/
     // window_t()
     //****************************************************************************/
+    /// Construct an uninitialized window.
     window_t() : id (++idCounter) {  }
     
     //****************************************************************************/
     // window_t()
     //****************************************************************************/
+    /// Construct and initialize a window with a title.
     window_t(const std::string & _name, int flags = cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_NORMAL) : id (++idCounter) { init(_name, flags); }
     
     //****************************************************************************/
     // ~window_t()
     //****************************************************************************/
+    /// Close and unregister the window.
     ~window_t() { close(); }
     
     //****************************************************************************/
     // close()
     //****************************************************************************/
+    /// Close the window and unregister it.
     void close() {
       if(isInit) {
         isInit = false;
@@ -153,11 +163,13 @@ namespace cvl {
     //****************************************************************************/
     // isInited()
     //****************************************************************************
+    /// Return whether the window is initialized.
     bool isInited() { return isInit; }
     
     //****************************************************************************/
     // init() -
     //****************************************************************************/
+    /// Initialize the window and register callbacks.
     void init(const std::string & _name, int flags = cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_NORMAL) {
       
       if(isInit) {
@@ -182,6 +194,7 @@ namespace cvl {
     //****************************************************************************/
     // show()
     //****************************************************************************/
+    /// Show an image with an updated title.
     int show(const cv::Mat & _image, const std::string & str, int time = 0) {
       
       setTitle(str);
@@ -193,6 +206,7 @@ namespace cvl {
     //****************************************************************************/
     // show()
     //****************************************************************************/
+    /// Show an image and optionally wait for keyboard input.
     int show(const cv::Mat & _image, int time = 0) {
       
       if(!isInit) {
@@ -232,6 +246,7 @@ namespace cvl {
     //****************************************************************************/
     // setTitle()
     //****************************************************************************/
+    /// Set the window title.
     void setTitle(const std::string & str) {
       
       if(!isInit) {
@@ -246,6 +261,7 @@ namespace cvl {
     //****************************************************************************/
     // toggleFullScreen() -
     //****************************************************************************/
+    /// Toggle full-screen mode.
     void toggleFullScreen() {
             
       if(!isInit) {
@@ -263,6 +279,7 @@ namespace cvl {
     //****************************************************************************/
     // setFullScreen() -
     //****************************************************************************/
+    /// Enable full-screen mode.
     void setFullScreen() {
             
       if(!isInit) {
@@ -279,6 +296,7 @@ namespace cvl {
     //****************************************************************************/
     // unsetFullScreen() -
     //****************************************************************************/
+    /// Disable full-screen mode.
     void unsetFullScreen() {
             
       if(!isInit) {
@@ -295,6 +313,7 @@ namespace cvl {
     //****************************************************************************/
     // update() -
     //****************************************************************************/
+    /// Update the window contents without waiting.
     void update(const cv::Mat & _image, std::string title = "") {
       
       if(!isInit) {
@@ -311,6 +330,7 @@ namespace cvl {
     //****************************************************************************/
     // resize() -
     //****************************************************************************/
+    /// Resize the window.
     void resize(int _width, int _height) {
       
       if(!isInit) {
@@ -328,6 +348,7 @@ namespace cvl {
     //****************************************************************************/
     // move() -
     //****************************************************************************/
+    /// Move the window on screen.
     void move(int _screenPosX, int _screenPosY) {
       
       if(!isInit) {
@@ -345,11 +366,13 @@ namespace cvl {
     //****************************************************************************/
     // broadcast()
     //****************************************************************************
+    /// Broadcast an event to other windows.
     void broadcast() { for(int i=0; i<windows.size(); ++i) if(windows[i]->id != id) windows[i]->processBroadcastEvent(); }
     
     //****************************************************************************/
     // setCursor() -
     //****************************************************************************/
+    /// Set the cursor type if supported by OpenCV.
     void setCursor(int cursorTypes) {
       
 #ifdef OPENCV_EXTENDED_QT_GUI

@@ -35,6 +35,7 @@ namespace cvl::draw {
   //****************************************************************************/
   // dashedCircle() - ChatGPT
   //****************************************************************************/
+  /// Draw a dashed circle on a 3-channel image.
   void dashedCircle(cv::Mat & image, cv::Point center, int radius, int dashWidth, int dashSpacing, const cv::Scalar & color, int thickness = 1) {
     
     if(image.type() != CV_8UC3) {
@@ -67,6 +68,7 @@ namespace cvl::draw {
   //****************************************************************************/
   // cross()
   //****************************************************************************/
+  /// Draw a diagonal cross centered at the provided point.
   template <class T>
   void cross(cv::Mat & image, cv::Point_<T> & center, int lenght, const cv::Scalar & color, int thickness = 1) {
     
@@ -83,4 +85,3 @@ namespace cvl::draw {
 } /* namespace */
 
 #endif /* _H_CVL_DRAW_H_ */
-

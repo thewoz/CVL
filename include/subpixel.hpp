@@ -38,6 +38,7 @@ namespace cvl::subpixel {
   //*****************************************************************************/
   // get() -
   //*****************************************************************************/
+  /// Refine corner positions to subpixel accuracy.
   void get(const cv::Mat image, std::vector<cv::Point2f> & corners, int roiSize = 15, const std::string & algorithm = "old") {
      
     if(corners.size() > 0) {

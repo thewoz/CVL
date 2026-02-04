@@ -40,6 +40,7 @@ namespace cvl::denoising {
     //*****************************************************************************/
     // median
     //*****************************************************************************/
+    /// Compute the median intensity value of a single-channel image.
     int median(cv::Mat & src) {
       
       if(src.channels() > 1){
@@ -76,6 +77,7 @@ namespace cvl::denoising {
   //*****************************************************************************/
   // morphology
   //*****************************************************************************/
+  /// Apply an opening morphology filter.
   void morphology(cv::Mat & image, int size = 5) {
     
     cv::morphologyEx(image, image, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(size,size)));
@@ -85,6 +87,7 @@ namespace cvl::denoising {
   //*****************************************************************************/
   // gaussian
   //*****************************************************************************/
+  /// Apply a Gaussian blur.
   void gaussian(cv::Mat & src, int size = 3) {
     
     cv::GaussianBlur(src, src, cv::Size(size,size), 0);
@@ -94,6 +97,7 @@ namespace cvl::denoising {
   //*****************************************************************************/
   // blur
   //*****************************************************************************/
+  /// Apply a box blur.
   void blur(cv::Mat & src, int size = 3) {
     
     cv::blur(src, src, cv::Size(size,size));
@@ -103,6 +107,7 @@ namespace cvl::denoising {
   //*****************************************************************************/
   // bilateralFilter
   //*****************************************************************************/
+  /// Apply bilateral filtering.
   void bilateralFilter(cv::Mat & src, int diameter = 11, double sigmaColor = 21,  double sigmaSpace = 7) {
     
     cv::bilateralFilter(src, src, diameter, sigmaColor, sigmaSpace);
@@ -114,6 +119,7 @@ namespace cvl::denoising {
   //*****************************************************************************/
   // anisotropic
   //*****************************************************************************/
+  /// Apply anisotropic diffusion filtering (ximgproc).
   void anisotropic(cv::Mat & src, double amount, double sensitivity) {
     
     bool mode = false;
@@ -134,6 +140,7 @@ namespace cvl::denoising {
   //*****************************************************************************/
   // median
   //*****************************************************************************/
+  /// Apply median blur.
   void median(cv::Mat & src, int size = 3) {
     
     cv::medianBlur(src, src, size);
@@ -143,6 +150,7 @@ namespace cvl::denoising {
 //*****************************************************************************/
   // lowlightFilter
   //*****************************************************************************/
+  /// Remove low-light noise using a median threshold and Gaussian blur.
   void lowlightFilter(cv::Mat & src, double factor = 2.0) {
     
     int median = utils::median(src) * factor;
@@ -159,6 +167,7 @@ namespace cvl::denoising {
   //*****************************************************************************/
   // starflag
   //*****************************************************************************/
+  /// Apply the Starflag denoising algorithm.
   void starflag(cv::Mat & src, cv::Mat & workImage, int kernel_size, uchar * denoiseMatrix) {
     
     int alfa = (int) ((kernel_size - 1) * 0.5);
@@ -227,6 +236,7 @@ namespace cvl::denoising {
   //*****************************************************************************/
   // get
   //*****************************************************************************/
+  /// Dispatch denoising by name (GAUSSIAN, MEDIAN, MORPHOLOGY, LOWLIGHTFILTER, STARFLAG).
   void get(cv::Mat & src, const std::string & algo, double param = 3, int time = 1) {
     
     int size = param;
