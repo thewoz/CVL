@@ -1,7 +1,7 @@
 /*
  * GNU GENERAL PUBLIC LICENSE
  *
- * Copyright (C) 2017
+ * Copyright (C) 2026
  * Created by Leonardo Parisi (leonardo.parisi[at]gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,18 +24,6 @@
 
 namespace cvl {
 
-  // NOTE: in OpenCV the colors are in BGR order.
-  const cv::Vec3b Red(0, 0, 255);
-  const cv::Vec3b Blue(255, 0, 0);
-  const cv::Vec3b Green(0, 255, 0);
-  const cv::Vec3b Yellow(0, 255, 255);
-  const cv::Vec3b Magenta(255, 0, 255);
-  const cv::Vec3b White(255, 255, 255);
-  const cv::Vec3b Black(0, 0, 0);
-  const cv::Vec3b LightGrey(211, 211, 211);
-  const cv::Vec3b darkslategray4(59, 122, 121);
-
-  // OGL glColors palette converted from RGB [0..1] to OpenCV BGR [0..255].
   const cv::Vec3b aliceblue(255, 248, 240);
   const cv::Vec3b antiquewhite(215, 235, 250);
   const cv::Vec3b aqua(255, 255, 0);

@@ -28,8 +28,6 @@
 
 #include <opencv2/opencv.hpp>
 
-#include "Colors.hpp"
-
 #include <mpl/stdio.hpp>
 #include <mpl/stdlib.hpp>
 
