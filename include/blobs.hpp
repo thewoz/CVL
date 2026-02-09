@@ -197,7 +197,7 @@ namespace cvl {
     // drawBaricenters
     //*****************************************************************************
     /// Draw barycenters for each blob.
-    void drawBaricenters(cv::Mat & dst, const cv::Vec3b & color = cvl::Red, int scaleFactor = 1) const {
+    void drawBaricenters(cv::Mat & dst, const cv::Vec3b & color = cvl::red, int scaleFactor = 1) const {
       
       if(dst.channels() !=3)
         mpl::log::error("The destination image is not a three channel image.\n");
@@ -215,7 +215,7 @@ namespace cvl {
     // drawLabels
     //*****************************************************************************
     /// Draw labels for each blob.
-    void drawLabels(cv::Mat & dst, const cv::Vec3b & color = cvl::Yellow, int scaleFactor = 1) const {
+    void drawLabels(cv::Mat & dst, const cv::Vec3b & color = cvl::yellow, int scaleFactor = 1) const {
       
       if(dst.channels() !=3)
         mpl::log::error("The destination image is not a three channel image.\n");
@@ -229,7 +229,7 @@ namespace cvl {
     // drawContours
     //*****************************************************************************
     /// Draw external contours of the blob mask.
-    void drawContours(cv::Mat & dst, const cv::Vec3b & color = cvl::Blue) const {
+    void drawContours(cv::Mat & dst, const cv::Vec3b & color = cvl::blue) const {
       
       if(dst.channels() !=3)
         mpl::log::error("The destination image is not a three channel image.\n");
