@@ -28,6 +28,8 @@
 
 #include <opencv2/opencv.hpp>
 
+#include "Colors.hpp"
+
 #include <mpl/stdio.hpp>
 #include <mpl/stdlib.hpp>
 
@@ -102,20 +104,6 @@ namespace cvl {
 //    
 //  }
   
-
-  // NOTE: in opencv the color are in the BGR order
-  const cv::Vec3b Red(0, 0, 255);
-  const cv::Vec3b Blue(255, 0, 0);
-  const cv::Vec3b Green(0, 255, 0);
-  const cv::Vec3b Yellow(0, 255, 255);
-  const cv::Vec3b Magenta(255, 0, 255);
-  const cv::Vec3b White(255, 255, 255);
-  const cv::Vec3b Black(0, 0, 0);
-  const cv::Vec3b LightGrey(211, 211, 211);
-  const cv::Vec3b darkslategray4(59, 122, 121);
-
-  const cv::Scalar Zero(0, 0, 0);
-  const cv::Scalar One(255, 255, 255);
 
 #ifdef __APPLE__
 
