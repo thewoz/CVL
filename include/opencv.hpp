@@ -412,30 +412,9 @@ namespace cvl {
   }
  
   //*****************************************************************************/
-  // RGBtoHex:
-  // Function to convert the RGB code to Hex color code
-  //*****************************************************************************/
-  /// Convert RGB values to a hex color string (e.g., #RRGGBB).
-  std::string RGBtoHex(int R, int G, int B) {
-    
-    if((R >= 0 && R <= 255) && (G >= 0 && G <= 255) && (B >= 0 && B <= 255)) {
-   
-      std::string hexCode = "#";
-                  hexCode += std::decToHex(R);
-                  hexCode += std::decToHex(G);
-                  hexCode += std::decToHex(B);
-   
-      return hexCode;
-      
-    } else return "-1";
-    
-  }
-
-
-  //*****************************************************************************/
   // save
   //*****************************************************************************/
-  /// Save an image to disk, expanding paths and validating the write.
+  // Save an image to disk, expanding paths and validating the write.
   bool save(cv::Mat & image, std::string str){
     
     mpl::io::expandPath(str);
@@ -454,7 +433,7 @@ namespace cvl {
   //*****************************************************************************/
   // open
   //*****************************************************************************/
-  /// Open an image from disk with the requested imread mode.
+  // Open an image from disk with the requested imread mode.
   cv::Mat open(std::string str, int mode = cv::IMREAD_UNCHANGED){
     
     mpl::io::expandPath(str);
