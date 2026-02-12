@@ -307,7 +307,26 @@ namespace cvl {
     
     constexpr static const cv::Scalar Zero(0, 0, 0);
     constexpr static const cv::Scalar One(255, 255, 255);
+    
+  private:
+    
+    //****************************************************************************//
+    // normalize()
+    //****************************************************************************//
+    static std::string normalize(const std::string & value) {
       
+      std::string lowered;
+      
+      lowered.reserve(value.size());
+      
+      for (unsigned char ch : value) {
+        lowered.push_back(static_cast<char>(std::tolower(ch)));
+      }
+      
+      return lowered;
+      
+    }
+    
   }; /* class glColors */
 
   std::map<std::string, glm::vec4> cvl::_colors = std::map<std::string, cv::Vec3b>();
