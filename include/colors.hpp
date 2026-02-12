@@ -22,6 +22,7 @@
 
 #include <map>
 #include <string>
+#include <random>
 
 #include <opencv2/opencv.hpp>
 
@@ -468,7 +469,7 @@ namespace cvl {
       
       lowered.reserve(value.size());
       
-      for (unsigned char ch : value) {
+      for(unsigned char ch : value) {
         lowered.push_back(static_cast<char>(std::tolower(ch)));
       }
       
@@ -478,7 +479,7 @@ namespace cvl {
     
   }; /* class glColors */
 
-  std::map<std::string, glm::vec4> cvl::_colors = std::map<std::string, cv::Vec3b>();
+  std::map<std::string, cv::Vec3b> cvl::colors::_colors = std::map<std::string, cv::Vec3b>();
 
 } /* namespace cvl */
 
