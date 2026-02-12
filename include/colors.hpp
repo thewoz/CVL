@@ -39,7 +39,6 @@ namespace cvl {
     
     colors() { }
     
-    
     // mappa che mi contiene i colori
     static std::map<std::string, cv::Vec3b> _colors;
     
@@ -49,7 +48,7 @@ namespace cvl {
     // get()
     //****************************************************************************//
     // https://htmlcolorcodes.com/color-names/
-        void loadPalette() {
+    void loadPalette() {
       
       _colors.clear();
       _colors["aliceblue"] = aliceblue;
@@ -307,26 +306,26 @@ namespace cvl {
     // https://htmlcolorcodes.com/color-names/
     //NOTE: i colori sono in BGR e non RGB
     inline static const cv::Vec3b aliceblue = cv::Vec3b(255, 248, 240);
-    inline static const cv::Vec3b antiquewhite(215, 235, 250);
-    inline static const cv::Vec3b aqua(255, 255, 0);
-    inline static const cv::Vec3b aquamarine(212, 255, 127);
-    inline static const cv::Vec3b azure(255, 255, 240);
-    inline static const cv::Vec3b beige(220, 245, 245);
-    inline static const cv::Vec3b bisque(196, 228, 255);
-    inline static const cv::Vec3b black(0, 0, 0);
-    inline static const cv::Vec3b blanchedalmond(205, 235, 255);
-    inline static const cv::Vec3b blue(255, 0, 0);
-    inline static const cv::Vec3b blueviolet(226, 43, 138);
-    inline static const cv::Vec3b brown(42, 42, 165);
-    inline static const cv::Vec3b burlywood(135, 184, 222);
-    inline static const cv::Vec3b cadetblue(160, 158, 95);
-    inline static const cv::Vec3b chartreuse(0, 255, 127);
-    inline static const cv::Vec3b chocolate(30, 105, 210);
-    inline static const cv::Vec3b coral(80, 127, 255);
-    inline static const cv::Vec3b cornflowerblue(237, 149, 100);
-    inline static const cv::Vec3b cornsilk(220, 248, 255);
-    inline static const cv::Vec3b crimson(60, 20, 220);
-    inline static const cv::Vec3b cyan(255, 255, 0);
+    inline static const cv::Vec3b antiquewhite = cv::Vec3b(215, 235, 250);
+    inline static const cv::Vec3b aqua = cv::Vec3b(255, 255, 0);
+    inline static const cv::Vec3b aquamarine = cv::Vec3b(212, 255, 127);
+    inline static const cv::Vec3b azure = cv::Vec3b(255, 255, 240);
+    inline static const cv::Vec3b beige = cv::Vec3b(220, 245, 245);
+    inline static const cv::Vec3b bisque = cv::Vec3b(196, 228, 255);
+    inline static const cv::Vec3b black = cv::Vec3b(0, 0, 0);
+    inline static const cv::Vec3b blanchedalmond = cv::Vec3b(205, 235, 255);
+    inline static const cv::Vec3b blue = cv::Vec3b(255, 0, 0);
+    inline static const cv::Vec3b blueviolet = cv::Vec3b(226, 43, 138);
+    inline static const cv::Vec3b brown = cv::Vec3b(42, 42, 165);
+    inline static const cv::Vec3b burlywood = cv::Vec3b(135, 184, 222);
+    inline static const cv::Vec3b cadetblue = cv::Vec3b(160, 158, 95);
+    inline static const cv::Vec3b chartreuse = cv::Vec3b(0, 255, 127);
+    inline static const cv::Vec3b chocolate = cv::Vec3b(30, 105, 210);
+    inline static const cv::Vec3b coral = cv::Vec3b(80, 127, 255);
+    inline static const cv::Vec3b cornflowerblue = cv::Vec3b(237, 149, 100);
+    inline static const cv::Vec3b cornsilk = cv::Vec3b(220, 248, 255);
+    inline static const cv::Vec3b crimson = cv::Vec3b(60, 20, 220);
+    inline static const cv::Vec3b cyan = cv::Vec3b(255, 255, 0);
     inline static const cv::Vec3b darkblue(139, 0, 0);
     inline static const cv::Vec3b darkcyan(139, 139, 0);
     inline static const cv::Vec3b darkgoldenrod(11, 134, 184);
@@ -454,8 +453,8 @@ namespace cvl {
     inline static const cv::Vec3b yellow(0, 255, 255);
     inline static const cv::Vec3b yellowgreen(50, 205, 154);
     
-    inline static const cv::Scalar Zero(0, 0, 0);
-    inline static const cv::Scalar One(255, 255, 255);
+    inline static const cv::Scalar Zero = cv::Scalar(0, 0, 0);
+    inline static const cv::Scalar One = cv::Scalar(255, 255, 255);
     
   private:
     
