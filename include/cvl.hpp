@@ -21,7 +21,7 @@
 #ifndef _H_CVL_H_
 #define _H_CVL_H_
 
-#define CVL_LIB_VERSION "Cvl Lib v3.2.2"
+#define CVL_LIB_VERSION "Cvl Lib v3.2.3"
 
 #include <cvl/colors.hpp>
 #include <cvl/opencv.hpp>
