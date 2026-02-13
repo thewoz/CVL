@@ -20,11 +20,16 @@
 #ifndef _H_CVL_COLORS_H_
 #define _H_CVL_COLORS_H_
 
+#include <cstdlib>
+#include <cstdio>
+
 #include <map>
 #include <string>
 #include <random>
 
 #include <opencv2/opencv.hpp>
+
+#include <mpl/stdlib.hpp>
 
 //*****************************************************************************
 // namespace cvl
