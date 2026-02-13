@@ -211,7 +211,7 @@ namespace cvl {
     // get()
     //****************************************************************************//
     // https://htmlcolorcodes.com/color-names/
-    void loadPalette() {
+    static void loadPalette() {
       
       _colors.clear();
       _colors["aliceblue"] = aliceblue;
@@ -387,19 +387,22 @@ namespace cvl {
       
     }
     
+    static std::string RGBtoHex(const cv::Vec3b & color) { return RGBtoHex(color[0], color[1], color[2]); }
+
+    
     //*****************************************************************************/
     // BGRtoHex()
     // Function to convert the BGR code to Hex color code
     // Convert BGR values to a hex color string (e.g., #RRGGBB).
     //*****************************************************************************/
-    static std::string BGRtoHex(const cv::Vec3b & color) {
+    static std::string BGRtoHex(int B, int G, int R) {
       
-      if((color[0] >= 0 && color[0] <= 255) && (color[1] >= 0 && color[1] <= 255) && (color[2] >= 0 && color[2] <= 255)) {
-     
+      if((B >= 0 && B <= 255) && (G >= 0 && G <= 255) && (R >= 0 && R <= 255)) {
+
         std::string hexCode = "#";
-                    hexCode += std::decToHex(color[2]);
-                    hexCode += std::decToHex(color[1]);
-                    hexCode += std::decToHex(color[0]);
+                    hexCode += std::decToHex(R);
+                    hexCode += std::decToHex(G);
+                    hexCode += std::decToHex(B);
      
         return hexCode;
         
@@ -409,6 +412,8 @@ namespace cvl {
       }
       
     }
+    
+    static std::string BGRtoHex(const cv::Vec3b & color) { return BGRtoHex(color[0], color[1], color[2]); }
     
     //****************************************************************************//
     // get()
@@ -435,9 +440,9 @@ namespace cvl {
     }
     
     //****************************************************************************//
-    // getHex()
+    // getRGBHex()
     //****************************************************************************//
-    static const std::string getHex(const std::string & str, bool create = false) { return BGRtoHex(get(str,create)); }
+    static const std::string getRGBHex(const std::string & str, bool create = false) { return RGBtoHex(get(str,create)); }
     
 
     //****************************************************************************//
