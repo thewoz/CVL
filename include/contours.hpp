@@ -27,6 +27,7 @@
 
 #include <opencv2/opencv.hpp>
 
+#include <mpl/log.hpp>
 
 //*****************************************************************************/
 // namespace

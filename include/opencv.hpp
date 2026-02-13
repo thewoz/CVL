@@ -31,7 +31,6 @@
 #include <mpl/stdio.hpp>
 #include <mpl/stdlib.hpp>
 
-
 namespace cvl {
   
 //  template<typename _Tp1, typename _Tp2>

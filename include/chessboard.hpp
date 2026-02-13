@@ -17,7 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef _H_CVL_CHESSBOARD_H_
 #define _H_CVL_CHESSBOARD_H_
 
@@ -30,8 +29,6 @@
 
 #include <mpl/stdio.hpp>
 #include <mpl/loader.hpp>
-
-#include <cvl/cvl.hpp>
 
 //****************************************************************************/
 // cvl::chessboard

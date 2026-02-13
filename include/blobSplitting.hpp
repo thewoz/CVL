@@ -29,9 +29,6 @@
 
 #include <opencv2/opencv.hpp>
 
-#include "blob.hpp"
-#include "labeling.hpp"
-
 //#define _DEBUG_CVL_BLOBSPLITTING_
 
 //*****************************************************************************

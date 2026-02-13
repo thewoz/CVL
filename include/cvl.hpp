@@ -21,30 +21,62 @@
 #ifndef _H_CVL_H_
 #define _H_CVL_H_
 
-#define CVL_LIB_VERSION "Cvl Lib v3.2.3"
+#define CVL_LIB_VERSION "Cvl Lib v3.2.4"
 
-#include <cvl/colors.hpp>
-#include <cvl/opencv.hpp>
-#include <cvl/background.hpp>
-#include <cvl/baricenter.hpp>
-#include <cvl/blob.hpp>
-#include <cvl/blobs.hpp>
-#include <cvl/blobSplitting.hpp>
-#include <cvl/chessboard.hpp>
-#include <cvl/corners.hpp>
-#include <cvl/clustering.hpp>
-#include <cvl/contours.hpp>
-#include <cvl/deflickering.hpp>
-#include <cvl/denoising.hpp>
-#include <cvl/enhance.hpp>
-#include <cvl/features.hpp>
-#include <cvl/labeling.hpp>
-#include <cvl/subpixel.hpp>
-#include <cvl/targetMass.hpp>
-#include <cvl/threshold.hpp>
-#include <cvl/window.hpp>
-#include <cvl/pose.hpp>
-#include <cvl/draw.hpp>
-#include <cvl/convert.hpp>
+#ifdef _DEBUG_CVL_LIBS_
+
+  #include "colors.hpp"
+  #include "opencv.hpp"
+  #include "background.hpp"
+  #include "baricenter.hpp"
+  #include "contours.hpp"
+  #include "blob.hpp"
+  #include "blobs.hpp"
+  #include "labeling.hpp"
+  #include "blobSplitting.hpp"
+  #include "chessboard.hpp"
+  #include "corners.hpp"
+  #include "clustering.hpp"
+  #include "deflickering.hpp"
+  #include "denoising.hpp"
+  #include "enhance.hpp"
+  #include "features.hpp"
+  #include "subPixNew.hpp"
+  #include "subpixelNew.hpp"
+  #include "targetMass.hpp"
+  #include "threshold.hpp"
+  #include "window.hpp"
+  #include "pose.hpp"
+  #include "draw.hpp"
+  #include "convert.hpp"
+
+#else
+
+  #include <cvl/colors.hpp>
+  #include <cvl/opencv.hpp>
+  #include <cvl/background.hpp>
+  #include <cvl/baricenter.hpp>
+  #include <cvl/contours.hpp>
+  #include <cvl/blob.hpp>
+  #include <cvl/blobs.hpp>
+  #include <cvl/labeling.hpp>
+  #include <cvl/blobSplitting.hpp>
+  #include <cvl/chessboard.hpp>
+  #include <cvl/corners.hpp>
+  #include <cvl/clustering.hpp>
+  #include <cvl/deflickering.hpp>
+  #include <cvl/denoising.hpp>
+  #include <cvl/enhance.hpp>
+  #include <cvl/features.hpp>
+  #include <cvl/subpixelNew.hpp>
+  #include <cvl/subpixel.hpp>
+  #include <cvl/targetMass.hpp>
+  #include <cvl/threshold.hpp>
+  #include <cvl/window.hpp>
+  #include <cvl/pose.hpp>
+  #include <cvl/draw.hpp>
+  #include <cvl/convert.hpp>
+
+#endif
 
 #endif /* _H_CVL_H_ */

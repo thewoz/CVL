@@ -27,10 +27,6 @@
 
 #include <opencv2/opencv.hpp>
 
-#include "blob.hpp"
-#include "labeling.hpp"
-#include "contours.hpp"
-
 //*****************************************************************************/
 // namespace cvl::targetmass
 //*****************************************************************************/

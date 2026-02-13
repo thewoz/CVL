@@ -17,7 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #ifndef _H_asDeflickering_H_
 #define _H_asDeflickering_H_
 
@@ -27,7 +26,6 @@
 #include <vector>
 
 #include <opencv2/opencv.hpp>
-
 
 //***************************************************************************************************//
 // asDeflickering

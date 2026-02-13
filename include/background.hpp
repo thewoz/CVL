@@ -36,7 +36,7 @@ namespace cvl::background {
   //*****************************************************************************/
   // lightest
   //*****************************************************************************/
-  /// Build a background image taking the maximum value for each pixel.
+  // Build a background image taking the maximum value for each pixel.
   void lightest(const std::vector<cv::Mat> & src, cv::Mat & dst) {
     
     // Metto tutti i pixel a 0
@@ -50,7 +50,7 @@ namespace cvl::background {
   //*****************************************************************************/
   // darkest
   //*****************************************************************************/
-  /// Build a background image taking the minimum value for each pixel.
+  // Build a background image taking the minimum value for each pixel.
   void darkest(const std::vector<cv::Mat> & src, cv::Mat & dst) {
 
     // Metto tutti i pixel a 255
@@ -64,7 +64,7 @@ namespace cvl::background {
   //*****************************************************************************/
   // median
   //*****************************************************************************/
-  /// Build a background image taking the per-pixel median.
+  // Build a background image taking the per-pixel median.
   void median(const std::vector<cv::Mat> & src, cv::Mat & dst) {
     
     int histo[256];
@@ -106,7 +106,7 @@ namespace cvl::background {
   //*****************************************************************************/
   // moda
   //*****************************************************************************/
-  /// Build a background image taking the per-pixel mode (most frequent value).
+  // Build a background image taking the per-pixel mode (most frequent value).
   void moda(const std::vector<cv::Mat> & src, cv::Mat & dst) {
     
     int histo[256];
@@ -150,7 +150,7 @@ namespace cvl::background {
   //*****************************************************************************/
   // avg
   //*****************************************************************************/
-  /// Build a background image taking the per-pixel average.
+  // Build a background image taking the per-pixel average.
   void avg(const std::vector<cv::Mat> & src, cv::Mat & dst) {
     
     cv::Mat avgTemp = cv::Mat::zeros(src[0].size(), CV_32F);
@@ -173,7 +173,7 @@ namespace cvl::background {
   //*****************************************************************************/
   // bucket
   //*****************************************************************************/
-  /// Build a background image by masking pixels close to the median (bucket mode).
+  // Build a background image by masking pixels close to the median (bucket mode).
   void bucket(const std::vector<cv::Mat> & src, cv::Mat & dst){
     
     int delta = 10;
@@ -202,7 +202,7 @@ namespace cvl::background {
   //*****************************************************************************/
   // fixed
   //*****************************************************************************/
-  /// Copy pixels above a threshold from the source to the destination.
+  // Copy pixels above a threshold from the source to the destination.
   void fixed(const cv::Mat & src, cv::Mat & dst, uchar value) {
      
     for(int y=0; y<src.rows; ++y) {
@@ -216,7 +216,7 @@ namespace cvl::background {
   //*****************************************************************************/
   // get
   //*****************************************************************************/
-  /// Dispatch background evaluation by name (LIGHTEST, DARKEST, MEDIAN, MODA, AVG, FIXED, NONE).
+  // Dispatch background evaluation by name (LIGHTEST, DARKEST, MEDIAN, MODA, AVG, FIXED, NONE).
   void get(const std::vector<cv::Mat> & src, cv::Mat & dst, const std::string & algo, uchar value = 0) {
     
     int index = src.size() * 0.5;
