@@ -44,7 +44,7 @@ namespace cvl::clustering {
   /// Cluster blobs using nearest-neighbor distances (median-based threshold).
   void NN(const cvl::blobs_t & blobs, std::vector<cvl::blobs_t> & clusters, double factor = 1) {
     
-    std::vector<std::vector<size_t>> clustersIndex = mpl::clustering::byMedianFirstNNDistance(blobs, factor, distanceOp);
+    std::vector<std::vector<size_t>> clustersIndex = mpl::clustering::connectedComponentsMedianFirstNN(blobs, factor, distanceOp);
     
     clusters.clear();
     
