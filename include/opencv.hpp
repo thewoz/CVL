@@ -259,7 +259,7 @@ namespace cvl {
     //*****************************************************************************/
     // drawDigit
     //*****************************************************************************/
-    /// Draw a 5x3 digit glyph at the given position.
+    // Draw a 5x3 digit glyph at the given position.
     void drawDigit(cv::Mat & dst, int number, const cv::Point & pos, const cv::Vec3b & color) {
 
       const digit_t & digit = *digits[number];
@@ -294,7 +294,7 @@ namespace cvl {
   //*****************************************************************************/
   // drawString
   //*****************************************************************************/
-  /// Draw a numeric string using the built-in 5x3 glyphs.
+  // Draw a numeric string using the built-in 5x3 glyphs.
   void drawString(cv::Mat & dst, const char * str, cv::Point pos, const cv::Vec3b & color){
     
     if(dst.channels() != 3){
@@ -319,7 +319,7 @@ namespace cvl {
   //*****************************************************************************/
   // drawNumber
   //*****************************************************************************/
-  /// Draw an integer number using built-in digit glyphs.
+  // Draw an integer number using built-in digit glyphs.
   void drawNumber(cv::Mat & dst, int number, const cv::Point & pos, const cv::Vec3b & color){
     
     char str[PATH_MAX];
@@ -333,7 +333,7 @@ namespace cvl {
   //*****************************************************************************/
   // drawParabola
   //*****************************************************************************/
-  /// Draw a parabola defined by quadratic coefficients.
+  // Draw a parabola defined by quadratic coefficients.
   void drawParabola(cv::Mat & dst, cv::Vec3d & coeffs, const cv::Vec3b & color, const cv::Point2d & offset = cv::Point2d(0,0)) {
     
      for(int x=0; x<dst.cols; ++x) {
@@ -355,7 +355,7 @@ namespace cvl {
   //*****************************************************************************/
   // cross
   //*****************************************************************************/
-  /// Draw a small cross marker.
+  // Draw a small cross marker.
   void cross(cv::Mat & dst, const cv::Point & pos, const cv::Vec3b & color) {
     cv::circle(dst, pos, 1, color);
   }
@@ -363,7 +363,7 @@ namespace cvl {
   //*****************************************************************************/
   // minEnclosureRoi
   //*****************************************************************************/
-  /// Compute the minimal ROI enclosing two rectangles.
+  // Compute the minimal ROI enclosing two rectangles.
   cv::Rect minEnclosureRoi(const cv::Rect & roi1, const cv::Rect & roi2) {
     
     cv::Rect roi;
@@ -384,7 +384,7 @@ namespace cvl {
   //*****************************************************************************/
   // getRandomColor
   //*****************************************************************************/
-  /// Generate a random BGR color optionally above a brightness threshold.
+  // Generate a random BGR color optionally above a brightness threshold.
   cv::Vec3b getRandomColor(double minBright = -1) {
 
     if(minBright != -1 && minBright < 0) minBright = 0;
@@ -414,7 +414,7 @@ namespace cvl {
   // save
   //*****************************************************************************/
   // Save an image to disk, expanding paths and validating the write.
-  bool save(cv::Mat & image, std::string str){
+  bool save(cv::Mat & image, std::string str) {
     
     mpl::io::expandPath(str);
 
@@ -428,12 +428,43 @@ namespace cvl {
     return true;
     
   }
+  
+  //*****************************************************************************/
+  // resize()
+  //*****************************************************************************/
+  // INTER_AREA  downscale  meno aliasing, default per <100%
+  // INTER_LINEAR  upscale veloce  buon compromesso qualità/velocità
+  // INTER_CUBIC  upscale qualità  più nitido, 4× più lento di LINEAR
+  // INTER_LANCZOS4  upscale max qualità  il migliore, usalo per immagini scientifiche
+  // INTER_NEAREST  pixel art / debug  velocissimo, nessun blending
+  cv::Mat resize(const cv::Mat & src, double percent, int interp = -1) {
     
+    if(src.empty())
+      throw std::invalid_argument("resizeByPercent: immagine vuota");
+    if(percent <= 0.0)
+      throw std::invalid_argument("resizeByPercent: percentuale deve essere > 0");
+
+    double scale = percent / 100.0;
+
+    // Scelta automatica interpolazione se non specificata
+    if(interp == -1) {
+      interp = (scale < 1.0)
+              ? cv::INTER_AREA    // downscale: riduce aliasing
+              : cv::INTER_LINEAR; // upscale:   buon compromesso
+    }
+
+    cv::Mat dst;
+    cv::resize(src, dst, cv::Size(), scale, scale, interp);
+    
+    return dst;
+    
+  }
+
   //*****************************************************************************/
   // open
   //*****************************************************************************/
   // Open an image from disk with the requested imread mode.
-  cv::Mat open(std::string str, int mode = cv::IMREAD_UNCHANGED){
+  cv::Mat open(std::string str, int mode = cv::IMREAD_UNCHANGED) {
     
     mpl::io::expandPath(str);
     
@@ -451,7 +482,19 @@ namespace cvl {
   //*****************************************************************************/
   // open
   //*****************************************************************************/
-  /// Open a 16-bit single-channel image from disk.
+  // Open an image from disk with the requested imread mode.
+  cv::Mat open(std::string str, double percent, int mode = cv::IMREAD_UNCHANGED, int interp = -1) {
+    
+    cv::Mat image = open(str, mode);
+    
+    return resize(image, percent, interp);
+    
+  }
+
+  //*****************************************************************************/
+  // open
+  //*****************************************************************************/
+  // Open a 16-bit single-channel image from disk.
   cv::Mat open16bitC1(std::string str){
     
     mpl::io::expandPath(str);
@@ -573,46 +616,46 @@ namespace cvl {
     
   }
 
-//****************************************************************************/
-// histogram16bit
-//****************************************************************************/
-void histogram16bit(const cv::Mat & src, cv::Mat & histogram) {
-  
-  if(src.empty() || src.type() != CV_16UC1) {
-    fprintf(stderr, "error in cvl::histogram16bit(): the input image must be a non empty CV_16UC1 image\n");
-    abort();
-  }
+  //****************************************************************************/
+  // histogram16bit
+  //****************************************************************************/
+  void histogram16bit(const cv::Mat & src, cv::Mat & histogram) {
     
-  int histSize = 65536;
-  float range[] = { 0, 65536 };
-  const float * histRange = { range };
-  
-  cv::calcHist(&src, 1, 0, cv::Mat(), histogram, 1, &histSize, &histRange);
+    if(src.empty() || src.type() != CV_16UC1) {
+      fprintf(stderr, "error in cvl::histogram16bit(): the input image must be a non empty CV_16UC1 image\n");
+      abort();
+    }
+      
+    int histSize = 65536;
+    float range[] = { 0, 65536 };
+    const float * histRange = { range };
+    
+    cv::calcHist(&src, 1, 0, cv::Mat(), histogram, 1, &histSize, &histRange);
 
-}
-
-//****************************************************************************/
-// histogram16bit
-//****************************************************************************/
-template <typename T>
-void histogram16bit(const cv::Mat & src, cv::Mat & histogram, T & min, T & max) {
-
-  histogram16bit(src, histogram);
-  
-  min = 0;
-  max = 65535;
-
-  for(int i=0; i<histogram.rows; ++i) {
-    min = i;
-    if(histogram.at<float>(i) != 0) break;
   }
 
-  for(int i=histogram.rows-1; i>=0; --i) {
-    max = i;
-    if(histogram.at<float>(i) != 0) break;
+  //****************************************************************************/
+  // histogram16bit
+  //****************************************************************************/
+  template <typename T>
+  void histogram16bit(const cv::Mat & src, cv::Mat & histogram, T & min, T & max) {
+
+    histogram16bit(src, histogram);
+    
+    min = 0;
+    max = 65535;
+
+    for(int i=0; i<histogram.rows; ++i) {
+      min = i;
+      if(histogram.at<float>(i) != 0) break;
+    }
+
+    for(int i=histogram.rows-1; i>=0; --i) {
+      max = i;
+      if(histogram.at<float>(i) != 0) break;
+    }
+    
   }
-  
-}
 
 
 //// 2D cross product of OA and OB vectors, i.e. z-component of their 3D cross product.
