@@ -267,7 +267,7 @@ namespace cvl::threshold {
       dst = cv::Mat(src.size(), CV_8UC1);
     }
     
-    double value = cv::threshold(src, dst, 128, 255, cv::THRESH_OTSU | cv::THRESH_BINARY) + 1;
+    double value = cv::threshold(src, dst, 0, 255, cv::THRESH_OTSU | cv::THRESH_BINARY) + 1;
     
     if(!mask.empty())
       cv::bitwise_and(dst, mask, dst);
