@@ -446,7 +446,7 @@ namespace cvl {
 
     double scale = percent / 100.0;
 
-    // Scelta automatica interpolazione se non specificata
+    // Scelta automatic interpolazione se non specificata
     if(interp == -1) {
       interp = (scale < 1.0)
               ? cv::INTER_AREA    // downscale: riduce aliasing
