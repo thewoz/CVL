@@ -291,6 +291,146 @@ namespace cvl {
   } // namespace util
   
   
+//*****************************************************************************
+// drawRotatedText()
+//*****************************************************************************
+void drawRotatedText(cv::Mat & image, const std::string & text, const cv::Point & center, double angleDeg, double fontScale, const cv::Scalar & color, int thickness = 2) {
+    
+  int baseline = 0;
+    
+  cv::Size textSize = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, fontScale, thickness, &baseline);
+
+  int margin = 20;
+  int w = textSize.width + 2 * margin;
+  int h = textSize.height + baseline + 2 * margin;
+
+  // Canvas BGRA completamente trasparente
+  cv::Mat textImg(h, w, CV_8UC4, cv::Scalar(0, 0, 0, 0));
+  cv::Mat alpha(h, w, CV_8UC1, cv::Scalar(0));
+
+  cv::Point org(margin, margin + textSize.height);
+
+  // Disegno il testo nella maschera alpha
+  cv::putText(alpha, text, org, cv::FONT_HERSHEY_SIMPLEX, fontScale, cv::Scalar(255), thickness, cv::LINE_AA);
+
+  // Copio il colore del testo e il suo alpha nel canvas BGRA
+  for(int y = 0; y < h; ++y) {
+    
+    for(int x = 0; x < w; ++x) {
+      
+      uchar a = alpha.at<uchar>(y, x);
+      
+      cv::Vec4b& px = textImg.at<cv::Vec4b>(y, x);
+
+      px[0] = static_cast<uchar>(color[0]); // B
+      px[1] = static_cast<uchar>(color[1]); // G
+      px[2] = static_cast<uchar>(color[2]); // R
+      px[3] = a;                            // A
+      
+    }
+    
+  }
+
+  // Inverto il segno per avere l'inclinazione visiva corretta in coordinate immagine
+  double correctedAngle = -angleDeg;
+
+  cv::Point2f rotCenter(textImg.cols / 2.0f, textImg.rows / 2.0f);
+  cv::Mat rotMat = cv::getRotationMatrix2D(rotCenter, correctedAngle, 1.0);
+
+  cv::Rect2f bbox = cv::RotatedRect(cv::Point2f(), textImg.size(), correctedAngle).boundingRect2f();
+
+  rotMat.at<double>(0, 2) += bbox.width / 2.0 - textImg.cols / 2.0;
+  rotMat.at<double>(1, 2) += bbox.height / 2.0 - textImg.rows / 2.0;
+
+  cv::Mat rotated;
+  cv::warpAffine(textImg, rotated, rotMat,  bbox.size(), cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar(0,0,0,0));
+
+  int x0 = center.x - rotated.cols / 2;
+  int y0 = center.y - rotated.rows / 2;
+
+  // Alpha blending sul target BGR
+  for(int y=0; y<rotated.rows; ++y) {
+    
+    int dstY = y0 + y;
+    
+    if(dstY < 0 || dstY >= image.rows)
+      continue;
+
+    for(int x = 0; x < rotated.cols; ++x) {
+      
+      int dstX = x0 + x;
+      if(dstX < 0 || dstX >= image.cols)
+        continue;
+
+      const cv::Vec4b& src = rotated.at<cv::Vec4b>(y, x);
+      uchar alphaVal = src[3];
+      if(alphaVal == 0)
+        continue;
+
+      double a = alphaVal / 255.0;
+      cv::Vec3b& dst = image.at<cv::Vec3b>(dstY, dstX);
+
+      dst[0] = cv::saturate_cast<uchar>(src[0] * a + dst[0] * (1.0 - a));
+      dst[1] = cv::saturate_cast<uchar>(src[1] * a + dst[1] * (1.0 - a));
+      dst[2] = cv::saturate_cast<uchar>(src[2] * a + dst[2] * (1.0 - a));
+      
+    }
+    
+  }
+  
+}
+
+//*****************************************************************************
+// drawDistanceMarker()
+//*****************************************************************************
+void drawDistanceMarker(cv::Mat & image, const cv::Point & p1, const cv::Point & p2, const std::string & label, const cv::Scalar & color, int thickness = 2, int endMarkSize = 10, int textOffset = 20, double fontScale = 0.8) {
+  
+  // Linea principale
+  cv::line(image, p1, p2, color, thickness, cv::LINE_AA);
+
+  // Direzione della linea
+  cv::Point2f dir((p2.x - p1.x), (p2.y - p1.y));
+
+  float len = std::sqrt(dir.x * dir.x + dir.y * dir.y);
+  if(len < 1.0f) return;
+
+  dir.x /= len;
+  dir.y /= len;
+
+  // Perpendicolare
+  cv::Point2f perp(-dir.y, dir.x);
+
+   // Tacche alle estremità
+  cv::Point p1a(cvRound(p1.x + perp.x * endMarkSize), cvRound(p1.y + perp.y * endMarkSize));
+  cv::Point p1b(cvRound(p1.x - perp.x * endMarkSize), cvRound(p1.y - perp.y * endMarkSize));
+
+  cv::Point p2a(cvRound(p2.x + perp.x * endMarkSize), cvRound(p2.y + perp.y * endMarkSize));
+  cv::Point p2b(cvRound(p2.x - perp.x * endMarkSize), cvRound(p2.y - perp.y * endMarkSize));
+
+  cv::line(image, p1a, p1b, color, thickness, cv::LINE_AA);
+  cv::line(image, p2a, p2b, color, thickness, cv::LINE_AA);
+
+  // Punto medio
+  cv::Point mid((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
+
+  // Posizione del testo, spostata in direzione perpendicolare
+  cv::Point textCenter(cvRound(mid.x + perp.x * textOffset), cvRound(mid.y + perp.y * textOffset));
+
+  // Angolo della linea
+  double angleRad = std::atan2((p2.y - p1.y), (p2.x - p1.x));
+  
+  double angleDeg = angleRad * 180.0 / CV_PI;
+
+  // Mantiene il testo leggibile
+       if(angleDeg >  90.0) angleDeg -= 180.0;
+  else if(angleDeg < -90.0) angleDeg += 180.0;
+
+  drawRotatedText(image, label, textCenter, angleDeg, fontScale, color, thickness);
+  
+}
+
+
+
   //*****************************************************************************/
   // drawString
   //*****************************************************************************/
