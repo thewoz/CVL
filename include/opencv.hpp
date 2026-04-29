@@ -381,10 +381,58 @@ void drawRotatedText(cv::Mat & image, const std::string & text, const cv::Point 
 }
 
 //*****************************************************************************
+// shrinkLine()
+//*****************************************************************************
+void shrinkLine(cv::Point & p1, cv::Point & p2, int cutFromP1, int cutFromP2) {
+    
+  cv::Point2d dir = p2 - p1;
+
+  double length = std::sqrt(dir.x * dir.x + dir.y * dir.y);
+
+  if(length <= 1e-9) {
+    fprintf(stderr, "shrinkLine() warning: line too short\n");
+    return;
+  }
+  
+  dir.x /= length;
+  dir.y /= length;
+
+  // Evita di accorciare più della lunghezza totale
+  double totalCut = cutFromP1 + cutFromP2;
+
+  if(totalCut >= length) {
+    fprintf(stderr, "shrinkLine() warning: cut too big\n");
+    return;
+  }
+
+  p1.x = p1.x + dir.x * cutFromP1;
+  p1.y = p1.y + dir.y * cutFromP1;
+
+  p2.x = p2.x - dir.x * cutFromP2;
+  p2.y = p2.y - dir.y * cutFromP2;
+
+}
+
+void shrinkLine(cv::Point & p1, cv::Point & p2, int cut) {
+  shrinkLine(p1, p2, cut, cut);
+}
+
+void scaleLine(cv::Point & p1, cv::Point & p2, double scale) {
+  cv::Point2d center = (p1 + p2) * 0.5;
+  p1.x = center.x + (p1.x - center.x) * scale;
+  p1.y = center.y + (p1.y - center.y) * scale;
+  p2.x = center.x + (p2.x - center.x) * scale;
+  p2.y = center.y + (p2.y - center.y) * scale;
+}
+
+
+//*****************************************************************************
 // drawDistanceMarker()
 //*****************************************************************************
-void drawDistanceMarker(cv::Mat & image, const cv::Point & p1, const cv::Point & p2, const std::string & label, const cv::Scalar & color, int thickness = 2, int endMarkSize = 10, int textOffset = 20, double fontScale = 0.8) {
+void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::string & label, const cv::Scalar & color, int thickness = 2, int shrink = 0, int endMarkSize = 10, int textOffset = 20, double fontScale = 0.8) {
   
+  if(shrink != 0) shrinkLine(p1, p2, shrink);
+      
   // Linea principale
   cv::line(image, p1, p2, color, thickness, cv::LINE_AA);
 
