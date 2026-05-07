@@ -36,10 +36,32 @@ namespace cvl::contours {
   
   enum { EXTERNAL, INTERNAL };
   
+  //*****************************************************************************/
+  // scale
+  //*****************************************************************************/
+  void scale(std::vector<cv::Point> & contour, double scaleFactor) {
+    
+    std::vector<cv::Point> scaledContour;
+
+    if(contour.empty()) return;
+
+    cv::Moments m = cv::moments(contour);
+
+    if(m.m00 == 0.0) return;
+
+    cv::Point2d center((m.m10 / m.m00), (m.m01 / m.m00));
+
+    for(cv::Point & p : contour) {
+      p.x = cvRound(center.x + scaleFactor * (p.x - center.x));
+      p.y = cvRound(center.y + scaleFactor * (p.y - center.y));
+    }
+    
+  }
+
  	//*****************************************************************************/
   // get
   //*****************************************************************************/
-  /// Extract external or internal contour pixels from a binary image.
+  // Extract external or internal contour pixels from a binary image.
   void get(const cv::Mat & image, bool mode, std::vector<cv::Point> & contours) {
     
     if(image.channels() != 1)
