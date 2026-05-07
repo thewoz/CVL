@@ -476,7 +476,7 @@ void scaleLine(cv::Point & p1, cv::Point & p2, double scale) {
 //*****************************************************************************
 // drawDistanceMarker()
 //*****************************************************************************
-void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::string & label, const cv::Scalar & color, int thickness = 2, int shrink = 0, int endMarkSize = 10, int textOffset = 20, double fontScale = 0.8) {
+void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::string & label, const cv::Scalar & color, int thickness = 2, int textOffset = 20, int shrink = 0, double fontScale = 0.8, int endMarkSize = 10) {
   
   if(shrink != 0) shrinkLine(p1, p2, shrink);
       
