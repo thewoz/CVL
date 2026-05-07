@@ -31,6 +31,53 @@
 #include <mpl/stdio.hpp>
 #include <mpl/stdlib.hpp>
 
+
+// cv::Point2d += cv::Point
+inline cv::Point2d& operator+=(cv::Point2d& lhs, const cv::Point& rhs)
+{
+    lhs.x += static_cast<double>(rhs.x);
+    lhs.y += static_cast<double>(rhs.y);
+    return lhs;
+}
+
+// cv::Point2d -= cv::Point
+inline cv::Point2d& operator-=(cv::Point2d& lhs, const cv::Point& rhs)
+{
+    lhs.x -= static_cast<double>(rhs.x);
+    lhs.y -= static_cast<double>(rhs.y);
+    return lhs;
+}
+
+// cv::Point2d + cv::Point
+inline cv::Point2d operator+(cv::Point2d lhs, const cv::Point& rhs)
+{
+    lhs += rhs;
+    return lhs;
+}
+
+// cv::Point + cv::Point2d
+inline cv::Point2d operator+(const cv::Point& lhs, cv::Point2d rhs)
+{
+    rhs += lhs;
+    return rhs;
+}
+
+// cv::Point2d - cv::Point
+inline cv::Point2d operator-(cv::Point2d lhs, const cv::Point& rhs)
+{
+    lhs -= rhs;
+    return lhs;
+}
+
+// cv::Point - cv::Point2d
+inline cv::Point2d operator-(const cv::Point& lhs, const cv::Point2d& rhs)
+{
+    return cv::Point2d(
+        static_cast<double>(lhs.x) - rhs.x,
+        static_cast<double>(lhs.y) - rhs.y
+    );
+}
+
 namespace cvl {
   
 //  template<typename _Tp1, typename _Tp2>
