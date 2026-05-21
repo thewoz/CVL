@@ -759,6 +759,25 @@ void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::
     
   }
 
+  //****************************************************************************//
+  // getTopRightPoint()
+  //****************************************************************************//
+  template <class T>
+  T getTopRightPoint(const std::vector<T> & points) {
+    
+    if(points.empty()) throw std::runtime_error("La lista dei punti è vuota");
+
+    T best = points[0];
+
+    for(const auto & p : points) {
+      if(p.y < best.y || (p.y == best.y && p.x > best.x))
+        best = p;
+    }
+
+    return best;
+    
+  }
+
   //*****************************************************************************/
   // open
   //*****************************************************************************/
