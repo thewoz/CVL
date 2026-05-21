@@ -21,7 +21,7 @@
 #ifndef _H_CVL_H_
 #define _H_CVL_H_
 
-#define CVL_LIB_VERSION "Cvl Lib v3.2.5"
+#define CVL_LIB_VERSION "Cvl Lib v3.2.6"
 
 #ifdef _DEBUG_CVL_LIBS_
 
