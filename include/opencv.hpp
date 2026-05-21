@@ -472,6 +472,14 @@ void scaleLine(cv::Point & p1, cv::Point & p2, double scale) {
   p2.y = center.y + (p2.y - center.y) * scale;
 }
 
+cv::Rect scaleRect(const cv::Rect & r, double factor) {
+    int newW = cvRound(r.width  * factor);
+    int newH = cvRound(r.height * factor);
+    int newX = r.x + (r.width  - newW) / 2;
+    int newY = r.y + (r.height - newH) / 2;
+    return cv::Rect(newX, newY, newW, newH);
+}
+
 
 //*****************************************************************************
 // drawDistanceMarker()
