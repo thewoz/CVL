@@ -1,7 +1,7 @@
 /*
  * GNU GENERAL PUBLIC LICENSE
  *
- * Copyright (C) 2019
+ * Copyright (C) 2021-2026
  * Created by Leonardo Parisi (leonardo.parisi[at]gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,10 +27,12 @@
 
 #include <opencv2/opencv.hpp>
 
+#include "utils.hpp"
+
 //***************************************************************************************************//
 // asDeflickering
 //***************************************************************************************************//
-/// Temporal deflickering utility operating on a sliding window of frames.
+// Temporal deflickering utility operating on a sliding window of frames.
 class asDeflickering {
 
 private:
@@ -42,65 +44,65 @@ private:
   bool inited;
   bool invert;
 
-  uint32_t deflickerMatrixSize;
+  int deflickerMatrixSize;
 
-  uint32_t halfDeflickerMatrixSize;
+  int halfDeflickerMatrixSize;
 
-  uint32_t deflickerTime;
+  int deflickerTime;
   
-  uint32_t halfDeflickerTime;
+  int halfDeflickerTime;
 
-  uint32_t deflickerWindows;
+  int deflickerWindows;
 
 public:
 
   //***************************************************************************************************//
   // asDeflickering
   //***************************************************************************************************//
-  /// Construct an uninitialized deflickering helper.
+  // Construct an uninitialized deflickering helper.
   asDeflickering() { inited = false; }
   
 
   //***************************************************************************************************//
   // init
   //***************************************************************************************************//
-  /// Initialize deflickering parameters, mask, and input image list.
-  void init(std::vector<cv::Mat> & images, uint32_t _deflickerWindows, uint32_t _deflickerTime, uint32_t _deflickerMatrixSize, std::string maskPath, bool _invert) {
+  // Initialize deflickering parameters, mask, and input image list.
+  void init(std::vector<cv::Mat> & images, int _deflickerWindows, int _deflickerTime, int _deflickerMatrixSize, std::string maskPath, bool _invert) {
 
-    for(uint32_t i=0; i<deflickerWindows; ++i)
-      imageList[i] = images[i].clone();
-        
     invert = _invert;
-    
-    if(maskPath.empty()){
-      
-      mpl::io::expandPath(maskPath);
 
-      mask = cvl::open(maskPath, cv::IMREAD_GRAYSCALE);
-      
-    } else { mask = cv::Mat(imageList[0].size(), CV_8UC1, cv::Scalar(255,255,255)); }
-    
     deflickerWindows = _deflickerWindows;
 
-    imageList.resize(deflickerWindows);
-  
     deflickerMatrixSize = _deflickerMatrixSize;
 
     if(deflickerMatrixSize % 2 == 0){
-      fprintf(stderr, "error the size of the matrix in deflickeing should be odd\n");
-      exit(EXIT_FAILURE);
+      cvl::log::error("asDeflickering::init() error: the deflicker matrix size must be odd\n");
     }
 
-    halfDeflickerMatrixSize= (uint32_t)(deflickerMatrixSize * 0.5);;
-  
+    halfDeflickerMatrixSize = (int)(deflickerMatrixSize * 0.5);
+
     deflickerTime = _deflickerTime;
 
     if(deflickerTime % 2 == 0 || deflickerTime > deflickerWindows){
-      fprintf(stderr, "the deflicker time should be odd and less of the deflicker window\n");
-      exit(EXIT_FAILURE);
+      cvl::log::error("asDeflickering::init() error: the deflicker time must be odd and smaller than the deflicker window\n");
     }
-  
-    halfDeflickerTime = (uint32_t)(deflickerTime * 0.5);
+
+    halfDeflickerTime = (int)(deflickerTime * 0.5);
+
+    // copy the input images into the working list
+    imageList.resize(deflickerWindows);
+
+    for(int i=0; i<deflickerWindows; ++i)
+      imageList[i] = images[i].clone();
+
+    // load the mask from file, or use an all-white mask when no path is given
+    if(!maskPath.empty()){
+
+      cvl::io::expandPath(maskPath);
+
+      mask = cvl::open(maskPath, cv::IMREAD_GRAYSCALE);
+
+    } else { mask = cv::Mat(imageList[0].size(), CV_8UC1, cv::Scalar(255)); }
 
     inited = true;
 
@@ -118,7 +120,7 @@ public:
 //      exit(EXIT_FAILURE);
 //    }
 //
-//    for(uint32_t i=0; i<deflickerWindows; ++i)
+//    for(int i=0; i<deflickerWindows; ++i)
 //      imageList[i] = images[i].clone();
 //
 //    deflicker(images);
@@ -138,7 +140,7 @@ public:
 //    }
 //
 //    /* shift the others */
-//    for(uint32_t j=1; j<deflickerWindows; ++j)
+//    for(int j=1; j<deflickerWindows; ++j)
 //      imageList[j-1] = imageList[j];
 //
 //    /* load the new one */
@@ -151,59 +153,58 @@ public:
   //***************************************************************************************************//
   // deflicker
   //***************************************************************************************************//
-  /// Apply deflickering to the provided images using the configured window.
+  // Apply deflickering to the provided images using the configured window.
   void deflicker(std::vector<cv::Mat> & images){
 
     if(!inited){
-      fprintf(stderr, "asDeflickering class must be initializaetd\n");
-      exit(EXIT_FAILURE);
+      cvl::log::error("asDeflickering::deflicker() error: the class must be initialized first\n");
     }
 
-    uint32_t xS, xE, yS, yE;
+    int rS, rE, cS, cE;
 
-    for(uint32_t h=0; h<mask.rows; ++h) {
+    for(int r=0; r<mask.rows; ++r) {
 
-	    for(uint32_t w=0; w<mask.cols; ++w) {
+	    for(int c=0; c<mask.cols; ++c) {
 
-	      if(mask.at<uchar>(w,h) != 0) {
+	      if(mask.at<uchar>(r,c) != 0) {
 
-          getCenteredROI(w, h, xS, xE, yS, yE);
+          getCenteredROI(r, c, rS, rE, cS, cE);
 
-          uint32_t index = 0;
+          int index = 0;
 
           do {
 
-            uint32_t from;
-            uint32_t to;
+            int from;
+            int to;
 
             getFromTo(index, from, to);
 
             double avg = 0;
 
-            for(uint32_t i=from; i<=to; ++i)
-              avg += getAvg(xS, xE, yS, yE, imageList[i]);
+            for(int i=from; i<=to; ++i)
+              avg += getAvg(rS, rE, cS, cE, imageList[i]);
 
             avg /= (double) deflickerTime;
 
-            for(uint32_t i=from; i<=to; ++i){
+            for(int i=from; i<=to; ++i){
 
-              double currentAvg = getAvg(xS, xE, yS, yE, imageList[i]);
+              double currentAvg = getAvg(rS, rE, cS, cE, imageList[i]);
 
-              int target = round(imageList[i].at<uchar>(w,h) + (avg - currentAvg));
+              int target = round(imageList[i].at<uchar>(r,c) + (avg - currentAvg));
 
               if(target > 255) target = 255;
               if(target < 0) target = 0;
 
              if(invert)
-               images[i].at<uchar>(w,h) = 255 - target;
+               images[i].at<uchar>(r,c) = 255 - target;
              else
-               images[i].at<uchar>(w,h) = target;
+               images[i].at<uchar>(r,c) = target;
 
             }
 
             ++index;
 
-          } while(index<images.size());
+          } while(index < (int)images.size());
 
         }
 
@@ -220,14 +221,21 @@ private:
   //***************************************************************************************************//
   // getFromTo
   //***************************************************************************************************//
-  /// Compute temporal window bounds for the given index.
-  void getFromTo(uint32_t i, uint32_t & from, uint32_t & to) {
+  // Compute temporal window bounds for the given index.
+  void getFromTo(int i, int & from, int & to) {
 
-    from = i - halfDeflickerTime;
-    to   = i + halfDeflickerTime;
+    int last = deflickerWindows - 1;
 
-    if(from < 0) { to += -from; from = 0; }
-    if(to >= deflickerWindows-1) { from -= to - deflickerWindows + 1; to = deflickerWindows - 1; }
+    int f = i - halfDeflickerTime;
+    int t = i + halfDeflickerTime;
+
+    // keep the window size constant by shifting it inside [0, last]
+    if(f < 0)    { t += -f;       f = 0; }
+    if(t > last) { f -= t - last; t = last; }
+    if(f < 0)      f = 0;
+
+    from = f;
+    to   = t;
 
   }
 
@@ -236,20 +244,28 @@ private:
   //***************************************************************************************************//
   // getCenteredROI
   //***************************************************************************************************//
-  /// Compute a centered ROI around (x, y), clamped to image bounds.
-  void getCenteredROI(uint32_t x, uint32_t y, uint32_t & xS, uint32_t & xE, uint32_t & yS, uint32_t & yE) {
+  // Compute a window of size deflickerMatrixSize centered at pixel (row, col),
+  // shifted to stay inside the image bounds.
+  void getCenteredROI(int row, int col, int & rS, int & rE, int & cS, int & cE) {
 
-    xS = x - halfDeflickerMatrixSize;
-    xE = x + halfDeflickerMatrixSize;
+    int half = halfDeflickerMatrixSize;
 
-    yS = y - halfDeflickerMatrixSize;
-    yE = y + halfDeflickerMatrixSize;
+    int lastRow = mask.rows - 1;
+    int lastCol = mask.cols - 1;
 
-    if(xS < 0) { xE += -xS; xS = 0; }
-    if(xE >= mask.cols) { xS -= xE - mask.cols + 1; xE = mask.rows - 1; }
+    int r0 = row - half;  int r1 = row + half;
+    int c0 = col - half;  int c1 = col + half;
 
-    if(yS < 0) { yE += -yS; yS = 0; }
-    if(yE >= mask.rows) { yS -= yE - mask.cols + 1; yE = mask.rows - 1; }
+    if(r0 < 0)       { r1 += -r0;          r0 = 0; }
+    if(r1 > lastRow) { r0 -= r1 - lastRow; r1 = lastRow; }
+    if(r0 < 0)         r0 = 0;
+
+    if(c0 < 0)       { c1 += -c0;          c0 = 0; }
+    if(c1 > lastCol) { c0 -= c1 - lastCol; c1 = lastCol; }
+    if(c0 < 0)         c0 = 0;
+
+    rS = r0;  rE = r1;
+    cS = c0;  cE = c1;
 
   }
 
@@ -258,14 +274,14 @@ private:
   //***************************************************************************************************//
   // getAvg
   //***************************************************************************************************//
-  /// Compute average intensity within the provided ROI.
-  double getAvg(uint32_t xS, uint32_t xE, uint32_t yS, uint32_t yE, const cv::Mat & image) const {
+  // Compute average intensity within the provided ROI.
+  double getAvg(int rS, int rE, int cS, int cE, const cv::Mat & image) const {
 
     double avg = 0;
 
-    for(uint32_t x=xS; x<=xE; ++x)
-      for(uint32_t y=yS; y<=yE; ++y)
-        avg += image.at<uchar>(x,y);
+    for(int r=rS; r<=rE; ++r)
+      for(int c=cS; c<=cE; ++c)
+        avg += image.at<uchar>(r,c);
 
     return (avg / (double)(deflickerMatrixSize * deflickerMatrixSize));
 

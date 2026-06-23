@@ -1,7 +1,7 @@
 /*
  * GNU GENERAL PUBLIC LICENSE
  *
- * Copyright (C) 2019
+ * Copyright (C) 2021-2026
  * Created by Leonardo Parisi (leonardo.parisi[at]gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,6 +27,8 @@
 
 #include <opencv2/opencv.hpp>
 
+#include "utils.hpp"
+
 //****************************************************************************/
 // namespace
 //****************************************************************************/
@@ -36,16 +38,19 @@ namespace cvl::draw {
   // dashedCircle() - ChatGPT
   //****************************************************************************/
   // Draw a dashed circle on a 3-channel image.
-  void dashedCircle(cv::Mat & image, cv::Point center, int radius, int dashWidth, int dashSpacing, const cv::Scalar & color, int thickness = 1) {
+  inline void dashedCircle(cv::Mat & image, cv::Point center, int radius, int dashWidth, int dashSpacing, const cv::Scalar & color, int thickness = 1) {
     
     if(image.type() != CV_8UC3) {
-      fprintf(stderr, "cvl::draw::dashedCircle() error: destination type image must be CV_8UC3\n");
-      abort();
+      cvl::log::error("cvl::draw::dashedCircle() error: the destination image must be CV_8UC3\n");
     }
+    
+    if(radius <= 0 || (dashWidth + dashSpacing) <= 0) return;
     
     const double PI = 3.14159265358979323846;
     double circumference = 2 * PI * radius;
-    int numSegments = static_cast<int>(circumference / (dashWidth + dashSpacing));
+    int numSegments = (int)(circumference / (dashWidth + dashSpacing));
+    
+    if(numSegments < 1) return;
     
     double angleStep = 2 * PI / numSegments;
     double dashAngle = angleStep * dashWidth / (dashWidth + dashSpacing);
@@ -70,11 +75,10 @@ namespace cvl::draw {
   //****************************************************************************/
   // Draw a diagonal cross centered at the provided point.
   template <class T>
-  void cross(cv::Mat & image, cv::Point_<T> & center, int lenght, const cv::Scalar & color, int thickness = 1) {
+  inline void cross(cv::Mat & image, cv::Point_<T> & center, int lenght, const cv::Scalar & color, int thickness = 1) {
     
     if(image.type() != CV_8UC3) {
-      fprintf(stderr, "cvl::draw::cross() error: destination type image must be CV_8UC3\n");
-      abort();
+      cvl::log::error("cvl::draw::cross() error: the destination image must be CV_8UC3\n");
     }
     
     cv::line(image, cv::Point(center.x-lenght, center.y-lenght), cv::Point(center.x+lenght, center.y+lenght), color, thickness);

@@ -1,7 +1,7 @@
 /*
  * GNU GENERAL PUBLIC LICENSE
  *
- * Copyright (C) 2019
+ * Copyright (C) 2021-2026
  * Created by Leonardo Parisi (leonardo.parisi[at]gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,8 @@
 
 #include <opencv2/opencv.hpp>
 
+#include "utils.hpp"
+
 //*****************************************************************************/
 // namespace cvl::convert
 //*****************************************************************************/
@@ -35,12 +37,11 @@ namespace cvl::convert {
   //****************************************************************************/
   // from16to8()
   //****************************************************************************/
-  /// Convert a 16-bit grayscale image to 8-bit using explicit scale/offset.
-  void from16to8(const cv::Mat & src, cv::Mat & dst, double alpha, double beta) {
+  // Convert a 16-bit grayscale image to 8-bit using explicit scale/offset.
+  inline void from16to8(const cv::Mat & src, cv::Mat & dst, double alpha, double beta) {
 
     if(src.empty() || src.type() != CV_16UC1) {
-      fprintf(stderr, "error in cvl::from16to8(): the input image must be a non empty CV_16UC1 image\n");
-      abort();
+      cvl::log::error("cvl::convert::from16to8() error: the input image must be a non-empty CV_16UC1 image\n");
     }
     
     src.convertTo(dst, CV_8U, alpha, beta);
@@ -50,12 +51,11 @@ namespace cvl::convert {
   //****************************************************************************/
   // from16to8()
   //****************************************************************************/
-  /// Convert a 16-bit grayscale image to 8-bit using the chosen mode.
-  std::pair<double,double> from16to8(const cv::Mat & src, cv::Mat & dst, int mode, double value = 0) {
+  // Convert a 16-bit grayscale image to 8-bit using the chosen mode.
+  inline std::pair<double,double> from16to8(const cv::Mat & src, cv::Mat & dst, int mode, double value = 0) {
   
     if(src.empty() || src.type() != CV_16UC1) {
-      fprintf(stderr, "error in cvl::from16to8(): the input image must be a non empty CV_16UC1 image\n");
-      abort();
+      cvl::log::error("cvl::convert::from16to8() error: the input image must be a non-empty CV_16UC1 image\n");
     }
     
     if(mode == LINEAR) {
@@ -75,6 +75,7 @@ namespace cvl::convert {
       
       //printf("LINEAR_MINMAX min %f max %f\n", min, max);
       
+      if(max <= min) max = min + 1; // evita la divisione per zero su immagini piatte
       double alpha = 255 / (max-min);
       double beta  = - (255*min) / (max-min);
       
@@ -111,6 +112,7 @@ namespace cvl::convert {
       
       //printf("LINEAR_CUTWINGS min %f max %f\n", min, max);
       
+      if(max <= min) max = min + 1; // evita la divisione per zero su immagini piatte
       double alpha = 255 / (max-min);
       double beta  = - (255*min) / (max-min);
       
@@ -146,6 +148,7 @@ namespace cvl::convert {
       
       //printf("LINEAR_CUTEXTREMAL min %f max %f\n", min, max);
       
+      if(max <= min) max = min + 1; // evita la divisione per zero su immagini piatte
       double alpha = 255 / (max-min);
       double beta  = - (255*min) / (max-min);
       
@@ -175,9 +178,10 @@ namespace cvl::convert {
 
     }
 
-    fprintf(stderr, "error in cvl::from16to8(): mode not recognized\n");
-    abort();
-    
+    cvl::log::error("cvl::convert::from16to8() error: mode not recognized\n");
+
+    return {};
+
   }
 
 } /* namespace cvl::convert */

@@ -1,7 +1,7 @@
 /*
  * GNU GENERAL PUBLIC LICENSE
  *
- * Copyright (C) 2019
+ * Copyright (C) 2021-2026
  * Created by Leonardo Parisi (leonardo.parisi[at]gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 
 #ifdef _DEBUG_CVL_LIBS_
 
+  #include "utils.hpp"
   #include "colors.hpp"
   #include "opencv.hpp"
   #include "background.hpp"
@@ -40,9 +41,8 @@
   #include "deflickering.hpp"
   #include "denoising.hpp"
   #include "enhance.hpp"
-  #include "features.hpp"
-  #include "subPixNew.hpp"
   #include "subpixelNew.hpp"
+  #include "subpixel.hpp"
   #include "targetMass.hpp"
   #include "threshold.hpp"
   #include "window.hpp"
@@ -52,6 +52,7 @@
 
 #else
 
+  #include <cvl/utils.hpp>
   #include <cvl/colors.hpp>
   #include <cvl/opencv.hpp>
   #include <cvl/background.hpp>
@@ -67,7 +68,6 @@
   #include <cvl/deflickering.hpp>
   #include <cvl/denoising.hpp>
   #include <cvl/enhance.hpp>
-  #include <cvl/features.hpp>
   #include <cvl/subpixelNew.hpp>
   #include <cvl/subpixel.hpp>
   #include <cvl/targetMass.hpp>

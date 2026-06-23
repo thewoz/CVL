@@ -1,7 +1,8 @@
-# CVL – API Reference (minimal)
+# CVL – API Reference
 
 This page summarizes the main functions available in the library headers.
-All functions are header-only and live under the `include/` directory.
+All functions are header-only and live under the `include/` directory and, unless
+noted otherwise, inside the `cvl` namespace.
 
 ## Background (`include/background.hpp`)
 
@@ -88,9 +89,21 @@ Class `cvl::chessboard_t`:
 - `clustering::NN(blobs, clusters, factor)` – NN clustering.
 - `clustering::follow(blobs, coords, clusters, factor)` – track closest cluster.
 
+## Colors (`include/colors.hpp`)
+
+- Named BGR constants: `cvl::red`, `cvl::blue`, `cvl::yellow`, … (CSS color names).
+- Class `cvl::colors`:
+  - `loadPalette()` – populate the name→color map.
+  - `get(name[, create])` – look up a color by name (optionally add a random one).
+  - `add(name, r, g, b)` / `add(name, color)` – register a color.
+  - `getRandom()` – random BGR color.
+  - `RGBtoHex(...)` / `BGRtoHex(...)` / `getRGBHex(name)` – hex conversions.
+
 ## Contours (`include/contours.hpp`)
 
-- `contours::get(image, mode, contours)` – extract internal/external contours.
+- `contours::get(image, mode, contours)` – extract internal/external contour pixels
+  (`mode` = `contours::EXTERNAL` / `contours::INTERNAL`).
+- `contours::scale(contour, scaleFactor)` – scale a contour about its centroid.
 
 ## Convert (`include/convert.hpp`)
 
@@ -107,7 +120,7 @@ Class `cvl::corners_t`:
 
 ## Deflickering (`include/deflickering.hpp`)
 
-Class `asDeflickering`:
+Class `asDeflickering` (global namespace):
 
 - `init(images, window, time, matrixSize, maskPath, invert)` – initialize.
 - `deflicker(images)` – apply deflickering.
@@ -139,32 +152,45 @@ Class `asDeflickering`:
 - `enhance::clahe(src, clipLimit, tilesGridSize)` – CLAHE.
 - `enhance::get(src, algo, params...)` – dispatcher.
 
-## Features (`include/features.hpp`)
-
-- `features::findCircles(image, minDist, higherThreshold, accumulatorThreshold, minRadius, maxRadius)` – Hough circles.
-
 ## Labeling (`include/labeling.hpp`)
 
 - `labeling::get(src, neighboursType, minClusterMass, blobs, original, offset)` – connected components labeling.
 
 ## OpenCV utilities (`include/opencv.hpp`)
 
-- `drawString(dst, str, pos, color)` – draw numeric strings.
+Also defines `cv::Point2d` ⊕ `cv::Point` arithmetic operators and the `CV_KEY_*`
+key-code macros. (The named-color palette and `RGBtoHex` live in `colors.hpp`.)
+
+Text / markers / geometry:
+- `drawString(dst, str, pos, color)` – draw numeric strings with the built-in 5×3 glyphs.
 - `drawNumber(dst, number, pos, color)` – draw an integer.
-- `drawParabola(dst, coeffs, color, offset)` – draw parabola.
+- `drawParabola(dst, coeffs, color, offset)` – draw a parabola from quadratic coefficients.
+- `drawRotatedText(image, text, center, angleDeg, fontScale, color, thickness)` – rotated, alpha-blended text.
+- `drawDistanceMarker(image, p1, p2, label, color, …)` – dimension line with end ticks and label.
 - `cross(dst, pos, color)` – small cross marker.
-- `minEnclosureRoi(roi1, roi2)` – enclosing ROI.
-- `getRandomColor(minBright)` – random color.
-- `RGBtoHex(R, G, B)` – hex string conversion.
-- `save(image, path)` – save image.
-- `open(path, mode)` – open image.
-- `open16bitC1(path)` – open 16-bit mono image.
+- `shrinkLine(p1, p2, cut[, cut2])` / `scaleLine(p1, p2, scale)` – shorten/scale a segment.
+- `scaleRect(rect, factor)` – scale a rectangle about its center.
+- `minEnclosureRoi(roi1, roi2)` – minimal ROI enclosing two rectangles.
+- `getRandomColor(minBright)` – random BGR color, optionally above a brightness.
+- `getTopRightPoint(points)` – top-right-most point of a set.
+
+Color / I/O:
+- `save(image, path)` – save an image (expands `~`, validates the write).
+- `open(path[, percent], mode[, interp])` – open an image, optionally resizing.
+- `open16bitC1(path)` – open a 16-bit mono image.
+- `resize(src, percent[, interp])` – percentage resize with auto interpolation.
+
+Histograms:
+- `histogram8bit(src, histo[, mask], valueToSkip = -1)` – 8-bit histogram.
+- `histogram16bit(src, histo[, min, max])` – 16-bit histogram (and used range).
 
 ## Pose (`include/pose.hpp`)
 
 - `pose::recoverPose(...)` – recover relative pose.
 - `pose::solvePnP(...)` – solvePnP for stereo.
 - `pose::stereoCalibrate(...)` – stereo calibration with fixed intrinsics.
+
+The pose/translation outputs are returned through `cv::Mat &` parameters.
 
 ## Subpixel (`include/subpixel.hpp` and `include/subpixelNew.hpp`)
 
@@ -186,6 +212,37 @@ Class `asDeflickering`:
 - `threshold::moda(src, dst, factor, valueToSkip, mask)` – mode-based threshold.
 - `threshold::percentile(src, dst, percentile, valueToSkip, mask)` – percentile threshold.
 - `threshold::get(src, dst, algo, param1, param2, param3, mask)` – dispatcher.
+
+## Utils (`include/utils.hpp`)
+
+Self-contained helpers (no external dependency beyond OpenCV).
+
+`cvl::io` namespace:
+
+- `io::expandPath(path)` – resolve `~`, relative and absolute paths in place.
+- `io::basename(path)` – file name component.
+- `io::subdirName(path)` – name of the directory containing the file.
+- `io::open(path, mode)` / `io::close(file)` – `fopen`/`fclose` with path expansion.
+- `io::isToSkip(line)` – true for empty, whitespace-only or `#`-comment lines.
+
+`cvl::log` namespace:
+
+- `log::error(format, ...)` – print to `stderr` and `exit(EXIT_FAILURE)`.
+- `log::warning(format, ...)` – print to `stderr`.
+
+Class `cvl::loader`:
+
+- `loader::operator()(file, columns, container, &T::filler)` – read selected columns and forward each row.
+- `loader::data::get<T>(index)` – typed access to a parsed column.
+
+`cvl::utils` namespace:
+
+- `utils::median(set, [stddev])` – median of a container.
+- `utils::medianFirstNNDistance(data, [op])` – median first-nearest-neighbor distance.
+- `utils::connectedComponents(data, maxDist, clusters, minClusterSize, op)` – distance-threshold clustering.
+- `utils::connectedComponentsMedianFirstNN(data, clusters, factor, minClusterSize, op)` – median-NN clustering.
+- `utils::itoa(value, result, base)` – integer to string.
+- `utils::decToHex(n)` – decimal (0-255) to two-digit hex string.
 
 ## Window (`include/window.hpp`)
 

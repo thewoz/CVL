@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm -rf /tmp/cvltest /tmp/*.txt)",
+      "Bash(git --no-pager diff --stat)",
+      "Bash(cat)",
+      "Bash(python3 /tmp/normdoc.py *.hpp)",
+      "Bash(python3 /tmp/revdoc.py *.hpp)",
+      "Bash(rm -f /tmp/normdoc.py /tmp/revdoc.py /tmp/e.txt 2>/dev/null; echo \"pulito\")",
+      "Bash(python3 -)",
+      "Bash(DYLD_LIBRARY_PATH=/usr/local/lib /tmp/cvl_test2)",
+      "Bash(echo \"RUN OK \\(exit $?\\)\")",
+      "Bash(rm -f /tmp/cvl_test*.cpp /tmp/cvl_test /tmp/cvl_test2 /tmp/cvl_test3)"
+    ]
+  }
+}

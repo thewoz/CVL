@@ -1,7 +1,7 @@
 /*
  * GNU GENERAL PUBLIC LICENSE
  *
- * Copyright (C) 2019
+ * Copyright (C) 2021-2026
  * Created by Leonardo Parisi (leonardo.parisi[at]gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,8 +26,11 @@
 #include <vector>
 #include <string>
 #include <random>
+#include <utility>
 
 #include <opencv2/opencv.hpp>
+
+#include "utils.hpp"
 
 //#define _DEBUG_CVL_BLOBSPLITTING_
 
@@ -61,12 +64,11 @@ namespace cvl::blobsplitting {
   //    // se devo continuare a dividire una volta diviso
   //    bool recursiveSplitting;
   //*****************************************************************************
-  /// Split a single blob into smaller ones by iteratively thresholding.
-  void split(const cvl::blob_t & blob, const cv::Mat & splitOn, const cv::Mat & original, cvl::blobs_t & blobsFound, bool toDark, int enterMass, int exitMass, int minMass, bool recursiveSplitting, int labelingNeighboursType) {
+  // Split a single blob into smaller ones by iteratively thresholding.
+  inline void split(const cvl::blob_t & blob, const cv::Mat & splitOn, const cv::Mat & original, cvl::blobs_t & blobsFound, bool toDark, int enterMass, int exitMass, int minMass, bool recursiveSplitting, int labelingNeighboursType) {
     
     if(exitMass < minMass) {
-      fprintf(stderr, "error in blobSplitting::split(): exitMass must be equal or grate than minMass\n");
-      abort();
+      cvl::log::error("cvl::blobsplitting::split() error: exitMass must be greater than or equal to minMass\n");
     }
     
   #ifdef _DEBUG_CVL_BLOBSPLITTING_
@@ -144,7 +146,7 @@ namespace cvl::blobsplitting {
         cvl::labeling::get(thrsImg, labelingNeighboursType, minMass, tmpBlobs, original, blob.offset);
         
         // se l'ho diviso o è rimasto un troppo piccolo o non è rimansto nulla esco
-        if(tmpBlobs.size() > 1 || tmpBlobs.size() == 0 || (tmpBlobs.size() == 1 && tmpBlobs[0].size() <= exitMass)) break;
+        if(tmpBlobs.size() > 1 || tmpBlobs.size() == 0 || (tmpBlobs.size() == 1 && (int)tmpBlobs[0].size() <= exitMass)) break;
         
         if(toDark) { --threshold; /*if(threshold > tmpBlobs[0].iMax) threshold = tmpBlobs[0].iMax;*/ }
         else       { ++threshold; /*if(threshold < tmpBlobs[0].iMin) threshold = tmpBlobs[0].iMin;*/ }
@@ -153,21 +155,21 @@ namespace cvl::blobsplitting {
       
       // se alla fine rimasto un solo cluster o nessuno aggiungo l'originale al risulato
       if(tmpBlobs.size() <= 1) {
-        
-        blobsFound.add(blobsToSplit[i]);
-        
+
+        blobsFound.add(std::move(blobsToSplit[i]));
+
         // se il blob invece è stato diviso
       } else {
-        
+
         // ciclo su i blob trovati
         for(size_t j=0; j<tmpBlobs.size(); ++j) {
-          
+
           // se il blob trovato e' ancora abbastanza grande e lo splitig e' ricorsivo lo aggiungo ai blob da dividere
-          if(tmpBlobs[j].size() > enterMass && recursiveSplitting) {
-            blobsToSplit.add(tmpBlobs[j]);
+          if((int)tmpBlobs[j].size() > enterMass && recursiveSplitting) {
+            blobsToSplit.add(std::move(tmpBlobs[j]));
             // altrimenti lo aggiungo al risultato
           } else {
-            blobsFound.add(tmpBlobs[j]);
+            blobsFound.add(std::move(tmpBlobs[j]));
           }
           
         } // for j
@@ -185,8 +187,8 @@ namespace cvl::blobsplitting {
   //****************************************************************************
   // get
   //****************************************************************************
-  /// Split blobs using the chosen mode and refine with watershed segmentation.
-  void get(cvl::blobs_t & blobs, const cv::Mat & splitOn, const cv::Mat & original, const std::string & mode, int enterMass, int exitMass, int minMass, bool recursiveSplitting, int labelingNeighboursType){
+  // Split blobs using the chosen mode and refine with watershed segmentation.
+  inline void get(cvl::blobs_t & blobs, const cv::Mat & splitOn, const cv::Mat & original, const std::string & mode, int enterMass, int exitMass, int minMass, bool recursiveSplitting, int labelingNeighboursType){
     
   #ifdef _DEBUG_CVL_BLOBSPLITTING_
     static int debugFrame = 22; // va modificato il valore di questo
@@ -201,12 +203,10 @@ namespace cvl::blobsplitting {
     
     if(mode.compare("TO_DARK") != 0 &&  mode.compare("TO_WHITE") != 0) {
       
-      fprintf(stderr, "error unknown type of BLOB_SPLIT_MODE.\n");
-      fprintf(stderr, "You can choose between:\n");
-      fprintf(stderr, "      TO_DARK, TO_WHITE\n");
-      
-      exit(EXIT_FAILURE);
-      
+      cvl::log::error("cvl::blobsplitting::get() error: unknown split mode '%s'\n"
+                      "You can choose between:\n"
+                      "      TO_DARK, TO_WHITE\n", mode.c_str());
+
     }
     
     // vettore di appoggio con il risultato finale
@@ -216,7 +216,7 @@ namespace cvl::blobsplitting {
     for(size_t i=0; i<blobs.size(); ++i) {
       
       // se e' piu' grande della massa di entrata lo provo a dividere
-      if(blobs[i].size() > enterMass) {
+      if((int)blobs[i].size() > enterMass) {
         
         cvl::blobs_t blobsSplited;
         
@@ -225,8 +225,8 @@ namespace cvl::blobsplitting {
         
         // ciclo su tutti i blob trovati
         for(size_t j=0; j<blobsSplited.size(); ++j)
-          newBlobs.add(blobsSplited[j]);
-        
+          newBlobs.add(std::move(blobsSplited[j]));
+
       } else { newBlobs.add(blobs[i]); }
       
     }
@@ -261,7 +261,7 @@ namespace cvl::blobsplitting {
     }
     
     // ciclo sui blob dopo lo split e metto i seed
-    for(int i=0; i<newBlobs.size(); ++i) {
+    for(int i=0; i<(int)newBlobs.size(); ++i) {
       
       newBlobs[i].draw(markers, i+1);
       
@@ -306,7 +306,7 @@ namespace cvl::blobsplitting {
         
   #endif
         
-        if(index > 0 && index <= newBlobs.size()) {
+        if(index > 0 && index <= (int)newBlobs.size()) {
           //newBlobs[index-1].add(j, i, original.at<uchar>(i,j));
           tmpPixels[index-1].push_back(cv::Point3i(j, i, original.at<uchar>(i,j)));
         }
@@ -323,7 +323,7 @@ namespace cvl::blobsplitting {
     // se il watershed mi ha ucciso un blob rimetto quello originale
     // questo caso è successo sicuramente una volta in 20241206_ACQ4 CAM3 frame 1092
     // quando un blob, che era solo una riga (4x1), accanto al bordo, y=0, veniva ucciso
-    for(int i=0; i<newBlobs.size(); ++i) {
+    for(int i=0; i<(int)newBlobs.size(); ++i) {
       
       // solo se ci stanno i pixel nuovi
       if(tmpPixels[i].size() != 0) {

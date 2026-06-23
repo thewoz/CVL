@@ -1,7 +1,7 @@
 /*
  * GNU GENERAL PUBLIC LICENSE
  *
- * Copyright (C) 2019
+ * Copyright (C) 2021-2026
  * Created by Leonardo Parisi (leonardo.parisi[at]gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,8 +28,7 @@
 
 #include <opencv2/opencv.hpp>
 
-#include <mpl/log.hpp>
-#include <mpl/graph.hpp>
+#include "utils.hpp"
 
 //*****************************************************************************
 // namespace
@@ -39,19 +38,21 @@ namespace cvl {
   //*****************************************************************************
   // blob_t
   //*****************************************************************************
-  /// Container for a connected component with pixel list and derived statistics.
-  class blob_t : public mpl::graph::node_t {
-    
+  // Container for a connected component with pixel list and derived statistics.
+  class blob_t {
+
   public:
-    
+
     std::vector<cv::Point3i> pixels;
-    
+
   public:
-    
+
     static std::string baricenterType;
-    
+
     //enum { EXTERNAL_CONTOUR, INTERNAL_CONTOUR };
-    
+
+    int frame = -1;
+
     int label;
     
     int iMin; int iMax;
@@ -69,38 +70,40 @@ namespace cvl {
     //*****************************************************************************
     // blob_t
     //*****************************************************************************
-    /// Create an empty blob with label -1.
+    // Create an empty blob with label -1.
     blob_t() { pixels.clear(); label = -1; }
     
     //*****************************************************************************
     // add
     //*****************************************************************************
-    /// Append a pixel (x, y, intensity) to the blob.
+    // Append a pixel (x, y, intensity) to the blob.
     void add(int x, int y, int i) { pixels.push_back(cv::Point3i(x,y,i)); }
     
     //*****************************************************************************
     // size
     //*****************************************************************************
-    /// Return the number of pixels in the blob.
+    // Return the number of pixels in the blob.
     size_t size() const { return pixels.size(); }
     
     //*****************************************************************************
     // getImageSize
     //*****************************************************************************
-    /// Return the width/height of the blob bounding box.
+    // Return the width/height of the blob bounding box.
     cv::Size getImageSize() const { return cv::Size(roi.width, roi.height); }
     
     //*****************************************************************************
     // clear
     //*****************************************************************************
-    /// Remove all pixels from the blob.
+    // Remove all pixels from the blob.
     void clear() { pixels.clear(); }
     
     //*****************************************************************************
     // finalize
     //*****************************************************************************
-    /// Compute min/max, average intensity, ROI, and barycenter for the blob.
+    // Compute min/max, average intensity, ROI, and barycenter for the blob.
     void finalize() {
+      
+      if(pixels.empty()) return;
       
       int xMin = INT_MAX; int xMax = 0;
       int yMin = INT_MAX; int yMax = 0;
@@ -142,7 +145,7 @@ namespace cvl {
     //*****************************************************************************
     // print()
     //*****************************************************************************
-    /// Print blob information to the provided stream.
+    // Print blob information to the provided stream.
     void print(FILE * out = stdout) {
       
       fprintf(out, "label: %d\n", label);
@@ -152,7 +155,7 @@ namespace cvl {
       fprintf(out, "iMin: %d iMax: %d\n", iMin, iMax);
       fprintf(out, "size: %lu\n", pixels.size());
       fprintf(out, "pixels:\n");
-      for(int i=0; i<pixels.size(); ++i) fprintf(out, "\t%d) %d %d - %d\n", i, pixels[i].x, pixels[i].y, pixels[i].z);
+      for(int i=0; i<(int)pixels.size(); ++i) fprintf(out, "\t%d) %d %d - %d\n", i, pixels[i].x, pixels[i].y, pixels[i].z);
       fprintf(out, "\n");
       
     }
@@ -163,7 +166,7 @@ namespace cvl {
 //      void draw(cv::Mat & dst, const cv::Mat & src, const cv::Point & offset = cv::Point(0,0)) const {
 //    
 //        if(dst.channels() != 1 && dst.channels() !=3)
-//          mpl::log::error("The destination image is not a one or three channel image.\n");
+//          cvl::log::error("The destination image is not a one or three channel image.\n");
 //    
 //        if(dst.channels() == 1) {
 //    
@@ -194,7 +197,7 @@ namespace cvl {
     //*****************************************************************************
     // draw
     //*****************************************************************************
-    /// Draw the blob onto dst using the provided color (8-bit 1 or 3 channel).
+    // Draw the blob onto dst using the provided color (8-bit 1 or 3 channel).
     void draw(cv::Mat & dst, const cv::Vec3b & color, const cv::Point & offset = cv::Point(0,0)) const {
       
       bool status = false;
@@ -213,8 +216,7 @@ namespace cvl {
       }
        
       if(!status) {
-        fprintf(stderr, "blob_t::draw() error: image type not recognized\n");
-        abort();
+        cvl::log::error("cvl::blob_t::draw() error: image type not recognized\n");
       }
 
     }
@@ -222,7 +224,7 @@ namespace cvl {
     //*****************************************************************************
     // draw
     //*****************************************************************************
-    /// Draw the blob onto an int label image.
+    // Draw the blob onto an int label image.
     void draw(cv::Mat & dst, int color, const cv::Point & offset = cv::Point(0,0)) const {
       
       bool status = false;
@@ -235,8 +237,7 @@ namespace cvl {
       }
        
       if(!status) {
-        fprintf(stderr, "blob_t::draw() error: image type not recognized\n");
-        abort();
+        cvl::log::error("cvl::blob_t::draw() error: image type not recognized\n");
       }
 
     }
@@ -244,7 +245,7 @@ namespace cvl {
     //*****************************************************************************
     // draw
     //*****************************************************************************
-    /// Draw the blob using stored intensity values.
+    // Draw the blob using stored intensity values.
     void draw(cv::Mat & dst, const cv::Point & offset = cv::Point(0,0)) const {
       
       bool status = false;
@@ -262,8 +263,7 @@ namespace cvl {
       }
       
       if(!status) {
-        fprintf(stderr, "blob_t::draw() error: image type not recognized\n");
-        abort();
+        cvl::log::error("cvl::blob_t::draw() error: image type not recognized\n");
       }
       
     }
@@ -271,14 +271,13 @@ namespace cvl {
     //*****************************************************************************
     // draw
     //*****************************************************************************
-    /// Draw the blob by sampling pixel values from the original image.
+    // Draw the blob by sampling pixel values from the original image.
     void draw(cv::Mat & dst, const cv::Mat & ori, const cv::Point & offset = cv::Point(0,0)) const {
       
       bool status = false;
       
       if(dst.type() != ori.type()) {
-        fprintf(stderr, "blob_t::draw() error: image must have the same type\n");
-        abort();
+        cvl::log::error("cvl::blob_t::draw() error: images must have the same type\n");
       }
       
       if(dst.type() == CV_8UC1) {
@@ -301,8 +300,7 @@ namespace cvl {
       }
        
       if(!status) {
-        fprintf(stderr, "blob_t::draw() error: image type not recognized\n");
-        abort();
+        cvl::log::error("cvl::blob_t::draw() error: image type not recognized\n");
       }
       
     }
@@ -310,7 +308,7 @@ namespace cvl {
     //*****************************************************************************
     // drawInv
     //*****************************************************************************
-    /// Draw the blob with inverted intensity values.
+    // Draw the blob with inverted intensity values.
     void drawInv(cv::Mat & dst, const cv::Point & offset = cv::Point(0,0)) const {
       
       bool status = false;
@@ -328,8 +326,7 @@ namespace cvl {
       }
       
       if(!status) {
-        fprintf(stderr, "blob_t::draw() error: image type not recognized\n");
-        abort();
+        cvl::log::error("cvl::blob_t::draw() error: image type not recognized\n");
       }
       
     }
@@ -337,7 +334,7 @@ namespace cvl {
     //*****************************************************************************
     // drawInv
     //*****************************************************************************
-    /// Draw the blob with inverted intensity values from the original image.
+    // Draw the blob with inverted intensity values from the original image.
     void drawInv(cv::Mat & dst, const cv::Mat & ori, const cv::Point & offset = cv::Point(0,0)) const {
       
       bool status = false;
@@ -362,8 +359,7 @@ namespace cvl {
       }
       
       if(!status) {
-        fprintf(stderr, "blob_t::draw() error: image type not recognized\n");
-        abort();
+        cvl::log::error("cvl::blob_t::draw() error: image type not recognized\n");
       }
       
     }
@@ -371,13 +367,13 @@ namespace cvl {
     //*****************************************************************************
     // drawMask
     //*****************************************************************************
-    /// Draw a white mask of the blob.
+    // Draw a white mask of the blob.
     void drawMask(cv::Mat & dst, const cv::Point & offset = cv::Point(0,0)) const { draw(dst, cv::Vec3b(255,255,255), offset); }
     
     //*****************************************************************************
     // drawLabel
     //*****************************************************************************
-    /// Draw the blob label at its barycenter.
+    // Draw the blob label at its barycenter.
     void drawLabel(cv::Mat & dst, const cv::Vec3b & color = cvl::yellow, int scaleFactor = 1) const {
       
       cvl::drawNumber(dst, label, cv::Point2i((baricenter.x*scaleFactor) + roi.width * 0.5, (baricenter.y*scaleFactor) + roi.height * 0.5), color);
@@ -387,7 +383,7 @@ namespace cvl {
     //*****************************************************************************
     // saveContours
     //*****************************************************************************
-    /// Save blob contour points to a stream.
+    // Save blob contour points to a stream.
     void saveContours(FILE * output, int camera, int frame) const {
       
       fprintf(output, "%d %d %d %lu ", camera, frame, label, pixels.size());
@@ -402,7 +398,7 @@ namespace cvl {
     //*****************************************************************************
     // println
     //*****************************************************************************
-    /// Print blob pixel coordinates in a simple text format.
+    // Print blob pixel coordinates in a simple text format.
     void println(FILE * output = stdout) const {
       
       fprintf(output, "%d %d %lu\n", frame, label, pixels.size());
@@ -420,7 +416,7 @@ namespace cvl {
     //  void drawContours(cv::Mat & dst, bool mode, const cv::Vec3b & color = cv::Vec3b(0,0,255)) const {
     //
     //    if(dst.channels() != 3)
-    //      mpl::log::error("The destination image not have three channel.\n");
+    //      cvl::log::error("The destination image not have three channel.\n");
     //
     //    std::vector<cv::Point> contours;
     //
@@ -437,7 +433,7 @@ namespace cvl {
     //  void drawBaricenter(cv::Mat & dst, const char * algo, const cv::Vec3b & color = cv::Vec3b(255,0,0)) {
     //
     //    if(dst.channels() != 3)
-    //      mpl::log::error("The destination image not have three channel.\n");
+    //      cvl::log::error("The destination image not have three channel.\n");
     //
     //    computeBaricenter(algo);
     //
@@ -445,7 +441,7 @@ namespace cvl {
     //    int32_t y = (int32_t) baricenter.y;
     //
     //    if(y<0 || y>=dst.rows || x<0 || x>=dst.cols)
-    //      mpl::log::error("Baricenter position not in image range.\n");
+    //      cvl::log::error("Baricenter position not in image range.\n");
     //
     //    dst.at<cv::Vec3b>(y,x) = color;
     //
@@ -484,7 +480,7 @@ namespace cvl {
     //*****************************************************************************
     // operator <
     //*****************************************************************************
-    /// Sort blobs by barycenter position (row-major).
+    // Sort blobs by barycenter position (row-major).
     inline bool operator < (const cvl::blob_t & blob) const {
       
            if(baricenter.y < blob.baricenter.y) return true;
@@ -499,7 +495,7 @@ namespace cvl {
     //*****************************************************************************
     //  operator []
     //*****************************************************************************
-    /// Access a pixel by index.
+    // Access a pixel by index.
     const cv::Point3i & operator [] (size_t index) const { return pixels[index]; }
           cv::Point3i & operator [] (size_t index)       { return pixels[index]; }
     
@@ -570,14 +566,14 @@ namespace cvl {
   //*****************************************************************************
   // operator -
   //*****************************************************************************
-  /// Return Euclidean distance between two blob barycenters.
-  double operator - (const cvl::blob_t & A, const cvl::blob_t & B) {
+  // Return Euclidean distance between two blob barycenters.
+  inline double operator - (const cvl::blob_t & A, const cvl::blob_t & B) {
     
     return cv::sqrt(((A.baricenter.x-B.baricenter.x)*(A.baricenter.x-B.baricenter.x)) + ((A.baricenter.y-B.baricenter.y)*(A.baricenter.y-B.baricenter.y)));
     
   }
 
-  std::string cvl::blob_t::baricenterType = "GEOMETRIC";
+  inline std::string cvl::blob_t::baricenterType = "GEOMETRIC";
 
 } /* namespace */
 

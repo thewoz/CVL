@@ -1,7 +1,7 @@
 /*
  * GNU GENERAL PUBLIC LICENSE
  *
- * Copyright (C) 2019
+ * Copyright (C) 2021-2026
  * Created by Leonardo Parisi (leonardo.parisi[at]gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,8 +27,7 @@
 
 #include <opencv2/opencv.hpp>
 
-#include <mpl/stdio.hpp>
-#include <mpl/loader.hpp>
+#include "utils.hpp"
 
 //****************************************************************************/
 // namespace cvl
@@ -38,7 +37,7 @@ namespace cvl {
   //****************************************************************************/
   // corners_t
   //****************************************************************************/
-  /// Container for loading and accessing 2D corner tracks from files.
+  // Container for loading and accessing 2D corner tracks from files.
   class corners_t {
     
   public:
@@ -48,10 +47,10 @@ namespace cvl {
     //****************************************************************************/
     // load
     //****************************************************************************/
-    /// Load corner tracks from a text file.
+    // Load corner tracks from a text file.
     void load(std::string filepath) {
       
-      mpl::loader loader;
+      cvl::loader loader;
       loader(filepath, "2 4 5", this, &corners_t::filler);
       
     }
@@ -59,13 +58,13 @@ namespace cvl {
     //****************************************************************************/
     // size_t
     //****************************************************************************/
-    /// Return number of frames loaded.
+    // Return number of frames loaded.
     size_t size() const { return coords.size(); }
     
     //****************************************************************************/
     // operator []
     //****************************************************************************/
-    /// Access per-frame corner coordinates.
+    // Access per-frame corner coordinates.
     const std::vector<cv::Point2d> & operator [] (size_t index) const { return coords[index]; }
           std::vector<cv::Point2d> & operator [] (size_t index)       { return coords[index]; }
     
@@ -74,8 +73,8 @@ namespace cvl {
     //****************************************************************************/
     // filler
     //****************************************************************************/
-    /// Loader callback for pushing coordinates into frames.
-    void filler(const mpl::loader::data & arguments) {
+    // Loader callback for pushing coordinates into frames.
+    void filler(const cvl::loader::data & arguments) {
 
       int frame = arguments.get<int>(0);
       
@@ -84,7 +83,7 @@ namespace cvl {
       coord.x = arguments.get<double>(1);
       coord.y = arguments.get<double>(2);
       
-      if(coords.size()<=frame) coords.resize(frame+1);
+      if((int)coords.size()<=frame) coords.resize(frame+1);
       
       coords[frame].push_back(coord);
       

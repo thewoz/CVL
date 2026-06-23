@@ -1,7 +1,7 @@
 /*
  * GNU GENERAL PUBLIC LICENSE
  *
- * Copyright (C) 2019
+ * Copyright (C) 2021-2026
  * Created by Leonardo Parisi (leonardo.parisi[at]gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 
 #include <opencv2/opencv.hpp>
 
-#include <mpl/log.hpp>
+#include "utils.hpp"
 
 //*****************************************************************************/
 // namespace
@@ -39,7 +39,8 @@ namespace cvl::contours {
   //*****************************************************************************/
   // scale
   //*****************************************************************************/
-  void scale(std::vector<cv::Point> & contour, double scaleFactor) {
+  // Scale a contour about its centroid by scaleFactor.
+  inline void scale(std::vector<cv::Point> & contour, double scaleFactor) {
     
     std::vector<cv::Point> scaledContour;
 
@@ -62,81 +63,89 @@ namespace cvl::contours {
   // get
   //*****************************************************************************/
   // Extract external or internal contour pixels from a binary image.
-  void get(const cv::Mat & image, bool mode, std::vector<cv::Point> & contours) {
+  inline void get(const cv::Mat & image, bool mode, std::vector<cv::Point> & contours) {
     
     if(image.channels() != 1)
-      mpl::log::error("The destination image must have one channel image.\n");
+      cvl::log::error("cvl::contours::get() error: the input image must be a one channel image\n");
     
     contours.clear();
     
     if(mode == EXTERNAL){
-      
+
       for(int y=0; y<image.rows; ++y) {
-        
+
+        const uchar * cur = image.ptr<uchar>(y);
+        const uchar * up  = (y-1) >= 0          ? image.ptr<uchar>(y-1) : nullptr;
+        const uchar * dn  = (y+1) < image.rows  ? image.ptr<uchar>(y+1) : nullptr;
+
         for(int x=0; x<image.cols; ++x) {
-          
+
           // con !0 faccio l'esterno con ==0 l'interno
-          if(image.at<uchar>(y,x) != 0) continue;
-          
-          if((y-1) >= 0 && image.at<uchar>(y-1,x) != 0){
+          if(cur[x] != 0) continue;
+
+          if(up && up[x] != 0){
             contours.push_back(cv::Point(x,y));
             continue;
           }
-          
-          if((y+1) < image.rows && image.at<uchar>(y+1,x) != 0){
+
+          if(dn && dn[x] != 0){
             contours.push_back(cv::Point(x,y));
             continue;
           }
-          
-          if((x+1) < image.cols && image.at<uchar>(y,x+1) != 0){
+
+          if((x+1) < image.cols && cur[x+1] != 0){
             contours.push_back(cv::Point(x,y));
             continue;
           }
-          
-          if((x-1) >= 0 && image.at<uchar>(y,x-1) != 0){
+
+          if((x-1) >= 0 && cur[x-1] != 0){
             contours.push_back(cv::Point(x,y));
             continue;
           }
-          
+
         }
-        
+
       }
-      
+
     }
-    
+
     if(mode == INTERNAL){
-      
+
       for(int y=0; y<image.rows; ++y) {
-        
+
+        const uchar * cur = image.ptr<uchar>(y);
+        const uchar * up  = (y-1) >= 0          ? image.ptr<uchar>(y-1) : nullptr;
+        const uchar * dn  = (y+1) < image.rows  ? image.ptr<uchar>(y+1) : nullptr;
+
         for(int x=0; x<image.cols; ++x) {
-          
+
           // con !0 faccio l'esterno con ==0 l'interno
-          if(image.at<uchar>(y,x) == 0) continue;
-          
-          if((y-1) >= 0 && image.at<uchar>(y-1,x) == 0){
+          if(cur[x] == 0) continue;
+
+          if(up && up[x] == 0){
             contours.push_back(cv::Point(x,y));
             continue;
           }
-          
-          if((y+1) < image.rows && image.at<uchar>(y+1,x) == 0){
+
+          if(dn && dn[x] == 0){
             contours.push_back(cv::Point(x,y));
             continue;
           }
-          
-          if((x+1) < image.cols && image.at<uchar>(y,x+1) == 0){
+
+          if((x+1) < image.cols && cur[x+1] == 0){
             contours.push_back(cv::Point(x,y));
             continue;
           }
-          
-          if((x-1) >= 0 && image.at<uchar>(y,x-1) == 0){
+
+          if((x-1) >= 0 && cur[x-1] == 0){
             contours.push_back(cv::Point(x,y));
             continue;
           }
-          
+
         }
-        
+
       }
-      
+
     }
     
 //    for(uint32_t i=0; i<contours.size(); ++i){

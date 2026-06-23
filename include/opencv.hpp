@@ -1,7 +1,7 @@
 /*
  * GNU GENERAL PUBLIC LICENSE
  *
- * Copyright (C) 2017
+ * Copyright (C) 2021-2026
  * Created by Leonardo Parisi (leonardo.parisi[at]gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,23 +28,22 @@
 
 #include <opencv2/opencv.hpp>
 
-#include <mpl/stdio.hpp>
-#include <mpl/stdlib.hpp>
+#include "utils.hpp"
 
 
 // cv::Point2d += cv::Point
 inline cv::Point2d& operator+=(cv::Point2d& lhs, const cv::Point& rhs)
 {
-    lhs.x += static_cast<double>(rhs.x);
-    lhs.y += static_cast<double>(rhs.y);
+    lhs.x += (double)(rhs.x);
+    lhs.y += (double)(rhs.y);
     return lhs;
 }
 
 // cv::Point2d -= cv::Point
 inline cv::Point2d& operator-=(cv::Point2d& lhs, const cv::Point& rhs)
 {
-    lhs.x -= static_cast<double>(rhs.x);
-    lhs.y -= static_cast<double>(rhs.y);
+    lhs.x -= (double)(rhs.x);
+    lhs.y -= (double)(rhs.y);
     return lhs;
 }
 
@@ -73,8 +72,8 @@ inline cv::Point2d operator-(cv::Point2d lhs, const cv::Point& rhs)
 inline cv::Point2d operator-(const cv::Point& lhs, const cv::Point2d& rhs)
 {
     return cv::Point2d(
-        static_cast<double>(lhs.x) - rhs.x,
-        static_cast<double>(lhs.y) - rhs.y
+        (double)(lhs.x) - rhs.x,
+        (double)(lhs.y) - rhs.y
     );
 }
 
@@ -301,13 +300,15 @@ namespace cvl {
       {0, 0, 1}
     };
     
-    const digit_t * digits[10] = { &zero, &uno, &due, &tre, &quattro, &cinque, &sei, &sette, &otto, &nove };
+    inline const digit_t * const digits[10] = { &zero, &uno, &due, &tre, &quattro, &cinque, &sei, &sette, &otto, &nove };
     
     //*****************************************************************************/
     // drawDigit
     //*****************************************************************************/
     // Draw a 5x3 digit glyph at the given position.
-    void drawDigit(cv::Mat & dst, int number, const cv::Point & pos, const cv::Vec3b & color) {
+    inline void drawDigit(cv::Mat & dst, int number, const cv::Point & pos, const cv::Vec3b & color) {
+
+      if(number < 0 || number > 9) return;
 
       const digit_t & digit = *digits[number];
       
@@ -324,8 +325,8 @@ namespace cvl {
         
         for(int w=pos.x, j=0; w<wTo; ++w, ++j) {
           
-          if(h < 0 || h > dst.rows) continue;
-          if(w < 0 || w > dst.cols) continue;
+          if(h < 0 || h >= dst.rows) continue;
+          if(w < 0 || w >= dst.cols) continue;
 
           if(digit[i][j] == 1) dst.at<cv::Vec3b>(h, w) = color;
           
@@ -341,7 +342,8 @@ namespace cvl {
 //*****************************************************************************
 // drawRotatedText()
 //*****************************************************************************
-void drawRotatedText(cv::Mat & image, const std::string & text, const cv::Point & center, double angleDeg, double fontScale, const cv::Scalar & color, int thickness = 2) {
+// Draw alpha-blended text rotated by angleDeg and centered at a point.
+inline void drawRotatedText(cv::Mat & image, const std::string & text, const cv::Point & center, double angleDeg, double fontScale, const cv::Scalar & color, int thickness = 2) {
     
   int baseline = 0;
     
@@ -369,9 +371,9 @@ void drawRotatedText(cv::Mat & image, const std::string & text, const cv::Point 
       
       cv::Vec4b& px = textImg.at<cv::Vec4b>(y, x);
 
-      px[0] = static_cast<uchar>(color[0]); // B
-      px[1] = static_cast<uchar>(color[1]); // G
-      px[2] = static_cast<uchar>(color[2]); // R
+      px[0] = (uchar)(color[0]); // B
+      px[1] = (uchar)(color[1]); // G
+      px[2] = (uchar)(color[2]); // R
       px[3] = a;                            // A
       
     }
@@ -430,14 +432,15 @@ void drawRotatedText(cv::Mat & image, const std::string & text, const cv::Point 
 //*****************************************************************************
 // shrinkLine()
 //*****************************************************************************
-void shrinkLine(cv::Point & p1, cv::Point & p2, int cutFromP1, int cutFromP2) {
+// Shorten a segment by cutting cutFromP1 / cutFromP2 pixels off each endpoint.
+inline void shrinkLine(cv::Point & p1, cv::Point & p2, int cutFromP1, int cutFromP2) {
     
   cv::Point2d dir = p2 - p1;
 
   double length = std::sqrt(dir.x * dir.x + dir.y * dir.y);
 
   if(length <= 1e-9) {
-    fprintf(stderr, "shrinkLine() warning: line too short\n");
+    cvl::log::warning("cvl::shrinkLine() warning: line too short\n");
     return;
   }
   
@@ -448,7 +451,7 @@ void shrinkLine(cv::Point & p1, cv::Point & p2, int cutFromP1, int cutFromP2) {
   double totalCut = cutFromP1 + cutFromP2;
 
   if(totalCut >= length) {
-    fprintf(stderr, "shrinkLine() warning: cut too big\n");
+    cvl::log::warning("cvl::shrinkLine() warning: cut too big\n");
     return;
   }
 
@@ -460,11 +463,19 @@ void shrinkLine(cv::Point & p1, cv::Point & p2, int cutFromP1, int cutFromP2) {
 
 }
 
-void shrinkLine(cv::Point & p1, cv::Point & p2, int cut) {
+//*****************************************************************************
+// shrinkLine()
+//*****************************************************************************
+// Shorten a segment by cutting the same amount off both endpoints.
+inline void shrinkLine(cv::Point & p1, cv::Point & p2, int cut) {
   shrinkLine(p1, p2, cut, cut);
 }
 
-void scaleLine(cv::Point & p1, cv::Point & p2, double scale) {
+//*****************************************************************************
+// scaleLine()
+//*****************************************************************************
+// Scale a segment about its midpoint.
+inline void scaleLine(cv::Point & p1, cv::Point & p2, double scale) {
   cv::Point2d center = (p1 + p2) * 0.5;
   p1.x = center.x + (p1.x - center.x) * scale;
   p1.y = center.y + (p1.y - center.y) * scale;
@@ -472,7 +483,11 @@ void scaleLine(cv::Point & p1, cv::Point & p2, double scale) {
   p2.y = center.y + (p2.y - center.y) * scale;
 }
 
-cv::Rect scaleRect(const cv::Rect & r, double factor) {
+//*****************************************************************************
+// scaleRect()
+//*****************************************************************************
+// Scale a rectangle about its center.
+inline cv::Rect scaleRect(const cv::Rect & r, double factor) {
     int newW = cvRound(r.width  * factor);
     int newH = cvRound(r.height * factor);
     int newX = r.x + (r.width  - newW) / 2;
@@ -484,7 +499,8 @@ cv::Rect scaleRect(const cv::Rect & r, double factor) {
 //*****************************************************************************
 // drawDistanceMarker()
 //*****************************************************************************
-void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::string & label, const cv::Scalar & color, int thickness = 2, int textOffset = 20, double fontScale = 0.8, int shrink = 0, int endMarkSize = 10) {
+// Draw a dimension line between two points with end ticks and a rotated label.
+inline void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::string & label, const cv::Scalar & color, int thickness = 2, int textOffset = 20, double fontScale = 0.8, int shrink = 0, int endMarkSize = 10) {
   
   if(shrink != 0) shrinkLine(p1, p2, shrink);
       
@@ -538,11 +554,10 @@ void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::
   // drawString
   //*****************************************************************************/
   // Draw a numeric string using the built-in 5x3 glyphs.
-  void drawString(cv::Mat & dst, const char * str, cv::Point pos, const cv::Vec3b & color){
+  inline void drawString(cv::Mat & dst, const char * str, cv::Point pos, const cv::Vec3b & color){
     
     if(dst.channels() != 3){
-      fprintf(stderr, "The destination image is not a three channel image.\n");
-      exit(EXIT_FAILURE);
+      cvl::log::error("cvl::drawString() error: the destination image must be a three channel image\n");
     }
     
     size_t size = (size_t)strlen(str);
@@ -563,11 +578,11 @@ void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::
   // drawNumber
   //*****************************************************************************/
   // Draw an integer number using built-in digit glyphs.
-  void drawNumber(cv::Mat & dst, int number, const cv::Point & pos, const cv::Vec3b & color){
+  inline void drawNumber(cv::Mat & dst, int number, const cv::Point & pos, const cv::Vec3b & color){
     
     char str[PATH_MAX];
     
-    std::itoa(number, str);
+    cvl::utils::itoa(number, str);
     
     drawString(dst, str, pos, color);
     
@@ -577,13 +592,13 @@ void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::
   // drawParabola
   //*****************************************************************************/
   // Draw a parabola defined by quadratic coefficients.
-  void drawParabola(cv::Mat & dst, cv::Vec3d & coeffs, const cv::Vec3b & color, const cv::Point2d & offset = cv::Point2d(0,0)) {
+  inline void drawParabola(cv::Mat & dst, cv::Vec3d & coeffs, const cv::Vec3b & color, const cv::Point2d & offset = cv::Point2d(0,0)) {
     
      for(int x=0; x<dst.cols; ++x) {
        
        double y = coeffs[0] * x * x + coeffs[1] * x + coeffs[2];
        
-       cv::Point pt(x, static_cast<int>(y));
+       cv::Point pt(x, (int)(y));
        
        if(pt.y >= 0 && pt.y < dst.rows){
          if(dst.channels() == 1) dst.at<uchar>(pt) = color[0];
@@ -599,7 +614,7 @@ void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::
   // cross
   //*****************************************************************************/
   // Draw a small cross marker.
-  void cross(cv::Mat & dst, const cv::Point & pos, const cv::Vec3b & color) {
+  inline void cross(cv::Mat & dst, const cv::Point & pos, const cv::Vec3b & color) {
     cv::circle(dst, pos, 1, color);
   }
 
@@ -607,7 +622,7 @@ void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::
   // minEnclosureRoi
   //*****************************************************************************/
   // Compute the minimal ROI enclosing two rectangles.
-  cv::Rect minEnclosureRoi(const cv::Rect & roi1, const cv::Rect & roi2) {
+  inline cv::Rect minEnclosureRoi(const cv::Rect & roi1, const cv::Rect & roi2) {
     
     cv::Rect roi;
     
@@ -628,7 +643,7 @@ void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::
   // getRandomColor
   //*****************************************************************************/
   // Generate a random BGR color optionally above a brightness threshold.
-  cv::Vec3b getRandomColor(double minBright = -1) {
+  inline cv::Vec3b getRandomColor(double minBright = -1) {
 
     if(minBright != -1 && minBright < 0) minBright = 0;
     if(minBright > 255) minBright = 255;
@@ -657,15 +672,14 @@ void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::
   // save
   //*****************************************************************************/
   // Save an image to disk, expanding paths and validating the write.
-  bool save(cv::Mat & image, std::string str) {
+  inline bool save(cv::Mat & image, std::string str) {
     
-    mpl::io::expandPath(str);
+    cvl::io::expandPath(str);
 
     int status = cv::imwrite(str, image);
     
     if(!status) {
-      fprintf(stderr, "error in opening the file '%s'\n", str.c_str());
-      abort();
+      cvl::log::error("cvl::save() error: cannot write the file '%s'\n", str.c_str());
     }
     
     return true;
@@ -680,12 +694,12 @@ void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::
   // INTER_CUBIC  upscale qualità  più nitido, 4× più lento di LINEAR
   // INTER_LANCZOS4  upscale max qualità  il migliore, usalo per immagini scientifiche
   // INTER_NEAREST  pixel art / debug  velocissimo, nessun blending
-  cv::Mat resize(const cv::Mat & src, double percent, int interp = -1) {
+  inline cv::Mat resize(const cv::Mat & src, double percent, int interp = -1) {
     
     if(src.empty())
-      throw std::invalid_argument("resizeByPercent: immagine vuota");
+      cvl::log::error("cvl::resize() error: empty image\n");
     if(percent <= 0.0)
-      throw std::invalid_argument("resizeByPercent: percentuale deve essere > 0");
+      cvl::log::error("cvl::resize() error: percent must be greater than zero\n");
 
     double scale = percent / 100.0;
 
@@ -707,15 +721,14 @@ void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::
   // open
   //*****************************************************************************/
   // Open an image from disk with the requested imread mode.
-  cv::Mat open(std::string str, int mode = cv::IMREAD_UNCHANGED) {
+  inline cv::Mat open(std::string str, int mode = cv::IMREAD_UNCHANGED) {
     
-    mpl::io::expandPath(str);
+    cvl::io::expandPath(str);
     
     cv::Mat image = cv::imread(str, mode);
     
     if(image.data==NULL){
-      fprintf(stderr, "error in opening the image '%s'\n", str.c_str());
-      exit(EXIT_FAILURE);
+      cvl::log::error("cvl::open() error: cannot open the image '%s'\n", str.c_str());
     }
     
     return image;
@@ -726,7 +739,7 @@ void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::
   // open
   //*****************************************************************************/
   // Open an image from disk with the requested imread mode.
-  cv::Mat open(std::string str, double percent, int mode = cv::IMREAD_UNCHANGED, int interp = -1) {
+  inline cv::Mat open(std::string str, double percent, int mode = cv::IMREAD_UNCHANGED, int interp = -1) {
     
     cv::Mat image = open(str, mode);
     
@@ -738,21 +751,20 @@ void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::
   // open
   //*****************************************************************************/
   // Open a 16-bit single-channel image from disk.
-  cv::Mat open16bitC1(std::string str){
+  inline cv::Mat open16bitC1(std::string str){
     
-    mpl::io::expandPath(str);
+    cvl::io::expandPath(str);
     
     cv::Mat image = cv::imread(str, cv::IMREAD_UNCHANGED);
     
     // controllo che l'immagine sia buona
     if(image.empty()) {
-      fprintf(stderr, "error: in opening the image: '%s'\n", str.c_str());
-      exit(EXIT_FAILURE);
+      cvl::log::error("cvl::open16bitC1() error: cannot open the image '%s'\n", str.c_str());
     }
     
     // controllo che l'immagine sia buona
     if(image.type() != CV_16UC1) {
-      fprintf(stderr, "warning: is not a CV_16UC1 image: '%s'\n", str.c_str());
+      cvl::log::warning("cvl::open16bitC1() warning: '%s' is not a CV_16UC1 image\n", str.c_str());
     }
     
     return image;
@@ -762,10 +774,11 @@ void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::
   //****************************************************************************//
   // getTopRightPoint()
   //****************************************************************************//
+  // Return the top-right-most point of a set (smallest y, then largest x).
   template <class T>
-  T getTopRightPoint(const std::vector<T> & points) {
+  inline T getTopRightPoint(const std::vector<T> & points) {
     
-    if(points.empty()) throw std::runtime_error("La lista dei punti è vuota");
+    if(points.empty()) cvl::log::error("cvl::getTopRightPoint() error: the point list is empty\n");
 
     T best = points[0];
 
@@ -783,12 +796,12 @@ void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::
   //*****************************************************************************/
 //  void open(std::string str, cv::Mat & image, uint32_t mode = cv::IMREAD_UNCHANGED){
 //    
-//    mpl::io::expandPath(str);
+//    cvl::io::expandPath(str);
 //    
 //    cv::imread(str, image, mode);
 //    
 //    if(image.data==NULL){
-//      fprintf(stderr, "error in opening the image '%s'\n", str.c_str());
+//      fprintf(stderr, "cvl::open() error: cannot open the image '%s'\n", str.c_str());
 //      exit(EXIT_FAILURE);
 //    }
 //      
@@ -804,7 +817,7 @@ void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::
     
     int histSize = 256;
     
-    float range[] = { static_cast<float>(minValue), static_cast<float>(maxValue) };
+    float range[] = { (float)(minValue), (float)(maxValue) };
     
     const float* histRange = { range };
     
@@ -833,27 +846,27 @@ void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::
 
 
   //****************************************************************************/
-  // histogram
+  // histogram8bit
   //****************************************************************************/
-  void histogram8bit(const cv::Mat & src, cv::Mat & histo, cv::Mat & mask, int valueToSkip = -1) {
+  // Compute the 256-bin histogram of a CV_8UC1 image, optionally masking pixels
+  // and skipping a given intensity value.
+  inline void histogram8bit(const cv::Mat & src, cv::Mat & histo, cv::Mat & mask, int valueToSkip = -1) {
     
     if(src.empty() || src.type() != CV_8UC1) {
-      fprintf(stderr, "error in cvl::histogram8bit(): the input image must be a non empty CV_8UC1 image\n");
-      abort();
+      cvl::log::error("cvl::histogram8bit() error: the input image must be a non-empty CV_8UC1 image\n");
     }
     
-    if(!mask.empty() || mask.type() != CV_8UC1) {
-      fprintf(stderr, "error in cvl::histogram8bit(): the mask image must be a CV_8UC1 image\n");
-      abort();
+    if(!mask.empty() && mask.type() != CV_8UC1) {
+      cvl::log::error("cvl::histogram8bit() error: the mask must be a CV_8UC1 image\n");
     }
-    
+
     //FIXME: devo controllare che sia ad 8bit
-    
+
     int histSize = 256;
     float range[] = { 0, 256 };
     const float * histRange = { range };
-    
-    if(valueToSkip != 1) {
+
+    if(valueToSkip != -1) {
       
       if(mask.empty()) mask = cv::Mat::ones(src.size(), CV_8UC1);
       
@@ -870,7 +883,8 @@ void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::
   //****************************************************************************/
   // histogram8bit
   //****************************************************************************/
-  void histogram8bit(const cv::Mat & src, cv::Mat & histo, int valueToSkip = -1) {
+  // Overload without an explicit mask.
+  inline void histogram8bit(const cv::Mat & src, cv::Mat & histo, int valueToSkip = -1) {
     
     cv::Mat mask = cv::Mat();
     
@@ -881,11 +895,11 @@ void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::
   //****************************************************************************/
   // histogram16bit
   //****************************************************************************/
-  void histogram16bit(const cv::Mat & src, cv::Mat & histogram) {
+  // Compute the 65536-bin histogram of a CV_16UC1 image.
+  inline void histogram16bit(const cv::Mat & src, cv::Mat & histogram) {
     
     if(src.empty() || src.type() != CV_16UC1) {
-      fprintf(stderr, "error in cvl::histogram16bit(): the input image must be a non empty CV_16UC1 image\n");
-      abort();
+      cvl::log::error("cvl::histogram16bit() error: the input image must be a non-empty CV_16UC1 image\n");
     }
       
     int histSize = 65536;
@@ -899,8 +913,9 @@ void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::
   //****************************************************************************/
   // histogram16bit
   //****************************************************************************/
+  // 16-bit histogram variant that also returns the occupied [min, max] range.
   template <typename T>
-  void histogram16bit(const cv::Mat & src, cv::Mat & histogram, T & min, T & max) {
+  inline void histogram16bit(const cv::Mat & src, cv::Mat & histogram, T & min, T & max) {
 
     histogram16bit(src, histogram);
     

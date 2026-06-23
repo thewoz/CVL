@@ -1,7 +1,7 @@
 /*
  * GNU GENERAL PUBLIC LICENSE
  *
- * Copyright (C) 2026
+ * Copyright (C) 2021-2026
  * Created by Leonardo Parisi (leonardo.parisi[at]gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -29,7 +29,7 @@
 
 #include <opencv2/opencv.hpp>
 
-#include <mpl/stdlib.hpp>
+#include "utils.hpp"
 
 //*****************************************************************************
 // namespace cvl
@@ -208,8 +208,9 @@ namespace cvl {
   public:
     
     //****************************************************************************//
-    // get()
+    // loadPalette()
     //****************************************************************************//
+    // Fill the name->color map with the built-in palette.
     // https://htmlcolorcodes.com/color-names/
     static void loadPalette() {
       
@@ -374,15 +375,15 @@ namespace cvl {
       if((R >= 0 && R <= 255) && (G >= 0 && G <= 255) && (B >= 0 && B <= 255)) {
      
         std::string hexCode = "#";
-                    hexCode += std::decToHex(R);
-                    hexCode += std::decToHex(G);
-                    hexCode += std::decToHex(B);
+                    hexCode += cvl::utils::decToHex(R);
+                    hexCode += cvl::utils::decToHex(G);
+                    hexCode += cvl::utils::decToHex(B);
      
         return hexCode;
         
       } else {
-        fprintf(stderr, "error: in RGBtoHex()\n");
-        abort();
+        cvl::log::error("cvl::colors::RGBtoHex() error: RGB values out of range\n");
+        return "";
       }
       
     }
@@ -400,15 +401,15 @@ namespace cvl {
       if((B >= 0 && B <= 255) && (G >= 0 && G <= 255) && (R >= 0 && R <= 255)) {
 
         std::string hexCode = "#";
-                    hexCode += std::decToHex(R);
-                    hexCode += std::decToHex(G);
-                    hexCode += std::decToHex(B);
+                    hexCode += cvl::utils::decToHex(R);
+                    hexCode += cvl::utils::decToHex(G);
+                    hexCode += cvl::utils::decToHex(B);
      
         return hexCode;
         
       } else  {
-        fprintf(stderr, "error: in BGRtoHex()\n");
-        abort();
+        cvl::log::error("cvl::colors::BGRtoHex() error: BGR values out of range\n");
+        return "";
       }
       
     }
@@ -418,6 +419,7 @@ namespace cvl {
     //****************************************************************************//
     // get()
     //****************************************************************************//
+    // Look up a color by name; with create=true a missing name is added as random.
     static const cv::Vec3b & get(const std::string & str, bool create = false) {
    
       auto colorMap = _colors.find(normalize(str));
@@ -425,13 +427,12 @@ namespace cvl {
       if(colorMap == _colors.end()) {
         
         if(!create) {
-          fprintf(stderr, "error: color \"%s\" not found cvl::colors\n", str.c_str());
-          abort();
+          cvl::log::error("cvl::colors::get() error: color '%s' not found\n", str.c_str());
         }
         
         add(str, getRandom());
         
-        return _colors[str];
+        return _colors[normalize(str)];
         
       }
       
@@ -442,30 +443,33 @@ namespace cvl {
     //****************************************************************************//
     // getRGBHex()
     //****************************************************************************//
+    // Return the named color as an #RRGGBB hex string.
     static const std::string getRGBHex(const std::string & str, bool create = false) { return RGBtoHex(get(str,create)); }
     
 
     //****************************************************************************//
     // add()
     //****************************************************************************//
+    // Register a color in the palette (RGB args are stored as BGR).
     static void add(const std::string & name, int r, int g, int b) {
-      _colors[name] = cv::Vec3b(b, g, r);
+      _colors[normalize(name)] = cv::Vec3b(b, g, r);
     }
     
     static void add(const std::string & name, const cv::Vec3b & color) {
-      _colors[name] = color;
+      _colors[normalize(name)] = color;
     }
 
     //****************************************************************************//
     // getRandom()
     //****************************************************************************//
+    // Return a random BGR color.
     static const cv::Vec3b getRandom() {
-      
+
       static std::default_random_engine generator;
-      static std::uniform_real_distribution<float> distribution(0.0,1.0);
-      
+      static std::uniform_int_distribution<int> distribution(0,255);
+
       return cv::Vec3b(distribution(generator), distribution(generator), distribution(generator));
-      
+
     }
         
   private:
@@ -473,6 +477,7 @@ namespace cvl {
     //****************************************************************************//
     // normalize()
     //****************************************************************************//
+    // Lower-case a color name for case-insensitive lookup.
     static std::string normalize(const std::string & value) {
       
       std::string lowered;
@@ -480,7 +485,7 @@ namespace cvl {
       lowered.reserve(value.size());
       
       for(unsigned char ch : value) {
-        lowered.push_back(static_cast<char>(std::tolower(ch)));
+        lowered.push_back((char)(std::tolower(ch)));
       }
       
       return lowered;
@@ -489,7 +494,7 @@ namespace cvl {
     
   }; /* class glColors */
 
-  std::map<std::string, cv::Vec3b> cvl::colors::_colors = std::map<std::string, cv::Vec3b>();
+  inline std::map<std::string, cv::Vec3b> cvl::colors::_colors = std::map<std::string, cv::Vec3b>();
 
 } /* namespace cvl */
 

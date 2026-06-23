@@ -1,30 +1,36 @@
 # CVL
 
-CVL is a simple, header-only Computer Vision Library built on top of OpenCV.
-It provides convenience wrappers for common CV tasks such as background modeling,
-thresholding, blob processing, denoising, enhancement, and drawing utilities.
+CVL is a header-only **C**omputer **V**ision **L**ibrary built on top of OpenCV.
+It provides convenience wrappers and small algorithms for common CV tasks such as
+background modeling, thresholding, connected-component labeling, blob processing
+and splitting, denoising, image enhancement, sub-pixel corner refinement and
+drawing utilities.
 
 ## Requirements
 
-- OpenCV (headers `opencv2/*`)
+A **C++17** compiler and the librarty **OpenCV 4** 
+
 
 ## Installation
 
-CVL is header-only. Add the `include/` directory to your include path.
+CVL is header-only. Either add the `include/` directory to your include path, or use
+the provided `Makefile`, which symlinks `include/` to `/usr/local/include/cvl`:
 
-### CMake
-
-```cmake
-target_include_directories(my_target PRIVATE /path/to/CVL/include)
+```sh
+make install     # creates /usr/local/include/cvl -> ./include
+make uninstall   # removes the symlink
 ```
 
 ## Usage
 
-Include the main header to access all modules:
+Include the umbrella header to access all modules (everything lives under the `cvl` namespace):
 
 ```cpp
 #include <cvl/cvl.hpp>
 ```
+
+By default the headers are included as `<cvl/...>`. 
+If you define `_DEBUG_CVL_LIBS_` before including `cvl.hpp`, they are included with local quotes (`"..."`) instead, which is handy when working on the library itself.
 
 ### Minimal example
 
@@ -37,35 +43,52 @@ int main() {
   cv::Mat thresholded;
   cvl::threshold::get(image, thresholded, "OTSU", 0, 0, 0);
 
-  cv::imwrite("out.png", thresholded);
+  cvl::blobs_t blobs;
+  cvl::labeling::get(thresholded, cvl::labeling::NEXT_NEAREST_NEIGHBOURS, /*minClusterMass=*/5, blobs, image);
+
+  cv::Mat out(image.size(), CV_8UC3, cv::Scalar::all(0));
+  blobs.drawMask(out);
+
+  cvl::save(out, "out.png");
   return 0;
 }
 ```
 
 ## Modules
 
-- `background` – background estimation (median, mode, average, etc.)
-- `baricenter` – barycenter computations
-- `blob` / `blobs` – blob data structures and utilities
-- `blobSplitting` – blob splitting via thresholding + watershed
-- `chessboard` – chessboard/circle grid detection
-- `clustering` – nearest-neighbor clustering
-- `contours` – contour extraction from masks
-- `convert` – 16-bit to 8-bit conversions
-- `corners` – loading tracked corners
-- `deflickering` – temporal deflickering
-- `denoising` – denoising filters
-- `draw` – drawing primitives
-- `enhance` – contrast/CLAHE/sharpening
-- `features` – feature helpers (Hough circles)
-- `labeling` – connected components labeling
-- `opencv` – OpenCV helpers and colors
-- `pose` – pose and stereo utilities
-- `subpixel` – subpixel corner refinement
-- `targetMass` – split/erode blobs by mass
-- `threshold` – thresholding utilities
-- `window` – OpenCV window wrapper
+| Header | Namespace | Purpose |
+| --- | --- | --- |
+| `background` | `cvl::background` | Background estimation (lightest, darkest, median, mode, average, bucket, fixed) |
+| `baricenter` | `cvl::baricenter` | Barycenter computations (geometric / intensity weighted) |
+| `blob` / `blobs` | `cvl` | `blob_t` / `blobs_t` data structures and drawing helpers |
+| `blobSplitting` | `cvl::blobsplitting` | Blob splitting via iterative thresholding + watershed |
+| `chessboard` | `cvl::chessboard`, `cvl` | Checkerboard / circle-grid detection and `chessboard_t` |
+| `clustering` | `cvl::clustering` | Nearest-neighbor clustering of blobs |
+| `colors` | `cvl` | Named BGR color palette and the `colors` lookup class |
+| `contours` | `cvl::contours` | Internal / external contour extraction, contour scaling |
+| `convert` | `cvl::convert` | 16-bit → 8-bit conversions (several modes) |
+| `corners` | `cvl` | `corners_t` loader for tracked corners |
+| `deflickering` | global | `asDeflickering` temporal deflickering helper |
+| `denoising` | `cvl::denoising` | Denoising filters (gaussian, median, morphology, bilateral, starflag, …) |
+| `draw` | `cvl::draw` | Drawing primitives (dashed circle, cross) |
+| `enhance` | `cvl::enhance` | Contrast / CLAHE / unsharp / histogram equalization |
+| `labeling` | `cvl::labeling` | Connected-components labeling into blobs |
+| `opencv` | `cvl` | OpenCV helpers (I/O, resize, histograms, text/markers, operators) |
+| `pose` | `cvl::pose` | Pose / stereo utilities |
+| `subpixel` / `subpixelNew` | `cvl::subpixel`, global | Sub-pixel corner refinement |
+| `targetMass` | `cvl::targetmass` | Split / erode blobs by mass |
+| `threshold` | `cvl::threshold` | Thresholding utilities (otsu, adaptive, global, median, mode, percentile) |
+| `utils` | `cvl::io`, `cvl::log`, `cvl::utils`, `cvl` | Self-contained helpers: path/file I/O, logging, `loader`, clustering primitives, `itoa`/`decToHex` |
+| `window` | `cvl` | `window_t`, an OpenCV window wrapper with event hooks |
 
 ## Documentation
 
-A minimal API reference is available in [`docs/REFERENCE.md`](docs/REFERENCE.md).
+- [REFERENCE.md](REFERENCE.md) – a compact, flat list of the public functions and their signatures.
+
+## Future optimizations
+
+Ideas left for later, only worth doing if they become real bottlenecks:
+
+- **Spatial index for clustering.** `cvl::utils::connectedComponents` and `cvl::utils::medianFirstNNDistance` (in `utils.hpp`) are brute-force, O(n²) in the number of blobs. For large blob counts a uniform spatial grid (or a k-d tree) would bring the neighbor search down to roughly O(n).
+- **OpenCV-based connected components.** `cvl::labeling::get` uses a hand-written union-find over an `int**` matrix. Replacing the core with `cv::connectedComponentsWithStats` (SIMD-optimized, supports 4/8-connectivity) would likely be faster; it is a larger refactor because the per-blob pixel lists still have to be collected afterwards.
+

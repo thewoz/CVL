@@ -1,7 +1,7 @@
 /*
  * GNU GENERAL PUBLIC LICENSE
  *
- * Copyright (C) 2019
+ * Copyright (C) 2021-2026
  * Created by Leonardo Parisi (leonardo.parisi[at]gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,6 +27,8 @@
 
 #include <opencv2/opencv.hpp>
 
+#include "utils.hpp"
+
 //****************************************************************************/
 // namescape cvl
 //****************************************************************************/
@@ -35,7 +37,7 @@ namespace cvl {
   //****************************************************************************/
   // class window_t
   //****************************************************************************/
-  /// Simple OpenCV window wrapper with event hooks.
+  // Simple OpenCV window wrapper with event hooks.
   class window_t {
   
   protected:
@@ -70,7 +72,7 @@ namespace cvl {
     //****************************************************************************/
     // mouseHandler
     //****************************************************************************/
-    /// Static mouse callback that dispatches to the instance handler.
+    // Static mouse callback that dispatches to the instance handler.
     static void mouseHandler(int event, int x, int y, int flags, void * window) {
       
       if(event == cv::EVENT_LBUTTONDOWN || event == cv::EVENT_LBUTTONUP || event == cv::EVENT_LBUTTONDBLCLK) flags -= cv::EVENT_FLAG_LBUTTON;
@@ -85,13 +87,13 @@ namespace cvl {
     //****************************************************************************/
     // processMouseEvent
     //****************************************************************************/
-    /// Override to handle mouse events.
+    // Override to handle mouse events.
     virtual void processMouseEvent(int event, int x, int y, int flags) { }
     
     //****************************************************************************/
     // processKeyboardEvent
     //****************************************************************************/
-    /// Override to handle keyboard events.
+    // Override to handle keyboard events.
     virtual void processKeyboardEvent(int key) { }
     
     //****************************************************************************/
@@ -102,13 +104,13 @@ namespace cvl {
     //****************************************************************************/
     // processBroadcastEvent
     //****************************************************************************/
-    /// Override to respond to broadcast events from other windows.
+    // Override to respond to broadcast events from other windows.
     virtual void processBroadcastEvent() { }
     
     //****************************************************************************/
     // processKeyboardEvent
     //****************************************************************************/
-    /// Internal keyboard event dispatcher to all windows.
+    // Internal keyboard event dispatcher to all windows.
     void _processKeyboardEvent(int key) {
       
       // ciclo sulle finestre
@@ -131,25 +133,25 @@ namespace cvl {
     //****************************************************************************/
     // window_t()
     //****************************************************************************/
-    /// Construct an uninitialized window.
+    // Construct an uninitialized window.
     window_t() : id (++idCounter) {  }
     
     //****************************************************************************/
     // window_t()
     //****************************************************************************/
-    /// Construct and initialize a window with a title.
+    // Construct and initialize a window with a title.
     window_t(const std::string & _name, int flags = cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_NORMAL) : id (++idCounter) { init(_name, flags); }
     
     //****************************************************************************/
     // ~window_t()
     //****************************************************************************/
-    /// Close and unregister the window.
+    // Close and unregister the window.
     ~window_t() { close(); }
     
     //****************************************************************************/
     // close()
     //****************************************************************************/
-    /// Close the window and unregister it.
+    // Close the window and unregister it.
     void close() {
       if(isInit) {
         isInit = false;
@@ -162,18 +164,17 @@ namespace cvl {
     //****************************************************************************/
     // isInited()
     //****************************************************************************
-    /// Return whether the window is initialized.
+    // Return whether the window is initialized.
     bool isInited() { return isInit; }
     
     //****************************************************************************/
     // init() -
     //****************************************************************************/
-    /// Initialize the window and register callbacks.
+    // Initialize the window and register callbacks.
     void init(const std::string & _name, int flags = cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_NORMAL) {
       
       if(isInit) {
-        fprintf(stderr, "error the window is already inited\n");
-        abort();
+        cvl::log::error("cvl::window_t error: the window is already initialized\n");
       }
       
       name = _name;
@@ -193,7 +194,7 @@ namespace cvl {
     //****************************************************************************/
     // show()
     //****************************************************************************/
-    /// Show an image with an updated title.
+    // Show an image with an updated title.
     int show(const cv::Mat & _image, const std::string & str, int time = 0) {
       
       setTitle(str);
@@ -205,12 +206,11 @@ namespace cvl {
     //****************************************************************************/
     // show()
     //****************************************************************************/
-    /// Show an image and optionally wait for keyboard input.
+    // Show an image and optionally wait for keyboard input.
     int show(const cv::Mat & _image, int time = 0) {
       
       if(!isInit) {
-        fprintf(stderr, "error the window must be init before\n");
-        abort();
+        cvl::log::error("cvl::window_t error: the window must be initialized first\n");
       }
 
       cv::imshow(name, _image);
@@ -245,12 +245,11 @@ namespace cvl {
     //****************************************************************************/
     // setTitle()
     //****************************************************************************/
-    /// Set the window title.
+    // Set the window title.
     void setTitle(const std::string & str) {
       
       if(!isInit) {
-        fprintf(stderr, "error the window must be init before\n");
-        abort();
+        cvl::log::error("cvl::window_t error: the window must be initialized first\n");
       }
       
       cv::setWindowTitle(name, str);
@@ -260,12 +259,11 @@ namespace cvl {
     //****************************************************************************/
     // toggleFullScreen() -
     //****************************************************************************/
-    /// Toggle full-screen mode.
+    // Toggle full-screen mode.
     void toggleFullScreen() {
             
       if(!isInit) {
-        fprintf(stderr, "error the window must be init before\n");
-        abort();
+        cvl::log::error("cvl::window_t error: the window must be initialized first\n");
       }
       
       isFullScreen = !isFullScreen;
@@ -278,12 +276,11 @@ namespace cvl {
     //****************************************************************************/
     // setFullScreen() -
     //****************************************************************************/
-    /// Enable full-screen mode.
+    // Enable full-screen mode.
     void setFullScreen() {
             
       if(!isInit) {
-        fprintf(stderr, "error the window must be init before\n");
-        abort();
+        cvl::log::error("cvl::window_t error: the window must be initialized first\n");
       }
       
       isFullScreen = true;
@@ -295,12 +292,11 @@ namespace cvl {
     //****************************************************************************/
     // unsetFullScreen() -
     //****************************************************************************/
-    /// Disable full-screen mode.
+    // Disable full-screen mode.
     void unsetFullScreen() {
             
       if(!isInit) {
-        fprintf(stderr, "error the window must be init before\n");
-        abort();
+        cvl::log::error("cvl::window_t error: the window must be initialized first\n");
       }
       
       isFullScreen = false;
@@ -312,12 +308,11 @@ namespace cvl {
     //****************************************************************************/
     // update() -
     //****************************************************************************/
-    /// Update the window contents without waiting.
+    // Update the window contents without waiting.
     void update(const cv::Mat & _image, std::string title = "") {
       
       if(!isInit) {
-        fprintf(stderr, "error the window must be init before\n");
-        abort();
+        cvl::log::error("cvl::window_t error: the window must be initialized first\n");
       }
       
       if(!title.empty()) setTitle(title);
@@ -329,12 +324,11 @@ namespace cvl {
     //****************************************************************************/
     // resize() -
     //****************************************************************************/
-    /// Resize the window.
+    // Resize the window.
     void resize(int _width, int _height) {
       
       if(!isInit) {
-        fprintf(stderr, "error the window must be init before\n");
-        abort();
+        cvl::log::error("cvl::window_t error: the window must be initialized first\n");
       }
       
       width  = _width;
@@ -347,12 +341,11 @@ namespace cvl {
     //****************************************************************************/
     // move() -
     //****************************************************************************/
-    /// Move the window on screen.
+    // Move the window on screen.
     void move(int _screenPosX, int _screenPosY) {
       
       if(!isInit) {
-        fprintf(stderr, "error the window must be init before\n");
-        abort();
+        cvl::log::error("cvl::window_t error: the window must be initialized first\n");
       }
       
       screenPosX = _screenPosX;
@@ -365,13 +358,13 @@ namespace cvl {
     //****************************************************************************/
     // broadcast()
     //****************************************************************************
-    /// Broadcast an event to other windows.
-    void broadcast() { for(int i=0; i<windows.size(); ++i) if(windows[i]->id != id) windows[i]->processBroadcastEvent(); }
+    // Broadcast an event to other windows.
+    void broadcast() { for(size_t i=0; i<windows.size(); ++i) if(windows[i]->id != id) windows[i]->processBroadcastEvent(); }
     
     //****************************************************************************/
     // setCursor() -
     //****************************************************************************/
-    /// Set the cursor type if supported by OpenCV.
+    // Set the cursor type if supported by OpenCV.
     void setCursor(int cursorTypes) {
       
 #ifdef OPENCV_EXTENDED_QT_GUI
@@ -380,7 +373,7 @@ namespace cvl {
       
 #else
       
-      fprintf(stderr, "cvl::windows_t::setCursor() error: the function is not available with this version of OpenCV\n");
+      cvl::log::warning("cvl::window_t::setCursor() warning: the function is not available with this version of OpenCV\n");
       
 #endif
       
@@ -388,9 +381,9 @@ namespace cvl {
     
   }; /* class window_t */
 
-  std::vector<window_t *> window_t::windows = std::vector<window_t *>();
+  inline std::vector<window_t *> window_t::windows = std::vector<window_t *>();
 
-  int window_t::idCounter = -1;
+  inline int window_t::idCounter = -1;
 
 } /* namespace cvl */
 

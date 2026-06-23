@@ -1,7 +1,7 @@
 /*
  * GNU GENERAL PUBLIC LICENSE
  *
- * Copyright (C) 2019
+ * Copyright (C) 2021-2026
  * Created by Leonardo Parisi (leonardo.parisi[at]gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,6 +24,7 @@
 #include <cstdio>
 
 #include <vector>
+#include <utility>
 
 #include <opencv2/opencv.hpp>
 
@@ -35,8 +36,8 @@ namespace cvl::targetmass {
   //****************************************************************************/
   // fixed
   //*****************************************************************************/
-  /// Draw fixed-radius target circles for each blob barycenter.
-  void fixed(cvl::blobs_t & blobs, cv::Mat & dst, int radius) {
+  // Draw fixed-radius target circles for each blob barycenter.
+  inline void fixed(cvl::blobs_t & blobs, cv::Mat & dst, int radius) {
     
     dst.setTo(cv::Scalar(0,0,0));
     
@@ -51,8 +52,8 @@ namespace cvl::targetmass {
   //*****************************************************************************/
   // erode
   //*****************************************************************************/
-  /// Erode blobs until they approach a target mass.
-  void erode(cvl::blobs_t & blobs, const cv::Mat & src, size_t targetMass, size_t minMass = 1, int labelingNeighboursType = cvl::labeling::NEXT_NEAREST_NEIGHBOURS) {
+  // Erode blobs until they approach a target mass.
+  inline void erode(cvl::blobs_t & blobs, const cv::Mat & src, size_t targetMass, size_t minMass = 1, int labelingNeighboursType = cvl::labeling::NEXT_NEAREST_NEIGHBOURS) {
     
     cvl::blobs_t newBlobs;
     
@@ -62,7 +63,7 @@ namespace cvl::targetmass {
       int mass = (int)blobs[i].size();
       
       // se e' piu' grande della massa di entrata lo provo a dividere
-      if(mass > targetMass) {
+      if(mass > (int)targetMass) {
         
         // creo un immagine di appoggio
         cv::Mat thrsImg = cv::Mat::zeros(blobs[i].getImageSize(), CV_8UC1);
@@ -71,7 +72,7 @@ namespace cvl::targetmass {
         blobs[i].drawMask(thrsImg, blobs[i].offset);
         
         // ciclo
-        for(;mass>targetMass;){
+        for(;mass>(int)targetMass;){
           
           std::vector<cv::Point> contours;
           
@@ -92,13 +93,13 @@ namespace cvl::targetmass {
         
         // labbello
         cvl::labeling::get(thrsImg, labelingNeighboursType, minMass, tmpBlobs, src, blobs[i].offset);
-        
-        newBlobs.add(tmpBlobs);
-        
+
+        newBlobs.add(std::move(tmpBlobs));
+
       } else {
-        
-        newBlobs.add(blobs[i]);
-        
+
+        newBlobs.add(std::move(blobs[i]));
+
       }
       
     }  // for i
@@ -117,8 +118,8 @@ namespace cvl::targetmass {
     //*****************************************************************************/
     // try2split
     //*****************************************************************************/
-    /// Attempt to split a blob by thresholding toward dark or light pixels.
-    void try2split(cvl::blob_t & blob, const cv::Mat & src, cvl::blobs_t & blobsFound, size_t targetMass, bool toDark, size_t minMass = 1, int labelingNeighboursType = cvl::labeling::NEXT_NEAREST_NEIGHBOURS) {
+    // Attempt to split a blob by thresholding toward dark or light pixels.
+    inline void try2split(cvl::blob_t & blob, const cv::Mat & src, cvl::blobs_t & blobsFound, size_t targetMass, bool toDark, size_t minMass = 1, int labelingNeighboursType = cvl::labeling::NEXT_NEAREST_NEIGHBOURS) {
       
       // vettore che contiene i vari blob che vanno divisi
       cvl::blobs_t blobsToSplit;
@@ -193,9 +194,9 @@ namespace cvl::targetmass {
           
           // se ha ragiunto la massa giusta
           if(tmpBlobs[j].size() <= targetMass || toAdd){
-            blobsFound.add(tmpBlobs[j]);
+            blobsFound.add(std::move(tmpBlobs[j]));
           } else {
-            blobsToSplit.add(tmpBlobs[j]);
+            blobsToSplit.add(std::move(tmpBlobs[j]));
           }
           
         }
@@ -211,8 +212,8 @@ namespace cvl::targetmass {
   //*****************************************************************************/
   // split
   //*****************************************************************************/
-  /// Split blobs until they are at or below the target mass.
-  void split(cvl::blobs_t & blobs, const cv::Mat & src, size_t targetMass, bool toDark, size_t minMass = 1, int labelingNeighboursType = cvl::labeling::NEXT_NEAREST_NEIGHBOURS) {
+  // Split blobs until they are at or below the target mass.
+  inline void split(cvl::blobs_t & blobs, const cv::Mat & src, size_t targetMass, bool toDark, size_t minMass = 1, int labelingNeighboursType = cvl::labeling::NEXT_NEAREST_NEIGHBOURS) {
     
     // vettore di appoggio con il risultato finale
     cvl::blobs_t foundedBlobs;
@@ -232,16 +233,16 @@ namespace cvl::targetmass {
         for(size_t j=0; j<tmpBlobs.size(); ++j) {
           
           tmpBlobs[j].label = (int)foundedBlobs.size();
-          
-          foundedBlobs.add(tmpBlobs[j]);
+
+          foundedBlobs.add(std::move(tmpBlobs[j]));
           
         }
         
       } else {
         
         blobs[i].label = (int)foundedBlobs.size();
-        
-        foundedBlobs.add(blobs[i]);
+
+        foundedBlobs.add(std::move(blobs[i]));
         
       }
       

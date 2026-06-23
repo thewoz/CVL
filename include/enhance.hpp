@@ -1,7 +1,7 @@
 /*
  * GNU GENERAL PUBLIC LICENSE
  *
- * Copyright (C) 2019
+ * Copyright (C) 2021-2026
  * Created by Leonardo Parisi (leonardo.parisi[at]gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,6 +27,8 @@
 
 #include <opencv2/opencv.hpp>
 
+#include "utils.hpp"
+
 //****************************************************************************
 // namespace
 //****************************************************************************
@@ -40,9 +42,9 @@ namespace cvl::enhance {
     //****************************************************************************
     // auto_alpha_beta
     //****************************************************************************
-    /// Compute contrast stretch parameters based on histogram clipping.
+    // Compute contrast stretch parameters based on histogram clipping.
     // https://answers.opencv.org/question/75510/how-to-make-auto-adjustmentsbrightness-and-contrast-for-image-android-opencv-image-correction
-    void auto_alpha_beta(const cv::Mat & image, float clipHistPercent, float & alpha, float & beta) {
+    inline void auto_alpha_beta(const cv::Mat & image, float clipHistPercent, float & alpha, float & beta) {
       
       double minimo, massimo;
       
@@ -52,8 +54,7 @@ namespace cvl::enhance {
       if(image.depth() == CV_16U) histSize = 65536;
       
       if(histSize == -1) {
-        fprintf(stderr, "error auto_alpha_beta() image depth not supported\n");
-        abort();
+        cvl::log::error("cvl::enhance::auto_alpha_beta() error: image depth not supported\n");
       }
       
       if(clipHistPercent == 0) {
@@ -106,16 +107,16 @@ namespace cvl::enhance {
   //****************************************************************************
   // histogramEqualization
   //****************************************************************************
-  /// Apply histogram equalization to a single image.
-  void histogramEqualization(cv::Mat & src) {
+  // Apply histogram equalization to a single image.
+  inline void histogramEqualization(cv::Mat & src) {
     cv::equalizeHist(src, src);
   }
 
   //****************************************************************************
   // histogramEqualization
   //****************************************************************************
-  /// Apply histogram equalization to a list of images.
-  void histogramEqualization(std::vector<cv::Mat> & images) {
+  // Apply histogram equalization to a list of images.
+  inline void histogramEqualization(std::vector<cv::Mat> & images) {
     
     for(size_t i=0; i<images.size(); ++i)
       histogramEqualization(images[i]);
@@ -126,14 +127,24 @@ namespace cvl::enhance {
   // contrast
   //****************************************************************************
   // I(x,y) = alpha * I(x,y) + beta
-  /// Apply a linear contrast adjustment.
-  void contrast(cv::Mat & image, float alpha, float beta) {
+  // Apply a linear contrast adjustment.
+  inline void contrast(cv::Mat & image, float alpha, float beta) {
     
     if(image.channels() != 1) {
-      fprintf(stderr, "error autoContrast() works only with one channel image\n");
-      abort();
+      cvl::log::error("cvl::enhance::contrast() error: works only with single channel images\n");
     }
     cv::convertScaleAbs(image, image, alpha, beta);
+    
+  }
+
+  //****************************************************************************
+  // contrast
+  //****************************************************************************
+  // Apply a linear contrast adjustment to multiple images.
+  inline void contrast(std::vector<cv::Mat> & images, float alpha, float beta) {
+    
+    for(size_t i=0; i<images.size(); ++i)
+      contrast(images[i], alpha, beta);
     
   }
 
@@ -141,12 +152,11 @@ namespace cvl::enhance {
   // autoContrast
   //****************************************************************************
   // I(x,y) = alpha * I(x,y) + beta
-  /// Apply automatic contrast stretching with histogram clipping.
-  void autoContrast(cv::Mat & image, float clipHistPercent) {
+  // Apply automatic contrast stretching with histogram clipping.
+  inline void autoContrast(cv::Mat & image, float clipHistPercent) {
     
     if(image.channels() != 1) {
-      fprintf(stderr, "error autoContrast() works only with one channel image\n");
-      abort();
+      cvl::log::error("cvl::enhance::autoContrast() error: works only with single channel images\n");
     }
 
     float alpha, beta;
@@ -160,8 +170,8 @@ namespace cvl::enhance {
   //****************************************************************************
   // autoContrast
   //****************************************************************************
-  /// Apply automatic contrast stretching to multiple images.
-  void autoContrast(std::vector<cv::Mat> & images, float clipHistPercent) {
+  // Apply automatic contrast stretching to multiple images.
+  inline void autoContrast(std::vector<cv::Mat> & images, float clipHistPercent) {
     
     for(size_t i=0; i<images.size(); ++i)
       autoContrast(images[i], clipHistPercent);
@@ -171,8 +181,8 @@ namespace cvl::enhance {
   //****************************************************************************
   // unsharpMask
   //****************************************************************************
-  /// Sharpen an image using unsharp masking.
-  void unsharpMask(cv::Mat & src, int size = 3, double sigma = 1, double threshold = 5, double amount = 3) {
+  // Sharpen an image using unsharp masking.
+  inline void unsharpMask(cv::Mat & src, int size = 3, double sigma = 1, double threshold = 5, double amount = 3) {
     
     #if(1)
     
@@ -223,8 +233,8 @@ namespace cvl::enhance {
   //****************************************************************************
   // unsharpMask
   //****************************************************************************
-  /// Apply unsharp masking to multiple images.
-  void unsharpMask(std::vector<cv::Mat> & images, double size = 3, double sigma = 1, double threshold = 5, double amount = 1) {
+  // Apply unsharp masking to multiple images.
+  inline void unsharpMask(std::vector<cv::Mat> & images, double size = 3, double sigma = 1, double threshold = 5, double amount = 1) {
     
     for(unsigned int i=0; i<images.size(); ++i)
       unsharpMask(images[i], size, sigma, threshold, amount);
@@ -234,8 +244,8 @@ namespace cvl::enhance {
   //****************************************************************************
   // laplacianUnsharpMask
   //****************************************************************************
-  /// Sharpen an image using a Laplacian filter.
-  void laplacianUnsharpMask(cv::Mat & src, double amount = 1.1) {
+  // Sharpen an image using a Laplacian filter.
+  inline void laplacianUnsharpMask(cv::Mat & src, double amount = 1.1) {
     
     cv::Mat filtered;
     cv::medianBlur(src, filtered, 1);
@@ -250,8 +260,8 @@ namespace cvl::enhance {
   //****************************************************************************
   // laplacianUnsharpMask
   //****************************************************************************
-  /// Apply Laplacian sharpening to multiple images.
-  void laplacianUnsharpMask(std::vector<cv::Mat> & images, double amount) {
+  // Apply Laplacian sharpening to multiple images.
+  inline void laplacianUnsharpMask(std::vector<cv::Mat> & images, double amount) {
     
     for(unsigned int i=0; i<images.size(); ++i)
       laplacianUnsharpMask(images[i], amount);
@@ -262,8 +272,8 @@ namespace cvl::enhance {
   // clahe
   //****************************************************************************
   // https://en.wikipedia.org/wiki/Adaptive_histogram_equalization#Contrast_Limited_AHE
-  /// Apply CLAHE (Contrast Limited Adaptive Histogram Equalization).
-  void clahe(cv::Mat & src, float clipLimit, const cv::Size & tilesGridSize) {
+  // Apply CLAHE (Contrast Limited Adaptive Histogram Equalization).
+  inline void clahe(cv::Mat & src, float clipLimit, const cv::Size & tilesGridSize) {
     
     cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
     
@@ -277,8 +287,8 @@ namespace cvl::enhance {
 
   }
   
-  /// Apply CLAHE to multiple images.
-  void clahe(std::vector<cv::Mat> & images, float clipLimit, const cv::Size & tilesGridSize) {
+  // Apply CLAHE to multiple images.
+  inline void clahe(std::vector<cv::Mat> & images, float clipLimit, const cv::Size & tilesGridSize) {
     
     for(unsigned int i=0; i<images.size(); ++i)
       clahe(images[i], clipLimit, tilesGridSize);
@@ -288,8 +298,8 @@ namespace cvl::enhance {
   //****************************************************************************
   // get
   //****************************************************************************
-  /// Dispatch enhancement by name for a single image.
-  void get(cv::Mat & src, const std::string & algo, double param1, double param2 = 1,  double param3 = 5, double param4 = 1) {
+  // Dispatch enhancement by name for a single image.
+  inline void get(cv::Mat & src, const std::string & algo, double param1, double param2 = 1,  double param3 = 5, double param4 = 1) {
     
     if(algo.compare("LAPLACIAN") == 0) {
       return laplacianUnsharpMask(src, param1);
@@ -312,22 +322,20 @@ namespace cvl::enhance {
     }
     
     if(algo.compare("CLAHE") == 0) {
-      return clahe(src, param1, cv::Size(param2, param2));
+      return clahe(src, param1, cv::Size(param2, param3));
     }
     
-    fprintf(stderr, "error unknown type of enhance evaluation criteria.\n");
-    fprintf(stderr, "You can choose between:\n");
-    fprintf(stderr, "      UNSHARPMASK, AUTO_CONTRAST, CLAHE or EQUALIZE_HISTOGRAM\n");
-    
-    exit(EXIT_FAILURE);
-    
+    cvl::log::error("cvl::enhance::get() error: unknown enhance type '%s'\n"
+                    "You can choose between:\n"
+                    "      LAPLACIAN, UNSHARPMASK, CONTRAST, AUTO_CONTRAST, CLAHE or EQUALIZE_HISTOGRAM\n", algo.c_str());
+
   }
-  
+
   //****************************************************************************
   // get
   //****************************************************************************
-  /// Dispatch enhancement by name for multiple images.
-  void get(std::vector<cv::Mat> & src, const std::string & algo, double param1, double param2 = 1,  double param3 = 5, double param4 = 1) {
+  // Dispatch enhancement by name for multiple images.
+  inline void get(std::vector<cv::Mat> & src, const std::string & algo, double param1, double param2 = 1,  double param3 = 5, double param4 = 1) {
     
     if(algo.compare("LAPLACIAN") == 0) {
       return laplacianUnsharpMask(src, param1);
@@ -335,6 +343,10 @@ namespace cvl::enhance {
     
     if(algo.compare("UNSHARPMASK") == 0) {
       return unsharpMask(src, param1, param2, param3, param4);
+    }
+    
+    if(algo.compare("CONTRAST") == 0) {
+      return contrast(src, param1, param2);
     }
     
     if(algo.compare("AUTO_CONTRAST") == 0) {
@@ -349,11 +361,9 @@ namespace cvl::enhance {
       return clahe(src, param1, cv::Size(param2, param3));
     }
     
-    fprintf(stderr, "error unknown type of enhance evaluation criteria.\n");
-    fprintf(stderr, "You can choose between:\n");
-    fprintf(stderr, "      UNSHARPMASK, AUTO_CONTRAST, CLAHE or EQUALIZE_HISTOGRAM\n");
-
-    exit(EXIT_FAILURE);
+    cvl::log::error("cvl::enhance::get() error: unknown enhance type '%s'\n"
+                    "You can choose between:\n"
+                    "      LAPLACIAN, UNSHARPMASK, CONTRAST, AUTO_CONTRAST, CLAHE or EQUALIZE_HISTOGRAM\n", algo.c_str());
     
   }
   

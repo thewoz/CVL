@@ -1,7 +1,7 @@
 /*
  * GNU GENERAL PUBLIC LICENSE
  *
- * Copyright (C) 2019
+ * Copyright (C) 2021-2026
  * Created by Leonardo Parisi (leonardo.parisi[at]gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,8 +27,7 @@
 
 #include <opencv2/opencv.hpp>
 
-#include <mpl/stdio.hpp>
-#include <mpl/loader.hpp>
+#include "utils.hpp"
 
 //****************************************************************************/
 // cvl::chessboard
@@ -38,8 +37,8 @@ namespace cvl::chessboard {
   //****************************************************************************/
   // get() -
   //****************************************************************************/
-  /// Detect a checkerboard or circles grid from an image.
-  bool get(const cv::Mat & image, const cv::Size & patternSize, std::vector<cv::Point2f> & corners, const std::string & mode, const std::string & algorithm = "old") {
+  // Detect a checkerboard or circles grid from an image.
+  inline bool get(const cv::Mat & image, const cv::Size & patternSize, std::vector<cv::Point2f> & corners, const std::string & mode, const std::string & algorithm = "old") {
         
     bool patternfound = false;
     
@@ -66,10 +65,8 @@ namespace cvl::chessboard {
         
       }
       
-      fprintf(stderr, "cvl::chessboard::get() error algorithm not found\n");
-      
-      abort();
-      
+      cvl::log::error("cvl::chessboard::get() error: algorithm not found\n");
+
       return false;
       
     }
@@ -111,17 +108,17 @@ namespace cvl::chessboard {
       
     }
     
-    fprintf(stderr, "operational mode in not found\n");
-    
-    abort();
-        
+    cvl::log::error("cvl::chessboard::get() error: operational mode '%s' not found\n", mode.c_str());
+
+    return false;
+
   }
   
   //****************************************************************************/
   // get() -
   //****************************************************************************/
-  /// Load an image from disk and detect a checkerboard or circles grid.
-  bool get(const std::string & imagePath, const cv::Size & patternSize, std::vector<cv::Point2f> & corners, const std::string & mode, const std::string & algorithm = "old") {
+  // Load an image from disk and detect a checkerboard or circles grid.
+  inline bool get(const std::string & imagePath, const cv::Size & patternSize, std::vector<cv::Point2f> & corners, const std::string & mode, const std::string & algorithm = "old") {
     
     cv::Mat image = cvl::open(imagePath, cv::IMREAD_GRAYSCALE);
 
@@ -132,8 +129,8 @@ namespace cvl::chessboard {
   //****************************************************************************/
   // saveImage() -
   //****************************************************************************/
-  /// Save an image with detected corners drawn.
-  void saveImage(cv::Mat image, const std::string & file, const std::vector<cv::Point2f> & corners, const cv::Size & boardSize, bool status) {
+  // Save an image with detected corners drawn.
+  inline void saveImage(cv::Mat image, const std::string & file, const std::vector<cv::Point2f> & corners, const cv::Size & boardSize, bool status) {
     
     if(image.type()==CV_8UC1) cvtColor(image, image, cv::COLOR_GRAY2RGB);
     
@@ -148,8 +145,8 @@ namespace cvl::chessboard {
   //****************************************************************************/
   // saveCorners() -
   //****************************************************************************/
-  /// Save detected corners to a stream in a simple text format.
-  void saveCorners(FILE * output, const std::string & file, const std::vector<cv::Point2f> & corners, const cv::Size & boardSize) {
+  // Save detected corners to a stream in a simple text format.
+  inline void saveCorners(FILE * output, const std::string & file, const std::vector<cv::Point2f> & corners, const cv::Size & boardSize) {
 
     //size_t rows = boardSize.height;
     size_t cols = boardSize.width;
@@ -160,7 +157,7 @@ namespace cvl::chessboard {
       size_t y = int(i/cols);
       size_t x = i - (y * cols);
 
-      fprintf(output, "%s %lu %lu 0 %.8f %.8f\n", (mpl::io::subdirName(file) + "_" + mpl::io::basename(file)).c_str(), x, y, corners[i].x, corners[i].y);
+      fprintf(output, "%s %lu %lu 0 %.8f %.8f\n", (cvl::io::subdirName(file) + "_" + cvl::io::basename(file)).c_str(), x, y, corners[i].x, corners[i].y);
 
     }
     
@@ -179,7 +176,7 @@ namespace cvl {
   //****************************************************************************/
   // chessboard_t
   //****************************************************************************/
-  /// Helper container for object/image point correspondences.
+  // Helper container for object/image point correspondences.
   class chessboard_t {
     
   public:
@@ -190,12 +187,12 @@ namespace cvl {
     //****************************************************************************/
     // scale
     //****************************************************************************/
-    /// Scale all object points by a constant factor.
+    // Scale all object points by a constant factor.
     void scale(double factor) {
       
-      for(int i=0; i<objectPoints.size(); ++i) {
+      for(int i=0; i<(int)objectPoints.size(); ++i) {
 
-        for(int j=0; j<objectPoints[i].size(); ++j) {
+        for(int j=0; j<(int)objectPoints[i].size(); ++j) {
           
           objectPoints[i][j].x *= factor;
           objectPoints[i][j].y *= factor;
@@ -210,10 +207,10 @@ namespace cvl {
     //****************************************************************************/
     // load
     //****************************************************************************/
-    /// Load calibration points from a text file.
+    // Load calibration points from a text file.
     void load(std::string filepath) {
       
-      mpl::loader loader;
+      cvl::loader loader;
       loader(filepath, "1 2 3 4 5 6", this, &chessboard_t::filler);
       
     }
@@ -223,8 +220,8 @@ namespace cvl {
     //****************************************************************************/
     // filler
     //****************************************************************************/
-    /// Loader callback for populating object/image points.
-    void filler(const mpl::loader::data & arguments) {
+    // Loader callback for populating object/image points.
+    void filler(const cvl::loader::data & arguments) {
       
       static std::string frame = "";
       

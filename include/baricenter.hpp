@@ -1,7 +1,7 @@
 /*
  * GNU GENERAL PUBLIC LICENSE
  *
- * Copyright (C) 2019
+ * Copyright (C) 2021-2026
  * Created by Leonardo Parisi (leonardo.parisi[at]gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,6 +28,8 @@
 
 #include <opencv2/opencv.hpp>
 
+#include "utils.hpp"
+
 //****************************************************************************
 // namespace
 //****************************************************************************
@@ -38,7 +40,9 @@ namespace cvl::baricenter {
   //****************************************************************************
   // Compute the geometric barycenter of a set of pixel coordinates.
   template <class T>
-	cv::Point2d geometric(const std::vector<T> & pixels) {
+	inline cv::Point2d geometric(const std::vector<T> & pixels) {
+
+		if(pixels.empty()) return cv::Point2d(-1.0, -1.0);
 
 		cv::Point2d baricenter(0.0, 0.0);
 
@@ -63,7 +67,9 @@ namespace cvl::baricenter {
 	// maxIntensity
 	//****************************************************************************
   // Return the coordinates of the pixel with the maximum intensity.
-	cv::Point2d maxIntensity(const std::vector<cv::Point3i> & pixels) {
+	inline cv::Point2d maxIntensity(const std::vector<cv::Point3i> & pixels) {
+
+		if(pixels.empty()) return cv::Point2d(-1.0, -1.0);
 		    
     size_t maxPixelIntensity = 0;
 		
@@ -87,7 +93,9 @@ namespace cvl::baricenter {
 	// lowIntensity
 	//****************************************************************************
   // Return the coordinates of the pixel with the minimum intensity.
-	cv::Point2d lowIntensity(const std::vector<cv::Point3i> & pixels) {
+	inline cv::Point2d lowIntensity(const std::vector<cv::Point3i> & pixels) {
+
+		if(pixels.empty()) return cv::Point2d(-1.0, -1.0);
 		
 		size_t lowPixelIntensity = pixels.size() - 1;
 		
@@ -111,7 +119,7 @@ namespace cvl::baricenter {
 	// maxIntensityWeighted
 	//****************************************************************************
   // Compute a weighted barycenter using intensity as weight.
-	cv::Point2d maxIntensityWeighted(const std::vector<cv::Point3i> & pixels) {
+	inline cv::Point2d maxIntensityWeighted(const std::vector<cv::Point3i> & pixels) {
 		
     size_t totalPixelsIntensity = 0;
 		
@@ -145,7 +153,7 @@ namespace cvl::baricenter {
 	// lowIntensityWeighted
 	//*****************************************************************************
   // Compute a weighted barycenter using inverted intensity (255 - value) as weight.
-	cv::Point2d lowIntensityWeighted(const std::vector<cv::Point3i> & pixels) {
+	inline cv::Point2d lowIntensityWeighted(const std::vector<cv::Point3i> & pixels) {
 
     size_t totalPixelsIntensity = 0;
 		
@@ -179,7 +187,7 @@ namespace cvl::baricenter {
 	// get
 	//*****************************************************************************
   // Dispatch barycenter evaluation by name.
-  cv::Point2d get(const std::vector<cv::Point3i> & pixels, const std::string & algo) {
+  inline cv::Point2d get(const std::vector<cv::Point3i> & pixels, const std::string & algo) {
 
 		if(algo.compare("MAX_INTENSITY") == 0)
 		  return maxIntensity(pixels);
@@ -196,11 +204,9 @@ namespace cvl::baricenter {
 	  if(algo.compare("GEOMETRIC") == 0)
 		  return geometric(pixels);	  
 		
-    fprintf(stderr, "error unknown type of baricenter evaluation criteria.\n");
-    fprintf(stderr, "You can choose between:\n");
-    fprintf(stderr, "      MAX_INTENSITY, MAX_INTENSITY_WEIGHTED, LOW_INTENSITY, LOW_INTENSITY_WEIGHTED or GEOMETRIC\n");
-		 
-		exit(EXIT_FAILURE);
+    cvl::log::error("cvl::baricenter::get() error: unknown baricenter type '%s'\n"
+                    "You can choose between:\n"
+                    "      MAX_INTENSITY, MAX_INTENSITY_WEIGHTED, LOW_INTENSITY, LOW_INTENSITY_WEIGHTED or GEOMETRIC\n", algo.c_str());
 
 		return cv::Point2d(-1,-1);
 		

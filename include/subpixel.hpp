@@ -1,7 +1,7 @@
 /*
  * GNU GENERAL PUBLIC LICENSE
  *
- * Copyright (C) 2019
+ * Copyright (C) 2021-2026
  * Created by Leonardo Parisi (leonardo.parisi[at]gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,8 +36,8 @@ namespace cvl::subpixel {
   //*****************************************************************************/
   // get() -
   //*****************************************************************************/
-  /// Refine corner positions to subpixel accuracy.
-  void get(const cv::Mat image, std::vector<cv::Point2f> & corners, int roiSize = 15, const std::string & algorithm = "old") {
+  // Refine corner positions to subpixel accuracy.
+  inline void get(const cv::Mat image, std::vector<cv::Point2f> & corners, int roiSize = 15, const std::string & algorithm = "old") {
      
     if(corners.size() > 0) {
          

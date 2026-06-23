@@ -1,7 +1,7 @@
 /*
  * GNU GENERAL PUBLIC LICENSE
  *
- * Copyright (C) 2019
+ * Copyright (C) 2021-2026
  * Created by Leonardo Parisi (leonardo.parisi[at]gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,6 +28,8 @@
 
 #include <opencv2/opencv.hpp>
 
+#include "utils.hpp"
+
 //*****************************************************************************/
 // namespace
 //*****************************************************************************/
@@ -37,7 +39,7 @@ namespace cvl::background {
   // lightest
   //*****************************************************************************/
   // Build a background image taking the maximum value for each pixel.
-  void lightest(const std::vector<cv::Mat> & src, cv::Mat & dst) {
+  inline void lightest(const std::vector<cv::Mat> & src, cv::Mat & dst) {
     
     // Metto tutti i pixel a 0
     dst.setTo(cv::Scalar(0,0,0));
@@ -51,7 +53,7 @@ namespace cvl::background {
   // darkest
   //*****************************************************************************/
   // Build a background image taking the minimum value for each pixel.
-  void darkest(const std::vector<cv::Mat> & src, cv::Mat & dst) {
+  inline void darkest(const std::vector<cv::Mat> & src, cv::Mat & dst) {
 
     // Metto tutti i pixel a 255
     dst.setTo(cv::Scalar(255,255,255));
@@ -65,108 +67,113 @@ namespace cvl::background {
   // median
   //*****************************************************************************/
   // Build a background image taking the per-pixel median.
-  void median(const std::vector<cv::Mat> & src, cv::Mat & dst) {
+  inline void median(const std::vector<cv::Mat> & src, cv::Mat & dst) {
     
     int histo[256];
-    
-    int median_index = (int) (src.size() * 0.5);
-    
-    int comulative = 0;
-    
+
+    int median_index = (int) ((src.size() + 1) / 2);
+
+    // row pointers for every input image (reused row by row)
+    std::vector<const uchar *> srcRow(src.size());
+
     // assumo che tutte le img sono grandi uguali
     for(int y=0; y<src[0].rows; ++y){
-      
+
+      for(size_t index=0; index<src.size(); ++index)
+        srcRow[index] = src[index].ptr<uchar>(y);
+
+      uchar * dstRow = dst.ptr<uchar>(y);
+
       for(int x=0; x<src[0].cols; ++x){
-        
+
         memset(histo, 0, sizeof(int) * 256);
-        
+
         for(size_t index=0; index<src.size(); ++index)
-          histo[src[index].at<uchar>(y,x)]++;
-        
-        comulative = 0;
-        
+          histo[srcRow[index][x]]++;
+
+        int comulative = 0;
+
         for(int i=0; i<256; ++i){
-          
+
           comulative += histo[i];
-          
+
           if(comulative >= median_index) {
-            
-            dst.at<uchar>(y,x) = i;
-            
+
+            dstRow[x] = i;
+
             break;
-            
+
           }
-          
+
         }
       }
     }
-    
+
   }
 
   //*****************************************************************************/
   // moda
   //*****************************************************************************/
   // Build a background image taking the per-pixel mode (most frequent value).
-  void moda(const std::vector<cv::Mat> & src, cv::Mat & dst) {
+  inline void moda(const std::vector<cv::Mat> & src, cv::Mat & dst) {
     
     int histo[256];
-    
-    int moda_index = 0;
-    
-    int max = 0;
-    
+
+    // row pointers for every input image (reused row by row)
+    std::vector<const uchar *> srcRow(src.size());
+
     // assumo che tutte le img sono grandi uguali
     for(int y=0; y<src[0].rows; ++y){
-      
+
+      for(size_t index=0; index<src.size(); ++index)
+        srcRow[index] = src[index].ptr<uchar>(y);
+
+      uchar * dstRow = dst.ptr<uchar>(y);
+
       for(int x=0; x<src[0].cols; ++x){
-        
+
         memset(histo, 0, sizeof(int) * 256);
-        
+
         for(size_t index=0; index<src.size(); ++index)
-          histo[src[index].at<uchar>(y,x)]++;
-        
-        max = 0;
-        
+          histo[srcRow[index][x]]++;
+
+        int max = 0;
+        int moda_index = 0;
+
         for(int i=0; i<256; ++i){
-          
+
           if(max < histo[i]) {
-            
+
             max = histo[i];
-            
+
             moda_index = i;
-                        
+
           }
-          
+
         } // for i
-        
-        dst.at<uchar>(y,x) = moda_index;
-        
+
+        dstRow[x] = moda_index;
+
       }
-      
+
     }
-    
+
   }
 
   //*****************************************************************************/
   // avg
   //*****************************************************************************/
   // Build a background image taking the per-pixel average.
-  void avg(const std::vector<cv::Mat> & src, cv::Mat & dst) {
+  inline void avg(const std::vector<cv::Mat> & src, cv::Mat & dst) {
     
     cv::Mat avgTemp = cv::Mat::zeros(src[0].size(), CV_32F);
-    cv::Mat rawImg32F = cv::Mat::zeros(src[0].size(), CV_32F);
-    
-    for(size_t i=0; i<src.size(); ++i) {
-      
-      src[i].convertTo(rawImg32F, CV_32F);
-      
-      cv::accumulate(rawImg32F, avgTemp);
-      
-    }
-    
-    avgTemp.mul((double)(1.0/(src.size()*1.0)));
-    
-    cv::convertScaleAbs(avgTemp, dst);
+
+    // cv::accumulate accepts an 8-bit source into a 32F accumulator,
+    // so no explicit per-frame conversion is needed
+    for(size_t i=0; i<src.size(); ++i)
+      cv::accumulate(src[i], avgTemp);
+
+    cv::convertScaleAbs(avgTemp, dst, 1.0 / (double) src.size());
     
   }
 
@@ -174,27 +181,30 @@ namespace cvl::background {
   // bucket
   //*****************************************************************************/
   // Build a background image by masking pixels close to the median (bucket mode).
-  void bucket(const std::vector<cv::Mat> & src, cv::Mat & dst){
+  inline void bucket(const std::vector<cv::Mat> & src, cv::Mat & dst){
     
     int delta = 10;
     
     median(src, dst);
     
     for(int y=0; y<src[0].rows; ++y){
-      
+
+      const uchar * srcRow = src[0].ptr<uchar>(y);
+      uchar * dstRow = dst.ptr<uchar>(y);
+
       for(int x=0; x<src[0].cols; ++x){
-        
-        int pixelOri = src[0].at<uchar>(y,x);
-        int pixelBgr = dst.at<uchar>(y,x);
-        
+
+        int pixelOri = srcRow[x];
+        int pixelBgr = dstRow[x];
+
         if((pixelOri <= (pixelBgr + delta)) && (pixelOri >= (pixelBgr - delta))){
-          dst.at<uchar>(y,x) = 0;
+          dstRow[x] = 0;
         } else {
-          dst.at<uchar>(y,x) = pixelOri;
+          dstRow[x] = pixelOri;
         }
-        
+
       }
-      
+
     }
     
   }
@@ -203,11 +213,13 @@ namespace cvl::background {
   // fixed
   //*****************************************************************************/
   // Copy pixels above a threshold from the source to the destination.
-  void fixed(const cv::Mat & src, cv::Mat & dst, uchar value) {
+  inline void fixed(const cv::Mat & src, cv::Mat & dst, uchar value) {
      
     for(int y=0; y<src.rows; ++y) {
+      const uchar * srcRow = src.ptr<uchar>(y);
+      uchar * dstRow = dst.ptr<uchar>(y);
       for(int x=0; x<src.cols; ++x) {
-        if(src.at<uchar>(y,x) >= value) dst.at<uchar>(y,x) = src.at<uchar>(y,x);
+        if(srcRow[x] >= value) dstRow[x] = srcRow[x];
       }
     }
 
@@ -217,7 +229,7 @@ namespace cvl::background {
   // get
   //*****************************************************************************/
   // Dispatch background evaluation by name (LIGHTEST, DARKEST, MEDIAN, MODA, AVG, FIXED, NONE).
-  void get(const std::vector<cv::Mat> & src, cv::Mat & dst, const std::string & algo, uchar value = 0) {
+  inline void get(const std::vector<cv::Mat> & src, cv::Mat & dst, const std::string & algo, uchar value = 0) {
     
     int index = src.size() * 0.5;
     
@@ -242,11 +254,9 @@ namespace cvl::background {
     if(algo.compare("FIXED") == 0)
       return fixed(src[index], dst, value);
       
-    fprintf(stderr, "error unknown type of background evaluation criteria '%s'.\n", algo.c_str());
-    fprintf(stderr, "You can choose between:\n");
-    fprintf(stderr, "    LIGHTEST, DARKEST, MEDIAN, MODA, AVG, FIXED or NONE\n");
-      
-    exit(EXIT_FAILURE);
+    cvl::log::error("cvl::background::get() error: unknown background type '%s'\n"
+                    "You can choose between:\n"
+                    "    LIGHTEST, DARKEST, MEDIAN, MODA, AVG, FIXED or NONE\n", algo.c_str());
     
   }
   

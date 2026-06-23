@@ -3,9 +3,7 @@ LIBRARY_INSTALL_PATH=/usr/local/lib
 
 LIBRARY_NAME=cvl
 
-
 all: install
-
 
 install:
 	@rm -rf $(INCLUDE_INSTALL_PATH)/$(LIBRARY_NAME)

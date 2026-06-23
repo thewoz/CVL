@@ -1,7 +1,7 @@
 /*
  * GNU GENERAL PUBLIC LICENSE
  *
- * Copyright (C) 2019
+ * Copyright (C) 2021-2026
  * Created by Leonardo Parisi (leonardo.parisi[at]gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,8 +28,7 @@
 
 #include <opencv2/opencv.hpp>
 
-#include <mpl/utils.hpp>
-#include <mpl/clustering.hpp>
+#include "utils.hpp"
 
 //*****************************************************************************/
 // namespace cvl::clustering
@@ -42,11 +41,11 @@ namespace cvl::clustering {
   // NN
   //*****************************************************************************/
   // Cluster blobs using nearest-neighbor distances (median-based threshold).
-  void NN(const cvl::blobs_t & blobs, std::vector<cvl::blobs_t> & clusters, double factor = 1) {
+  inline void NN(const cvl::blobs_t & blobs, std::vector<cvl::blobs_t> & clusters, double factor = 1) {
     
     std::vector<std::vector<size_t>> clustersIndex;
     
-    mpl::clustering::connectedComponentsMedianFirstNN(blobs, clustersIndex, factor, INT_MAX, distanceOp);
+    cvl::utils::connectedComponentsMedianFirstNN(blobs, clustersIndex, factor, /*minClusterSize=*/0, distanceOp);
     
     clusters.clear();
     
@@ -69,8 +68,8 @@ namespace cvl::clustering {
   //*****************************************************************************/
   // follow
   //*****************************************************************************/
-  /// Re-cluster and return the barycenter of the cluster closest to coords.
-  cv::Point2d follow(cvl::blobs_t & blobs, const cv::Point2d & coords, std::vector<cvl::blobs_t> & clusters, double factor = 1) {
+  // Re-cluster and return the barycenter of the cluster closest to coords.
+  inline cv::Point2d follow(cvl::blobs_t & blobs, const cv::Point2d & coords, std::vector<cvl::blobs_t> & clusters, double factor = 1) {
     
     // Clusterizzo
     cvl::clustering::NN(blobs, clusters, factor);
