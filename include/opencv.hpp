@@ -433,7 +433,7 @@ inline void drawRotatedText(cv::Mat & image, const std::string & text, const cv:
 // shrinkLine()
 //*****************************************************************************
 // Shorten a segment by cutting cutFromP1 / cutFromP2 pixels off each endpoint.
-inline void shrinkLine(cv::Point & p1, cv::Point & p2, int cutFromP1, int cutFromP2) {
+inline void shrinkLine(cv::Point & p1, cv::Point & p2, int cutFromP1, int cutFromP2, bool verbose = false) {
     
   cv::Point2d dir = p2 - p1;
 
@@ -450,7 +450,7 @@ inline void shrinkLine(cv::Point & p1, cv::Point & p2, int cutFromP1, int cutFro
   // Evita di accorciare più della lunghezza totale
   double totalCut = cutFromP1 + cutFromP2;
 
-  if(totalCut >= length) {
+  if(verbose && totalCut >= length) {
     cvl::log::warning("cvl::shrinkLine() warning: cut too big\n");
     return;
   }
