@@ -75,7 +75,7 @@ int main() {
 | `labeling` | `cvl::labeling` | Connected-components labeling into blobs |
 | `opencv` | `cvl` | OpenCV helpers (I/O, resize, histograms, text/markers, operators) |
 | `pose` | `cvl::pose` | Pose / stereo utilities |
-| `subpixel` / `subpixelNew` | `cvl::subpixel`, global | Sub-pixel corner refinement |
+| `subpixel` | `cvl::subpixel` | Sub-pixel corner refinement (old `cv::cornerSubPix` + new ROCHADE-like detector) |
 | `targetMass` | `cvl::targetmass` | Split / erode blobs by mass |
 | `threshold` | `cvl::threshold` | Thresholding utilities (otsu, adaptive, global, median, mode, percentile) |
 | `utils` | `cvl::io`, `cvl::log`, `cvl::utils`, `cvl` | Self-contained helpers: path/file I/O, logging, `loader`, clustering primitives, `itoa`/`decToHex` |

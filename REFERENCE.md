@@ -192,10 +192,9 @@ Histograms:
 
 The pose/translation outputs are returned through `cv::Mat &` parameters.
 
-## Subpixel (`include/subpixel.hpp` and `include/subpixelNew.hpp`)
+## Subpixel (`include/subpixel.hpp`)
 
-- `subpixel::get(image, corners, roiSize, algorithm)` – subpixel refinement.
-- `cornerSubPixNew(image, corners, roiSize)` – new algorithm refinement.
+- `subpixel::get(image, corners, roiSize, algorithm)` – subpixel refinement (`algorithm` = `"old"` uses `cv::cornerSubPix`, `"new"` uses the ROCHADE-like detector in `cvl::subpixel::detail`).
 
 ## Target mass (`include/targetMass.hpp`)
 

@@ -41,7 +41,6 @@
   #include "deflickering.hpp"
   #include "denoising.hpp"
   #include "enhance.hpp"
-  #include "subpixelNew.hpp"
   #include "subpixel.hpp"
   #include "targetMass.hpp"
   #include "threshold.hpp"
@@ -68,7 +67,6 @@
   #include <cvl/deflickering.hpp>
   #include <cvl/denoising.hpp>
   #include <cvl/enhance.hpp>
-  #include <cvl/subpixelNew.hpp>
   #include <cvl/subpixel.hpp>
   #include <cvl/targetMass.hpp>
   #include <cvl/threshold.hpp>
