@@ -23,6 +23,12 @@
 
 #define CVL_LIB_VERSION "Cvl Lib v3.2.6"
 
+//****************************************************************************/
+// General third-party includes (centralized here so the single headers do
+// not need to repeat them).
+//****************************************************************************/
+#include <opencv2/opencv.hpp>
+
 #ifdef _DEBUG_CVL_LIBS_
 
   #include "utils.hpp"

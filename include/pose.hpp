@@ -20,12 +20,14 @@
 #ifndef _H_CVL_POSE_H_
 #define _H_CVL_POSE_H_
 
+#ifndef _H_CVL_H_
+  #error "Do not include this header directly; include <cvl/cvl.hpp> instead."
+#endif
+
 #include <cstdio>
 #include <cstdlib>
 
 #include <vector>
-
-#include <opencv2/opencv.hpp>
 
 //****************************************************************************/
 // cvl::pose

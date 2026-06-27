@@ -20,6 +20,10 @@
 #ifndef _H_CVL_UTILS_H_
 #define _H_CVL_UTILS_H_
 
+#ifndef _H_CVL_H_
+  #error "Do not include this header directly; include <cvl/cvl.hpp> instead."
+#endif
+
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
@@ -38,8 +42,6 @@
 
 #include <unistd.h>    // getcwd, getuid
 #include <pwd.h>       // getpwuid
-
-#include <opencv2/opencv.hpp>
 
 #ifndef LINE_MAX
   #define LINE_MAX 2048

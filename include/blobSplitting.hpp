@@ -20,6 +20,10 @@
 #ifndef _H_CVL_BLOBSPLITTING_H_
 #define _H_CVL_BLOBSPLITTING_H_
 
+#ifndef _H_CVL_H_
+  #error "Do not include this header directly; include <cvl/cvl.hpp> instead."
+#endif
+
 #include <cstdlib>
 #include <cstdio>
 
@@ -27,10 +31,6 @@
 #include <string>
 #include <random>
 #include <utility>
-
-#include <opencv2/opencv.hpp>
-
-#include "utils.hpp"
 
 //#define _DEBUG_CVL_BLOBSPLITTING_
 

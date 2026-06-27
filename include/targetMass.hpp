@@ -20,13 +20,15 @@
 #ifndef _H_CVL_TARGET_MASS_H_
 #define _H_CVL_TARGET_MASS_H_
 
+#ifndef _H_CVL_H_
+  #error "Do not include this header directly; include <cvl/cvl.hpp> instead."
+#endif
+
 #include <cstdlib>
 #include <cstdio>
 
 #include <vector>
 #include <utility>
-
-#include <opencv2/opencv.hpp>
 
 //*****************************************************************************/
 // namespace cvl::targetmass

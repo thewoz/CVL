@@ -17,17 +17,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _H_asDeflickering_H_
-#define _H_asDeflickering_H_
+#ifndef _H_CVL_DEFLICKERING_H_
+#define _H_CVL_DEFLICKERING_H_
+
+#ifndef _H_CVL_H_
+  #error "Do not include this header directly; include <cvl/cvl.hpp> instead."
+#endif
 
 #include <cstdlib>
 #include <cstdio>
 
 #include <vector>
-
-#include <opencv2/opencv.hpp>
-
-#include "utils.hpp"
 
 //***************************************************************************************************//
 // asDeflickering

@@ -20,6 +20,10 @@
 #ifndef _H_CVL_LABELING_H_
 #define _H_CVL_LABELING_H_
 
+#ifndef _H_CVL_H_
+  #error "Do not include this header directly; include <cvl/cvl.hpp> instead."
+#endif
+
 #include <cstdlib>
 #include <cstdio>
 
@@ -27,10 +31,6 @@
 #include <map>
 #include <string>
 #include <utility>
-
-#include <opencv2/opencv.hpp>
-
-#include "utils.hpp"
 
 #define MERGE_MASS_LABEL(a,b) { labelMass[b] += labelMass[a]; labelMass[a] = -b; }
 
