@@ -8,7 +8,7 @@ drawing utilities.
 
 ## Requirements
 
-A **C++17** compiler and the librarty **OpenCV 4** 
+A **C++17** compiler and the library **OpenCV 4**
 
 
 ## Installation
@@ -46,7 +46,7 @@ int main() {
   cvl::blobs_t blobs;
   cvl::labeling::get(thresholded, cvl::labeling::NEXT_NEAREST_NEIGHBOURS, /*minClusterMass=*/5, blobs, image);
 
-  cv::Mat out(image.size(), CV_8UC3, cv::Scalar::all(0));
+  cv::Mat out(image.size(), CV_8UC1, cv::Scalar::all(0));
   blobs.drawMask(out);
 
   cvl::save(out, "out.png");
@@ -90,5 +90,5 @@ int main() {
 Ideas left for later, only worth doing if they become real bottlenecks:
 
 - **Spatial index for clustering.** `cvl::utils::connectedComponents` and `cvl::utils::medianFirstNNDistance` (in `utils.hpp`) are brute-force, O(n²) in the number of blobs. For large blob counts a uniform spatial grid (or a k-d tree) would bring the neighbor search down to roughly O(n).
-- **OpenCV-based connected components.** `cvl::labeling::get` uses a hand-written union-find over an `int**` matrix. Replacing the core with `cv::connectedComponentsWithStats` (SIMD-optimized, supports 4/8-connectivity) would likely be faster; it is a larger refactor because the per-blob pixel lists still have to be collected afterwards.
+- **OpenCV-based connected components.** `cvl::labeling::get` uses a hand-written union-find over a contiguous label matrix. Replacing the core with `cv::connectedComponentsWithStats` (SIMD-optimized, supports 4/8-connectivity) would likely be faster; it is a larger refactor because the per-blob pixel lists still have to be collected afterwards.
 

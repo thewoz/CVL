@@ -15,6 +15,8 @@ noted otherwise, inside the `cvl` namespace.
 - `background::fixed(src, dst, value)` – copy pixels above a threshold.
 - `background::get(src, dst, algo, value)` – dispatcher (LIGHTEST, DARKEST, MEDIAN, MODA, AVG, FIXED, NONE).
 
+If `dst` is empty it is allocated automatically (same size/type as the input frames).
+
 ## Baricenter (`include/baricenter.hpp`)
 
 - `baricenter::geometric(pixels)` – geometric barycenter.
@@ -93,7 +95,7 @@ Class `cvl::chessboard_t`:
 
 - Named BGR constants: `cvl::red`, `cvl::blue`, `cvl::yellow`, … (CSS color names).
 - Class `cvl::colors`:
-  - `loadPalette()` – populate the name→color map.
+  - `loadPalette()` – populate the name→color map (also invoked automatically on first use).
   - `get(name[, create])` – look up a color by name (optionally add a random one).
   - `add(name, r, g, b)` / `add(name, color)` – register a color.
   - `getRandom()` – random BGR color.
@@ -164,10 +166,10 @@ key-code macros. (The named-color palette and `RGBtoHex` live in `colors.hpp`.)
 Text / markers / geometry:
 - `drawString(dst, str, pos, color)` – draw numeric strings with the built-in 5×3 glyphs.
 - `drawNumber(dst, number, pos, color)` – draw an integer.
-- `drawParabola(dst, coeffs, color, offset)` – draw a parabola from quadratic coefficients.
+- `drawParabola(dst, coeffs, color)` – draw a parabola from quadratic coefficients.
 - `drawRotatedText(image, text, center, angleDeg, fontScale, color, thickness)` – rotated, alpha-blended text.
 - `drawDistanceMarker(image, p1, p2, label, color, …)` – dimension line with end ticks and label.
-- `cross(dst, pos, color)` – small cross marker.
+- `cross(dst, pos, color)` – small point marker (1-pixel-radius circle).
 - `shrinkLine(p1, p2, cut[, cut2])` / `scaleLine(p1, p2, scale)` – shorten/scale a segment.
 - `scaleRect(rect, factor)` – scale a rectangle about its center.
 - `minEnclosureRoi(roi1, roi2)` – minimal ROI enclosing two rectangles.
@@ -194,7 +196,7 @@ The pose/translation outputs are returned through `cv::Mat &` parameters.
 
 ## Subpixel (`include/subpixel.hpp`)
 
-- `subpixel::get(image, corners, roiSize, algorithm)` – subpixel refinement (`algorithm` = `"old"` uses `cv::cornerSubPix`, `"new"` uses the ROCHADE-like detector in `cvl::subpixel::detail`).
+- `subpixel::get(image, corners, roiSize, algorithm)` – subpixel refinement (`algorithm` = `"old"` uses `cv::cornerSubPix` with a `roiSize/2` half-window, `"new"` uses the ROCHADE-like detector in `cvl::subpixel::detail` on the full `roiSize` ROI; corners that cannot be refined keep their original position).
 
 ## Target mass (`include/targetMass.hpp`)
 

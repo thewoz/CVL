@@ -167,14 +167,14 @@ namespace cvl {
       }
 
       //***********************************************************************
-      // skipWhite
+      // skipWhite - first non-whitespace char, or nullptr if none
       //***********************************************************************
       inline const char * skipWhite(const std::string & line) {
 
         for(size_t i=0; i<line.length(); ++i)
-          if(!isspace(line[i])) return &line[i];
+          if(!isspace((unsigned char)line[i])) return &line[i];
 
-        return &line[line.length()-1];
+        return nullptr;
 
       }
 
@@ -249,13 +249,13 @@ namespace cvl {
     //*************************************************************************
     inline bool isToSkip(const std::string & line) {
 
-      const std::string & ptr = util::skipWhite(line);
+      const char * ptr = util::skipWhite(line);
 
-      if(ptr.length() == 1 && std::isspace(line[0])) return true;
+      // empty or whitespace-only line
+      if(ptr == nullptr) return true;
 
-      if(ptr.length() < 1) return true;
-
-      if(ptr[0] == '#') return true;
+      // comment line
+      if(*ptr == '#') return true;
 
       return false;
 
@@ -323,6 +323,11 @@ namespace cvl {
       // add
       //***********************************************************************
       void add(std::string argument) { arguments.push_back(argument); }
+
+      //***********************************************************************
+      // size
+      //***********************************************************************
+      size_t size() const { return arguments.size(); }
 
       //***********************************************************************
       // get
@@ -407,6 +412,9 @@ namespace cvl {
 
           status = sscanf(data, "%s%n", arg, &offset);
 
+          // no more tokens on this line: stop without touching stale data
+          if(status != 1) break;
+
           data += offset;
 
           if(read != columns[colIndex]) { ++read; continue; }
@@ -420,7 +428,8 @@ namespace cvl {
 
         } while(status != EOF);
 
-        if(read != columns.back()) { cvl::log::error("cvl::loader error: wrong number of columns in '%s'\n", inputFile.c_str()); }
+        // ogni colonna richiesta deve essere stata letta davvero
+        if(arguments.size() != columns.size()) { cvl::log::error("cvl::loader error: wrong number of columns in '%s'\n", inputFile.c_str()); }
 
         fillerFun(arguments);
 
@@ -481,6 +490,10 @@ namespace cvl {
     template <typename T>
     double median(const T & _set, double * stddev = NULL) {
 
+      if(_set.size() == 0) {
+        cvl::log::error("cvl::utils::median() error: the set is empty\n");
+      }
+
       T set = _set;
 
       std::size_t halfSize = set.size() * 0.5;
@@ -502,12 +515,20 @@ namespace cvl {
 
       if(stddev != NULL) {
 
-        double sum = 0;
+        if(set.size() < 2) {
 
-        for(auto value=set.begin(); value!=set.end(); value++)
-          sum += (*value - median) * (*value - median);
+          *stddev = 0;
 
-        *stddev = sqrt(sum / (double)(set.size()-1));
+        } else {
+
+          double sum = 0;
+
+          for(auto value=set.begin(); value!=set.end(); value++)
+            sum += (*value - median) * (*value - median);
+
+          *stddev = sqrt(sum / (double)(set.size()-1));
+
+        }
 
       }
 
@@ -647,6 +668,10 @@ namespace cvl {
     // decToHex - convert a decimal value (0-255) to a two-digit hex string
     //*************************************************************************
     inline std::string decToHex(int n) {
+
+      if(n < 0 || n > 255) {
+        cvl::log::error("cvl::utils::decToHex() error: value %d out of range [0,255]\n", n);
+      }
 
       char hexaDeciNum[2];
 

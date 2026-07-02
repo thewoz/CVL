@@ -201,10 +201,19 @@ namespace cvl {
   private:
     
     colors() { }
-    
+
     // mappa che mi contiene i colori
     static std::map<std::string, cv::Vec3b> _colors;
-    
+
+    // true dopo il primo loadPalette()
+    static bool _paletteLoaded;
+
+    //****************************************************************************//
+    // ensurePalette()
+    //****************************************************************************//
+    // Lazy-init: load the built-in palette on first use.
+    static void ensurePalette() { if(!_paletteLoaded) loadPalette(); }
+
   public:
     
     //****************************************************************************//
@@ -362,7 +371,9 @@ namespace cvl {
       _colors["whitesmoke"] = whitesmoke;
       _colors["yellow"] = yellow;
       _colors["yellowgreen"] = yellowgreen;
-          
+
+      _paletteLoaded = true;
+
     }
     
     //*****************************************************************************/
@@ -421,7 +432,9 @@ namespace cvl {
     //****************************************************************************//
     // Look up a color by name; with create=true a missing name is added as random.
     static const cv::Vec3b & get(const std::string & str, bool create = false) {
-   
+
+      ensurePalette();
+
       auto colorMap = _colors.find(normalize(str));
       
       if(colorMap == _colors.end()) {
@@ -452,10 +465,12 @@ namespace cvl {
     //****************************************************************************//
     // Register a color in the palette (RGB args are stored as BGR).
     static void add(const std::string & name, int r, int g, int b) {
+      ensurePalette();
       _colors[normalize(name)] = cv::Vec3b(b, g, r);
     }
-    
+
     static void add(const std::string & name, const cv::Vec3b & color) {
+      ensurePalette();
       _colors[normalize(name)] = color;
     }
 
@@ -495,6 +510,8 @@ namespace cvl {
   }; /* class glColors */
 
   inline std::map<std::string, cv::Vec3b> cvl::colors::_colors = std::map<std::string, cv::Vec3b>();
+
+  inline bool cvl::colors::_paletteLoaded = false;
 
 } /* namespace cvl */
 

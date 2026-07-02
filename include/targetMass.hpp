@@ -176,8 +176,10 @@ namespace cvl::targetmass {
           // trovo le componeti connesse
           cvl::labeling::get(thrsImg, labelingNeighboursType, minMass, tmpBlobs, src, blob.offset);
           
-          // se viene diviso i due
-          if(tmpBlobs.size() > 2) break;
+          // se viene diviso in due o più parti smetto di sogliare
+          // (allineato a blobsplitting::utils::split; prima era > 2 e la
+          // divisione esatta in due veniva persa continuando a erodere)
+          if(tmpBlobs.size() > 1) break;
           
           // se e' uno e ha raggiunto una massa giusta
           if(tmpBlobs.size() == 1 && tmpBlobs[0].size() <= targetMass) break;

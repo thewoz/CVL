@@ -40,7 +40,9 @@ namespace cvl::background {
   //*****************************************************************************/
   // Build a background image taking the maximum value for each pixel.
   inline void lightest(const std::vector<cv::Mat> & src, cv::Mat & dst) {
-    
+
+    if(dst.empty()) dst.create(src[0].size(), src[0].type());
+
     // Metto tutti i pixel a 0
     dst.setTo(cv::Scalar(0,0,0));
     
@@ -55,6 +57,8 @@ namespace cvl::background {
   // Build a background image taking the minimum value for each pixel.
   inline void darkest(const std::vector<cv::Mat> & src, cv::Mat & dst) {
 
+    if(dst.empty()) dst.create(src[0].size(), src[0].type());
+
     // Metto tutti i pixel a 255
     dst.setTo(cv::Scalar(255,255,255));
     
@@ -68,7 +72,9 @@ namespace cvl::background {
   //*****************************************************************************/
   // Build a background image taking the per-pixel median.
   inline void median(const std::vector<cv::Mat> & src, cv::Mat & dst) {
-    
+
+    if(dst.empty()) dst.create(src[0].size(), src[0].type());
+
     int histo[256];
 
     int median_index = (int) ((src.size() + 1) / 2);
@@ -116,7 +122,9 @@ namespace cvl::background {
   //*****************************************************************************/
   // Build a background image taking the per-pixel mode (most frequent value).
   inline void moda(const std::vector<cv::Mat> & src, cv::Mat & dst) {
-    
+
+    if(dst.empty()) dst.create(src[0].size(), src[0].type());
+
     int histo[256];
 
     // row pointers for every input image (reused row by row)
@@ -214,7 +222,9 @@ namespace cvl::background {
   //*****************************************************************************/
   // Copy pixels above a threshold from the source to the destination.
   inline void fixed(const cv::Mat & src, cv::Mat & dst, uchar value) {
-     
+
+    if(dst.empty()) dst = cv::Mat::zeros(src.size(), src.type());
+
     for(int y=0; y<src.rows; ++y) {
       const uchar * srcRow = src.ptr<uchar>(y);
       uchar * dstRow = dst.ptr<uchar>(y);
@@ -230,7 +240,11 @@ namespace cvl::background {
   //*****************************************************************************/
   // Dispatch background evaluation by name (LIGHTEST, DARKEST, MEDIAN, MODA, AVG, FIXED, NONE).
   inline void get(const std::vector<cv::Mat> & src, cv::Mat & dst, const std::string & algo, uchar value = 0) {
-    
+
+    if(src.empty()) {
+      cvl::log::error("cvl::background::get() error: the input image list is empty\n");
+    }
+
     int index = src.size() * 0.5;
     
     if(algo.compare("LIGHTEST") == 0)

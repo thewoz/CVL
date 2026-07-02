@@ -546,12 +546,14 @@ namespace cvl::subpixel {
       for (int angle_i = 0; angle_i < 10; angle_i++) {
         double angle = angle_i * (CV_PI * 0.1);
         cv::Point2f n(float(cos(angle)),float(-sin(angle)));
+        // patch fuori dall'immagine: il punto va scartato, quindi ritorno
+        // il massimo numero di errori (la funzione conta i fallimenti, non è un bool)
         center1 = pt+dist*n;
         if(!image_rect.contains(center1))
-          return false;
+          return MAX_SYMMETRY_ERRORS+1;
         center2 = pt-dist*n;
         if(!image_rect.contains(center2))
-          return false;
+          return MAX_SYMMETRY_ERRORS+1;
         cv::getRectSubPix(mat,size,center1,patch1);
         cv::getRectSubPix(mat,size,center2,patch2);
         if(fabs(cv::mean(patch1)[0]-cv::mean(patch2)[0]) > max_error)
@@ -678,11 +680,13 @@ namespace cvl::subpixel {
         fitRectangleInImage(image, roi);
         cv::Mat subImage = image(roi);
 
-        corner = cornerSubPixNewImpl(subImage);
+        cv::Point2d refined = cornerSubPixNewImpl(subImage);
 
-        if(corner.x != 0 || corner.y != 0) {
-          corner.x += roi.x; // mi riporto nel sistema di riferimento di image
-          corner.y += roi.y;
+        // il detector ritorna (0,0) quando fallisce: in quel caso
+        // conservo la stima originale invece di azzerare il corner
+        if(refined.x != 0 || refined.y != 0) {
+          corner.x = refined.x + roi.x; // mi riporto nel sistema di riferimento di image
+          corner.y = refined.y + roi.y;
         }
 
       }
@@ -699,8 +703,6 @@ namespace cvl::subpixel {
 
     if(corners.size() > 0) {
 
-      roiSize *= 0.5;
-
       // Talpa vecchio
       //cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.1);
 
@@ -708,10 +710,12 @@ namespace cvl::subpixel {
       cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.0001);
 
       // Cerco i subpixel con l'algoritmo vecchio
+      // (cornerSubPix vuole la mezza finestra, quindi dimezzo roiSize)
       if(!algorithm.compare("old"))
-        cv::cornerSubPix(image, corners, cv::Size(roiSize,roiSize), cv::Size(-1,-1), criteria);
+        cv::cornerSubPix(image, corners, cv::Size(roiSize/2,roiSize/2), cv::Size(-1,-1), criteria);
 
       // Cerco i subpixel con l'algoritmo nuovo
+      // (il detector multiscala lavora sull'intera ROI, quindi non dimezzo)
       if(!algorithm.compare("new"))
         detail::cornerSubPixNew(image, corners, roiSize);
 

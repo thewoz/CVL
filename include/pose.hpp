@@ -48,7 +48,7 @@ namespace cvl::pose {
 
     RRight = cv::Mat::eye(3, 3, CV_64FC1);
     
-    TRight = cv::Mat::zeros(1, 3, CV_64FC1);
+    TRight = cv::Mat::zeros(3, 1, CV_64FC1); // 3x1 come TLeft
 
   }
 
@@ -76,7 +76,7 @@ namespace cvl::pose {
     TLeft  = Tnew;
 
     RRight = cv::Mat::eye(3, 3, CV_64FC1);
-    TRight = cv::Mat::zeros(1, 3, CV_64FC1);
+    TRight = cv::Mat::zeros(3, 1, CV_64FC1); // 3x1 come TLeft
 
   }
 
@@ -103,7 +103,7 @@ namespace cvl::pose {
    
     RRight = cv::Mat::eye(3, 3, CV_64FC1);
     
-    TRight = cv::Mat::zeros(1, 3, CV_64FC1);
+    TRight = cv::Mat::zeros(3, 1, CV_64FC1); // 3x1 come TLeft
     
   }
     

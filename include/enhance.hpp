@@ -82,20 +82,24 @@ namespace cvl::enhance {
         float maximum = accumulator.back();
         clipHistPercent *= (maximum / 100.0); //make percent as absolute
         clipHistPercent /= 2.0; // left and right wings
-                                // locate left cut
-        minimo = 0;
-        while(accumulator[minimo] < clipHistPercent)
-          minimo++;
-        
+
+        // locate left cut (clamped: su istogrammi degeneri il while usciva dall'array)
+        int lo = 0;
+        while(lo < histSize - 1 && accumulator[lo] < clipHistPercent)
+          lo++;
+        minimo = lo;
+
         // locate right cut
-        massimo = histSize - 1;
-        while (accumulator[massimo] >= (maximum - clipHistPercent))
-          massimo--;
-        
+        int hi = histSize - 1;
+        while(hi > lo && accumulator[hi] >= (maximum - clipHistPercent))
+          hi--;
+        massimo = hi;
+
       }
-      
-      // current range
+
+      // current range (almeno 1 per evitare la divisione per zero su immagini piatte)
       float inputRange = massimo - minimo;
+      if(inputRange <= 0) inputRange = 1;
       
       alpha = (histSize - 1) / inputRange; // alpha expands current range to histsize range
       beta = -minimo * alpha;              // beta shifts current range so that minGray will go to 0

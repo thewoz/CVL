@@ -132,7 +132,11 @@ namespace cvl::threshold {
     //****************************************************************************/
     // Compute the mode (most frequent) intensity.
     inline int moda(const cv::Mat & src, cv::Mat mask = cv::Mat(), int valueToSkip = -1) {
-      
+
+      // clono la maschera per non modificare quella del chiamante
+      // (histogram8bit con valueToSkip scrive nella maschera, e cv::Mat è una shallow copy)
+      if(!mask.empty()) mask = mask.clone();
+
       cv::Mat histo;
       cvl::histogram8bit(src, histo, mask, valueToSkip);
       

@@ -311,17 +311,19 @@ namespace cvl {
       if(number < 0 || number > 9) return;
 
       const digit_t & digit = *digits[number];
-      
+
       int hTo = pos.y - 5;
       int hFrom = pos.y;
 
-      if(hTo < 0) hTo = 0;
+      // se il glifo è clippato in alto, parto dalla riga giusta del glifo
+      int i0 = 0;
+      if(hTo < 0) { i0 = -hTo; hTo = 0; }
       if(hFrom > dst.rows) hFrom = dst.rows;
 
       int wTo = pos.x + 3;
       if(wTo >= dst.cols) wTo = dst.cols;
-      
-      for(int h=hTo, i=0; h<hFrom; ++h, ++i) {
+
+      for(int h=hTo, i=i0; h<hFrom; ++h, ++i) {
         
         for(int w=pos.x, j=0; w<wTo; ++w, ++j) {
           
@@ -450,8 +452,8 @@ inline void shrinkLine(cv::Point & p1, cv::Point & p2, int cutFromP1, int cutFro
   // Evita di accorciare più della lunghezza totale
   double totalCut = cutFromP1 + cutFromP2;
 
-  if(verbose && totalCut >= length) {
-    cvl::log::warning("cvl::shrinkLine() warning: cut too big\n");
+  if(totalCut >= length) {
+    if(verbose) cvl::log::warning("cvl::shrinkLine() warning: cut too big\n");
     return;
   }
 
@@ -592,7 +594,7 @@ inline void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, cons
   // drawParabola
   //*****************************************************************************/
   // Draw a parabola defined by quadratic coefficients.
-  inline void drawParabola(cv::Mat & dst, cv::Vec3d & coeffs, const cv::Vec3b & color, const cv::Point2d & offset = cv::Point2d(0,0)) {
+  inline void drawParabola(cv::Mat & dst, const cv::Vec3d & coeffs, const cv::Vec3b & color) {
     
      for(int x=0; x<dst.cols; ++x) {
        
@@ -657,8 +659,9 @@ inline void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, cons
       color.val[2] = (uchar)((rand() / (double) RAND_MAX) * 255);
       
       if(minBright == -1) break;
-      
-      double Y = 0.299 * color.val[0] + 0.587 * color.val[1] + 0.114 * color.val[2];
+
+      // luma BT.601 su canali BGR
+      double Y = 0.114 * color.val[0] + 0.587 * color.val[1] + 0.299 * color.val[2];
 
       if(Y >= minBright) break;
       

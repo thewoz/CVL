@@ -75,10 +75,11 @@ namespace cvl {
     // Static mouse callback that dispatches to the instance handler.
     static void mouseHandler(int event, int x, int y, int flags, void * window) {
       
-      if(event == cv::EVENT_LBUTTONDOWN || event == cv::EVENT_LBUTTONUP || event == cv::EVENT_LBUTTONDBLCLK) flags -= cv::EVENT_FLAG_LBUTTON;
-      if(event == cv::EVENT_RBUTTONDOWN || event == cv::EVENT_RBUTTONUP || event == cv::EVENT_RBUTTONDBLCLK) flags -= cv::EVENT_FLAG_RBUTTON;
-      if(event == cv::EVENT_MBUTTONDOWN || event == cv::EVENT_MBUTTONUP || event == cv::EVENT_MBUTTONDBLCLK) flags -= cv::EVENT_FLAG_MBUTTON;
-      if(event == cv::EVENT_MOUSEMOVE) flags -= 2;
+      // azzero il bit del flag (con -= il flag non settato corrompeva il valore)
+      if(event == cv::EVENT_LBUTTONDOWN || event == cv::EVENT_LBUTTONUP || event == cv::EVENT_LBUTTONDBLCLK) flags &= ~cv::EVENT_FLAG_LBUTTON;
+      if(event == cv::EVENT_RBUTTONDOWN || event == cv::EVENT_RBUTTONUP || event == cv::EVENT_RBUTTONDBLCLK) flags &= ~cv::EVENT_FLAG_RBUTTON;
+      if(event == cv::EVENT_MBUTTONDOWN || event == cv::EVENT_MBUTTONUP || event == cv::EVENT_MBUTTONDBLCLK) flags &= ~cv::EVENT_FLAG_MBUTTON;
+      if(event == cv::EVENT_MOUSEMOVE) flags &= ~cv::EVENT_FLAG_RBUTTON;
       
       ((window_t*)window)->processMouseEvent(event, x, y, flags);
 

@@ -216,22 +216,23 @@ namespace cvl {
     }
     
   private:
-    
+
+    // ultimo frame letto dal loader (stato per-istanza, non condiviso)
+    std::string currentFrame;
+
     //****************************************************************************/
     // filler
     //****************************************************************************/
     // Loader callback for populating object/image points.
     void filler(const cvl::loader::data & arguments) {
-      
-      static std::string frame = "";
-      
-      if(arguments.get<std::string>(0).compare(frame)) {
-        
+
+      if(objectPoints.empty() || arguments.get<std::string>(0).compare(currentFrame)) {
+
         objectPoints.push_back(std::vector<cv::Point3d>());
         imagePoints.push_back(std::vector<cv::Point2d>());
 
-        frame = arguments.get<std::string>(0);
-        
+        currentFrame = arguments.get<std::string>(0);
+
       }
       
       cv::Point3d objectPoint;

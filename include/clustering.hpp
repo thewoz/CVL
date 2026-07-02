@@ -42,13 +42,16 @@ namespace cvl::clustering {
   //*****************************************************************************/
   // Cluster blobs using nearest-neighbor distances (median-based threshold).
   inline void NN(const cvl::blobs_t & blobs, std::vector<cvl::blobs_t> & clusters, double factor = 1) {
-    
-    std::vector<std::vector<size_t>> clustersIndex;
-    
-    cvl::utils::connectedComponentsMedianFirstNN(blobs, clustersIndex, factor, /*minClusterSize=*/0, distanceOp);
-    
+
     clusters.clear();
-    
+
+    // senza blob non c'è nulla da clusterizzare (evita la mediana su un set vuoto)
+    if(blobs.size() == 0) return;
+
+    std::vector<std::vector<size_t>> clustersIndex;
+
+    cvl::utils::connectedComponentsMedianFirstNN(blobs, clustersIndex, factor, /*minClusterSize=*/0, distanceOp);
+
     clusters.resize(clustersIndex.size());
     
     // per ogni cluster trovato
@@ -73,7 +76,13 @@ namespace cvl::clustering {
     
     // Clusterizzo
     cvl::clustering::NN(blobs, clusters, factor);
-    
+
+    // nessun cluster trovato: lascio i blob invariati e restituisco la posizione richiesta
+    if(clusters.empty()) {
+      cvl::log::warning("cvl::clustering::follow() warning: no clusters found\n");
+      return coords;
+    }
+
     size_t nearIndex = 0;
     double nearDist  = DBL_MAX;
     

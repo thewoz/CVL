@@ -45,86 +45,6 @@ namespace cvl::labeling {
   namespace utils {
 
     //*****************************************************************************/
-    // freeMatrix
-    //*****************************************************************************/
-    // Free a 2D label matrix.
-    inline void freeMatrix(int ** matrixLabel, const cv::Size & size){
-      
-      if(matrixLabel != NULL) {
-        
-        for(int i=0; i<size.height; ++i)
-          free(matrixLabel[i]);
-        
-        free(matrixLabel);
-        
-      }
-      
-    }
-    
-    //*****************************************************************************/
-    // allocMatrix
-    //*****************************************************************************/
-    // Allocate or resize a 2D label matrix.
-    inline void allocMatrix(int ** & matrixLabel, const cv::Size & size) {
-      
-      if(matrixLabel != NULL) freeMatrix(matrixLabel, size);
-      
-      matrixLabel = (int **) malloc(size.height * sizeof(int *));
-      
-      if(matrixLabel == NULL){
-        cvl::log::error("cvl::labeling::allocMatrix() error: matrix allocation failed\n");
-      }
-      
-      for(int i=0; i<size.height; ++i){
-
-        matrixLabel[i] = (int *) malloc(size.width * sizeof(int));
-        
-        if(matrixLabel[i] == NULL){
-          cvl::log::error("cvl::labeling::allocMatrix() error: matrix allocation failed\n");
-        }
-        
-        memset(matrixLabel[i], 0, size.width * sizeof(int));
-        
-      }
-      
-    }
-
-    //*****************************************************************************/
-    // init
-    //*****************************************************************************/
-    // Initialize or reset the label matrix with padding.
-    inline void init(const cv::Size & imgSize, cv::Size & workImageSize, int **  & matrixLabel) {
-
-      if(matrixLabel == NULL){
-        
-        workImageSize.width  = imgSize.width  + 2;
-        workImageSize.height = imgSize.height + 2;
-        
-        allocMatrix(matrixLabel, workImageSize);
-        
-      } else {
-        
-        if(workImageSize.height != (imgSize.height + 2) || workImageSize.width != (imgSize.width + 2)){
-          
-          freeMatrix(matrixLabel, workImageSize);
-          
-          workImageSize.height = imgSize.height + 2;
-          workImageSize.width  = imgSize.width  + 2;
-          
-          allocMatrix(matrixLabel, workImageSize);
-          
-        } else {
-          
-          for(int i=0; i<workImageSize.height; i++)
-            memset(matrixLabel[i], 0, workImageSize.width * sizeof(int));
-          
-        }
-        
-      }
-      
-    }
-    
-    //*****************************************************************************/
     // findRoot
     //*****************************************************************************/
     // Find the root label in the union-find structure.
@@ -147,30 +67,39 @@ namespace cvl::labeling {
   //*****************************************************************************/
   // Label connected components and return them as blobs.
   inline void get(cv::Mat & src, int neighboursType, size_t minClusterMass, cvl::blobs_t & blobs, const cv::Mat & original, const cv::Point & offset = cv::Point(0,0)) {
-    
+
+    if(src.empty() || src.type() != CV_8UC1) {
+      cvl::log::error("cvl::labeling::get() error: the input image must be a non-empty CV_8UC1 image\n");
+    }
+
     bool eight_connectivity = true;
-    
+
     if(neighboursType == NEAREST_NEIGHBOURS) {
       eight_connectivity = false;
     }
-    
+
     if(neighboursType != NEAREST_NEIGHBOURS && neighboursType != NEXT_NEAREST_NEIGHBOURS) {
-    
+
       cvl::log::error("cvl::labeling::get() error: unknown connectivity type\n"
                       "You can choose between:\n"
                       "      NEAREST_NEIGHBOURS, NEXT_NEAREST_NEIGHBOURS\n");
 
     }
-    
+
     std::vector<int> labelMass(1,0);
 
     int label = 1;
 
-    cv::Size workImageSize;
+    // matrice dei label con bordo di 1 pixel, un solo buffer contiguo
+    // (matrixLabel[y] punta alla riga y, così la sintassi [y][x] resta invariata)
+    cv::Size workImageSize(src.cols + 2, src.rows + 2);
 
-    int ** matrixLabel = NULL;
+    std::vector<int> matrixData((size_t)workImageSize.height * workImageSize.width, 0);
 
-    utils::init(src.size(), workImageSize, matrixLabel);
+    std::vector<int *> matrixLabel(workImageSize.height);
+
+    for(int i=0; i<workImageSize.height; ++i)
+      matrixLabel[i] = matrixData.data() + (size_t)i * workImageSize.width;
 
     int neighbors_found;
 
@@ -286,9 +215,7 @@ namespace cvl::labeling {
     }
 
     blobs.finalize();
-    
-    utils::freeMatrix(matrixLabel, workImageSize);
-    
+
   }
 
 } /* namespace cvl::labeling */

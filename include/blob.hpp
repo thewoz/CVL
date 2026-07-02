@@ -293,8 +293,7 @@ namespace cvl {
         for(size_t i=0; i<pixels.size(); i++){
           int x = pixels[i].x - offset.x;
           int y = pixels[i].y - offset.y;
-          uchar value = ori.at<uchar>(pixels[i].y, pixels[i].x);
-          dst.at<cv::Vec3b>(y,x) = cv::Vec3b(value, value, value);
+          dst.at<cv::Vec3b>(y,x) = ori.at<cv::Vec3b>(pixels[i].y, pixels[i].x);
         }
         status = true;
       }
@@ -352,8 +351,8 @@ namespace cvl {
         for(size_t i=0; i<pixels.size(); i++){
           int x = pixels[i].x - offset.x;
           int y = pixels[i].y - offset.y;
-          uchar value = 255 - ori.at<uchar>(pixels[i].y, pixels[i].x);
-          dst.at<cv::Vec3b>(y,x) = cv::Vec3b(value,  value, value);
+          const cv::Vec3b & value = ori.at<cv::Vec3b>(pixels[i].y, pixels[i].x);
+          dst.at<cv::Vec3b>(y,x) = cv::Vec3b(255 - value[0], 255 - value[1], 255 - value[2]);
         }
         status = true;
       }
