@@ -10,7 +10,9 @@
       "Bash(python3 -)",
       "Bash(DYLD_LIBRARY_PATH=/usr/local/lib /tmp/cvl_test2)",
       "Bash(echo \"RUN OK \\(exit $?\\)\")",
-      "Bash(rm -f /tmp/cvl_test*.cpp /tmp/cvl_test /tmp/cvl_test2 /tmp/cvl_test3)"
+      "Bash(rm -f /tmp/cvl_test*.cpp /tmp/cvl_test /tmp/cvl_test2 /tmp/cvl_test3)",
+      "Bash(git -C /Users/thewoz/Dropbox/Research/CVL diff --stat)",
+      "Bash(grep -rln \"targetmass\\\\|blobsplitting\" ~/Dropbox/Research/COBBS 2>/dev/null)"
     ]
   }
 }

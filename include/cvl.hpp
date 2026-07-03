@@ -48,7 +48,6 @@
   #include "denoising.hpp"
   #include "enhance.hpp"
   #include "subpixel.hpp"
-  #include "targetMass.hpp"
   #include "threshold.hpp"
   #include "window.hpp"
   #include "pose.hpp"
@@ -74,7 +73,6 @@
   #include <cvl/denoising.hpp>
   #include <cvl/enhance.hpp>
   #include <cvl/subpixel.hpp>
-  #include <cvl/targetMass.hpp>
   #include <cvl/threshold.hpp>
   #include <cvl/window.hpp>
   #include <cvl/pose.hpp>

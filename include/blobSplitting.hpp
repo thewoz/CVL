@@ -40,9 +40,121 @@
 namespace cvl::blobsplitting {
 
   //*****************************************************************************
+  // fixed
+  //*****************************************************************************
+  // Draw fixed-radius target circles for each blob barycenter.
+  inline void fixed(cvl::blobs_t & blobs, cv::Mat & dst, int radius) {
+
+    dst.setTo(cv::Scalar(0,0,0));
+
+    cv::Scalar color = cv::Scalar(255, 255, 255);
+
+    // per ogni blocb disegno un cerchio intorno al baricentro
+    for(size_t i=0; i<blobs.size(); ++i)
+      cv::circle(dst, cv::Point(blobs[i].baricenter.x, blobs[i].baricenter.y), radius, color, -1);
+
+  }
+
+  //*****************************************************************************
   // namespace
   //*****************************************************************************
   namespace utils {
+
+  //*****************************************************************************
+  // untilSplit
+  //*****************************************************************************
+  // Iteratively threshold a single blob (toward dark or light) until it
+  // splits into more than one connected component or reaches exitMass.
+  inline void untilSplit(const cvl::blob_t & blob, const cv::Mat & splitOn, const cv::Mat & original, bool toDark, int exitMass, int minMass, int labelingNeighboursType, cvl::blobs_t & tmpBlobs) {
+
+    tmpBlobs.clear();
+
+    // immagini di appoggio
+    cv::Mat blobImg = cv::Mat(blob.getImageSize(), CV_8UC1);
+    cv::Mat thrsImg = cv::Mat(blob.getImageSize(), CV_8UC1);
+
+    int threshold;
+
+    int targetThreshold;
+
+    // in base se devo andare verso il nero o meno
+    if(toDark){
+      blobImg.setTo(cv::Scalar(255,255,255));
+      targetThreshold = blob.iMin;
+      threshold       = blob.iMax;
+    } else {
+      blobImg.setTo(cv::Scalar(0,0,0));
+      targetThreshold = blob.iMax;
+      threshold       = blob.iMin;
+    }
+
+    // dimenzione imagine disegno il blob
+    blob.draw(blobImg, splitOn, blob.offset);
+
+    // ciclo sulla soglia fino a che non splitto o raggiungo il minimo
+    for(;;) {
+
+      // applico la nuova soglia
+      if(toDark){
+        if(threshold < targetThreshold) break;
+        cv::threshold(blobImg, thrsImg, (threshold - 1), 255, cv::THRESH_BINARY_INV);
+      } else {
+        if(threshold > targetThreshold) break;
+        cv::threshold(blobImg, thrsImg, (threshold - 1), 255, cv::THRESH_BINARY);
+      }
+
+      // trovo le componeti connesse
+      cvl::labeling::get(thrsImg, labelingNeighboursType, minMass, tmpBlobs, original, blob.offset);
+
+      // se l'ho diviso o è rimasto un troppo piccolo o non è rimansto nulla esco
+      if(tmpBlobs.size() > 1 || tmpBlobs.size() == 0 || (tmpBlobs.size() == 1 && (int)tmpBlobs[0].size() <= exitMass)) break;
+
+      if(toDark) { --threshold; }
+      else       { ++threshold; }
+
+    } // ciclo sulla soglia
+
+  }
+
+  //*****************************************************************************
+  // untilErode
+  //*****************************************************************************
+  // Erode a single blob (peeling internal contours) until its mass drops to
+  // or below exitMass, then label the remaining mask.
+  inline void untilErode(const cvl::blob_t & blob, const cv::Mat & original, int exitMass, int minMass, int labelingNeighboursType, cvl::blobs_t & tmpBlobs) {
+
+    tmpBlobs.clear();
+
+    int mass = (int)blob.size();
+
+    // creo un immagine di appoggio
+    cv::Mat thrsImg = cv::Mat::zeros(blob.getImageSize(), CV_8UC1);
+
+    // ci disegno il blob sopra
+    blob.drawMask(thrsImg, blob.offset);
+
+    // ciclo
+    for(; mass > exitMass; ) {
+
+      std::vector<cv::Point> contours;
+
+      cvl::contours::get(thrsImg, cvl::contours::INTERNAL, contours);
+
+      if(mass - (int)contours.size() >= minMass) {
+
+        for(size_t j=0; j<contours.size(); ++j)
+          thrsImg.at<uchar>(contours[j]) = 0;
+
+        mass -= (int)contours.size();
+
+      } else { break; }
+
+    }
+
+    // labbello
+    cvl::labeling::get(thrsImg, labelingNeighboursType, minMass, tmpBlobs, original, blob.offset);
+
+  }
 
   //*****************************************************************************
   // split
@@ -64,95 +176,34 @@ namespace cvl::blobsplitting {
   //    // se devo continuare a dividire una volta diviso
   //    bool recursiveSplitting;
   //*****************************************************************************
-  // Split a single blob into smaller ones by iteratively thresholding.
-  inline void split(const cvl::blob_t & blob, const cv::Mat & splitOn, const cv::Mat & original, cvl::blobs_t & blobsFound, bool toDark, int enterMass, int exitMass, int minMass, bool recursiveSplitting, int labelingNeighboursType) {
-    
+  // Split a single blob into smaller ones (via erosion or iterative thresholding).
+  inline void split(const cvl::blob_t & blob, const cv::Mat & splitOn, const cv::Mat & original, cvl::blobs_t & blobsFound, const std::string & mode, int enterMass, int exitMass, int minMass, bool recursiveSplitting, int labelingNeighboursType) {
+
     if(exitMass < minMass) {
       cvl::log::error("cvl::blobsplitting::split() error: exitMass must be greater than or equal to minMass\n");
     }
-    
-  #ifdef _DEBUG_CVL_BLOBSPLITTING_
-    //cv::namedWindow("blobs", cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_EXPANDED);
-  #endif
-    
+
     // vettore che contiene i blob che saranno trovati
     blobsFound.clear();
-    
+
     // vettore che contiene i vari blob che vanno divisi
     cvl::blobs_t blobsToSplit;
-    
+
     blobsToSplit.add(blob);
-    
+
     // vettore con i blob temporanei trovati a ogni passo
     cvl::blobs_t tmpBlobs;
-    
-    // immagini di appoggio
-    cv::Mat blobImg = cv::Mat(blob.getImageSize(), CV_8UC1);
-    cv::Mat thrsImg = cv::Mat(blob.getImageSize(), CV_8UC1);
-    
-    int threshold;
-    
-    int targetThreshold;
-    
+
     // ciclo su tutti i blob
     for(size_t i=0; i<blobsToSplit.size(); ++i) {
-      
-      // in base se devo andare verso il nero o meno
-      if(toDark){
-        blobImg.setTo(cv::Scalar(255,255,255));
-        targetThreshold = blobsToSplit[i].iMin;
-        threshold       = blobsToSplit[i].iMax;
+
+      if(mode.compare("ERODE") == 0) {
+        untilErode(blobsToSplit[i], original, exitMass, minMass, labelingNeighboursType, tmpBlobs);
       } else {
-        blobImg.setTo(cv::Scalar(0,0,0));
-        targetThreshold = blobsToSplit[i].iMax;
-        threshold       = blobsToSplit[i].iMin;
+        bool toDark = (mode.compare("TO_WHITE") != 0);
+        untilSplit(blobsToSplit[i], splitOn, original, toDark, exitMass, minMass, labelingNeighboursType, tmpBlobs);
       }
-      
-      //printf("threshold min %d threshold max %d\n", blobsToSplit[i].iMin, blobsToSplit[i].iMax);
-      
-      //        if(targetThreshold == 0 && threshold ==0) {
-      //          printf("i %d\n", i);
-      //          printf("baricenter %f %f\n", blobsToSplit[i].baricenter.x, blobsToSplit[i].baricenter.y);
-      //          printf("mass %lu\n", blobsToSplit[i].mass());
-      //          fflush(stdout);
-      //          cv::namedWindow("blobs", cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_EXPANDED);
-      //          blobsToSplit[i].draw(blobImg, blob.offset);
-      //          cv::imshow("blobs", blobImg); cv::waitKey(0);
-      //          abort();
-      //        }
-      
-      // dimenzione imagine disegno il blob
-      blobsToSplit[i].draw(blobImg, splitOn, blob.offset);
-      
-      //cv::imshow("blobs", blobImg); cv::waitKey(0);
-      
-      // ciclo sulla soglia fino a che non splitto o raggiungo il minimo
-      for(;;) {
-        
-        //printf("threshold %d\n", threshold); fflush(stdout);
-        
-        // applico la nuova soglia
-        if(toDark){
-          if(threshold < targetThreshold) break;
-          cv::threshold(blobImg, thrsImg, (threshold - 1), 255, cv::THRESH_BINARY_INV);
-        } else {
-          if(threshold > targetThreshold) break;
-          cv::threshold(blobImg, thrsImg, (threshold - 1), 255, cv::THRESH_BINARY);
-        }
-        
-        //cv::imshow("blobs", thrsImg); cv::waitKey(0);
-        
-        // trovo le componeti connesse
-        cvl::labeling::get(thrsImg, labelingNeighboursType, minMass, tmpBlobs, original, blob.offset);
-        
-        // se l'ho diviso o è rimasto un troppo piccolo o non è rimansto nulla esco
-        if(tmpBlobs.size() > 1 || tmpBlobs.size() == 0 || (tmpBlobs.size() == 1 && (int)tmpBlobs[0].size() <= exitMass)) break;
-        
-        if(toDark) { --threshold; /*if(threshold > tmpBlobs[0].iMax) threshold = tmpBlobs[0].iMax;*/ }
-        else       { ++threshold; /*if(threshold < tmpBlobs[0].iMin) threshold = tmpBlobs[0].iMin;*/ }
-        
-      } // ciclo sulla soglia
-      
+
       // se alla fine rimasto un solo cluster o nessuno aggiungo l'originale al risulato
       if(tmpBlobs.size() <= 1) {
 
@@ -171,13 +222,13 @@ namespace cvl::blobsplitting {
           } else {
             blobsFound.add(std::move(tmpBlobs[j]));
           }
-          
+
         } // for j
-        
+
       } // else
-      
+
     } // for i
-    
+
   }
 
   }  /* namespace */
@@ -187,50 +238,69 @@ namespace cvl::blobsplitting {
   //****************************************************************************
   // get
   //****************************************************************************
-  // Split blobs using the chosen mode and refine with watershed segmentation.
-  inline void get(cvl::blobs_t & blobs, const cv::Mat & splitOn, const cv::Mat & original, const std::string & mode, int enterMass, int exitMass, int minMass, bool recursiveSplitting, int labelingNeighboursType){
-    
+  // Split blobs using the chosen mode, optionally refining with watershed segmentation.
+  inline void get(cvl::blobs_t & blobs, const cv::Mat & splitOn, const cv::Mat & original, const std::string & mode, int enterMass, int exitMass, int minMass, bool recursiveSplitting, bool useWatershed, int radius, int labelingNeighboursType){
+
   #ifdef _DEBUG_CVL_BLOBSPLITTING_
     static int debugFrame = 22; // va modificato il valore di questo
     static int runFrame = 0;
   #endif
-    
-    bool toDark = true;
-    
-    if(mode.compare("TO_WHITE") == 0) {
-      toDark = false;
-    }
-    
-    if(mode.compare("TO_DARK") != 0 &&  mode.compare("TO_WHITE") != 0) {
-      
+
+    if(mode.compare("ERODE") != 0 && mode.compare("TO_DARK") != 0 &&  mode.compare("TO_WHITE") != 0 && mode.compare("FIXED") != 0) {
+
       cvl::log::error("cvl::blobsplitting::get() error: unknown split mode '%s'\n"
                       "You can choose between:\n"
-                      "      TO_DARK, TO_WHITE\n", mode.c_str());
+                      "      ERODE, TO_DARK, TO_WHITE, FIXED\n", mode.c_str());
 
     }
-    
+
+    // FIXED non passa dallo split iterativo: disegna cerchi a raggio fisso
+    // sui baricentri e rietichetta direttamente sull'immagine originale
+    if(mode.compare("FIXED") == 0) {
+
+      cv::Mat mask(original.size(), CV_8UC1);
+
+      fixed(blobs, mask, radius);
+
+      cvl::labeling::get(mask, labelingNeighboursType, minMass, blobs, original);
+
+      return;
+
+    }
+
     // vettore di appoggio con il risultato finale
     cvl::blobs_t newBlobs;
-    
+
     // provo a dividere ogni blob
     for(size_t i=0; i<blobs.size(); ++i) {
-      
+
       // se e' piu' grande della massa di entrata lo provo a dividere
       if((int)blobs[i].size() > enterMass) {
-        
+
         cvl::blobs_t blobsSplited;
-        
+
         // provo a splittarlo
-        utils::split(blobs[i], splitOn, original, blobsSplited, toDark, enterMass, exitMass, minMass, recursiveSplitting, labelingNeighboursType);
-        
+        utils::split(blobs[i], splitOn, original, blobsSplited, mode, enterMass, exitMass, minMass, recursiveSplitting, labelingNeighboursType);
+
         // ciclo su tutti i blob trovati
         for(size_t j=0; j<blobsSplited.size(); ++j)
           newBlobs.add(std::move(blobsSplited[j]));
 
       } else { newBlobs.add(blobs[i]); }
-      
+
     }
-    
+
+    // se non devo raffinare con il watershed mi fermo qui
+    if(!useWatershed) {
+
+      blobs = newBlobs;
+
+      blobs.finalize();
+
+      return;
+
+    }
+
     // creo un immagine come se fosse tutto cielo (sfondo)
     cv::Mat markers(original.size(), CV_32SC1, cv::Scalar::all(newBlobs.size()+1));
     

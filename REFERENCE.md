@@ -71,8 +71,9 @@ Class `cvl::blobs_t`:
 
 ## Blob splitting (`include/blobSplitting.hpp`)
 
-- `blobsplitting::utils::split(...)` – split a blob by iterative thresholding.
-- `blobsplitting::get(...)` – split a collection with watershed (TO_DARK/TO_WHITE).
+- `blobsplitting::fixed(blobs, dst, radius)` – draw radius targets at barycenters.
+- `blobsplitting::utils::split(...)` – split a blob (ERODE, or iterative thresholding TO_DARK/TO_WHITE).
+- `blobsplitting::get(blobs, splitOn, original, mode, enterMass, exitMass, minMass, recursiveSplitting, useWatershed, radius, neighboursType)` – process a collection: `mode` = `ERODE`/`TO_DARK`/`TO_WHITE` splits (optionally refined with watershed), `mode` = `FIXED` skips splitting and draws/relabels fixed-radius targets instead (`radius` used only in this mode).
 
 ## Chessboard (`include/chessboard.hpp`)
 
@@ -197,12 +198,6 @@ The pose/translation outputs are returned through `cv::Mat &` parameters.
 ## Subpixel (`include/subpixel.hpp`)
 
 - `subpixel::get(image, corners, roiSize, algorithm)` – subpixel refinement (`algorithm` = `"old"` uses `cv::cornerSubPix` with a `roiSize/2` half-window, `"new"` uses the ROCHADE-like detector in `cvl::subpixel::detail` on the full `roiSize` ROI; corners that cannot be refined keep their original position).
-
-## Target mass (`include/targetMass.hpp`)
-
-- `targetmass::fixed(blobs, dst, radius)` – draw radius targets at barycenters.
-- `targetmass::erode(blobs, src, targetMass, minMass, neighboursType)` – erode blobs.
-- `targetmass::split(blobs, src, targetMass, toDark, minMass, neighboursType)` – split blobs by mass.
 
 ## Threshold (`include/threshold.hpp`)
 
