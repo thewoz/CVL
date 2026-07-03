@@ -293,7 +293,7 @@ namespace cvl::blobsplitting {
     // se non devo raffinare con il watershed mi fermo qui
     if(!useWatershed) {
 
-      blobs = newBlobs;
+      blobs = std::move(newBlobs);
 
       blobs.finalize();
 
@@ -406,8 +406,8 @@ namespace cvl::blobsplitting {
       
     }
 
-    blobs = newBlobs;
-    
+    blobs = std::move(newBlobs);
+
     blobs.finalize();
     
   #ifdef _DEBUG_CVL_BLOBSPLITTING_

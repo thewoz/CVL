@@ -104,18 +104,37 @@ namespace cvl {
       //***********************************************************************
       inline void resolveBasicPath(const char * srcPath, char * dst) {
 
+        // dst è grande almeno PATH_MAX: ogni copia va verificata prima,
+        // altrimenti un path troppo lungo corrompe lo stack del chiamante
+        size_t srcLen = strlen(srcPath);
+
         // absolute path
         if(srcPath[0] == '/') {
+
+          if(srcLen >= PATH_MAX)
+            cvl::log::error("cvl::io::resolveBasicPath() error: the path is longer than PATH_MAX (%d)\n", PATH_MAX);
+
           strcpy(dst, srcPath);
+
           return;
+
         }
 
-        // home (~)
+        // home (~ oppure ~/...)
         if(srcPath[0] == '~') {
+
+          // la forma '~utente' non è supportata: prima veniva silenziosamente
+          // troncata alla sola home dell'utente corrente
+          if(srcPath[1] != '\0' && srcPath[1] != '/')
+            cvl::log::error("cvl::io::resolveBasicPath() error: '~user' paths are not supported: '%s'\n", srcPath);
 
           struct passwd * pw = getpwuid(getuid());
 
-          if(!pw) abort();
+          if(!pw)
+            cvl::log::error("cvl::io::resolveBasicPath() error: cannot resolve the home directory: %s\n", strerror(errno));
+
+          if(strlen(pw->pw_dir) + srcLen >= PATH_MAX)
+            cvl::log::error("cvl::io::resolveBasicPath() error: the path is longer than PATH_MAX (%d)\n", PATH_MAX);
 
           strcpy(dst, pw->pw_dir);
 
@@ -127,7 +146,11 @@ namespace cvl {
         }
 
         // relative path
-        if(getcwd(dst, PATH_MAX) == nullptr) abort();
+        if(getcwd(dst, PATH_MAX) == nullptr)
+          cvl::log::error("cvl::io::resolveBasicPath() error: getcwd() failed: %s\n", strerror(errno));
+
+        if(strlen(dst) + 1 + srcLen >= PATH_MAX)
+          cvl::log::error("cvl::io::resolveBasicPath() error: the path is longer than PATH_MAX (%d)\n", PATH_MAX);
 
         strcat(dst, "/");
         strcat(dst, srcPath);
@@ -382,11 +405,28 @@ namespace cvl {
 
       if(fillerFun == NULL) fillerFun = std::bind(&loader::filler, this, std::placeholders::_1);
 
-      FILE * input = io::open(inputFile, "r");
-
       std::vector<int> columns;
 
       getColsToRead(columnsToRead, columns);
+
+      // senza questo check una lista vuota manda columns[colIndex] out-of-bounds
+      if(columns.empty()) {
+        cvl::log::error("cvl::loader error: no columns to read in '%s'\n", columnsToRead.c_str());
+      }
+
+      // il parser legge i token in un solo passaggio: le colonne devono
+      // essere valide (>= 1) e in ordine strettamente crescente
+      if(columns[0] < 0) {
+        cvl::log::error("cvl::loader error: column indices must be >= 1 ('%s')\n", columnsToRead.c_str());
+      }
+
+      for(size_t i=1; i<columns.size(); ++i) {
+        if(columns[i] <= columns[i-1]) {
+          cvl::log::error("cvl::loader error: the column list must be strictly increasing ('%s')\n", columnsToRead.c_str());
+        }
+      }
+
+      FILE * input = io::open(inputFile, "r");
 
       char line[LINE_MAX];
 
@@ -460,7 +500,7 @@ namespace cvl {
     //*************************************************************************
     // filler
     //*************************************************************************
-    virtual void filler(const loader::data & arguments) { };
+    virtual void filler(const loader::data & /* arguments */) { };
 
   }; /* class loader */
 

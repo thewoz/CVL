@@ -77,7 +77,11 @@ namespace cvl {
     void filler(const cvl::loader::data & arguments) {
 
       int frame = arguments.get<int>(0);
-      
+
+      // un frame negativo (file corrotto) manderebbe coords[frame] out-of-bounds
+      if(frame < 0)
+        cvl::log::error("cvl::corners_t error: negative frame index %d\n", frame);
+
       cv::Point2d coord;
       
       coord.x = arguments.get<double>(1);

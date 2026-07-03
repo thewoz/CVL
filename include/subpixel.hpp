@@ -596,7 +596,7 @@ namespace cvl::subpixel {
       if(max_seeds < 9)
         return;
 
-      std::partial_sort(keypoints_temp.begin(),keypoints_temp.begin()+max_seeds-1,
+      std::partial_sort(keypoints_temp.begin(),keypoints_temp.begin()+max_seeds,
               keypoints_temp.end(),sortKeyPoint);
       keypoints_temp.resize(max_seeds);
       std::vector<std::vector<float> > angles_temp  = calcAngles(rotated_images,keypoints_temp);
@@ -700,6 +700,12 @@ namespace cvl::subpixel {
   //*****************************************************************************/
   // Refine corner positions to subpixel accuracy.
   inline void get(const cv::Mat image, std::vector<cv::Point2f> & corners, int roiSize = 15, const std::string & algorithm = "old") {
+
+    if(algorithm.compare("old") != 0 && algorithm.compare("new") != 0) {
+      cvl::log::error("cvl::subpixel::get() error: unknown algorithm '%s'\n"
+                      "You can choose between:\n"
+                      "      old, new\n", algorithm.c_str());
+    }
 
     if(corners.size() > 0) {
 

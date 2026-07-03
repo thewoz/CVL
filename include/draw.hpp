@@ -75,15 +75,15 @@ namespace cvl::draw {
   //****************************************************************************/
   // Draw a diagonal cross centered at the provided point.
   template <class T>
-  inline void cross(cv::Mat & image, cv::Point_<T> & center, int lenght, const cv::Scalar & color, int thickness = 1) {
-    
+  inline void cross(cv::Mat & image, const cv::Point_<T> & center, int length, const cv::Scalar & color, int thickness = 1) {
+
     if(image.type() != CV_8UC3) {
       cvl::log::error("cvl::draw::cross() error: the destination image must be CV_8UC3\n");
     }
-    
-    cv::line(image, cv::Point(center.x-lenght, center.y-lenght), cv::Point(center.x+lenght, center.y+lenght), color, thickness);
-    cv::line(image, cv::Point(center.x+lenght, center.y-lenght), cv::Point(center.x-lenght, center.y+lenght), color, thickness);
-    
+
+    cv::line(image, cv::Point(center.x-length, center.y-length), cv::Point(center.x+length, center.y+length), color, thickness);
+    cv::line(image, cv::Point(center.x+length, center.y-length), cv::Point(center.x-length, center.y+length), color, thickness);
+
   }
   
 } /* namespace */

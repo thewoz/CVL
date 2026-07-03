@@ -158,9 +158,15 @@ namespace cvl::enhance {
   // I(x,y) = alpha * I(x,y) + beta
   // Apply automatic contrast stretching with histogram clipping.
   inline void autoContrast(cv::Mat & image, float clipHistPercent) {
-    
+
     if(image.channels() != 1) {
       cvl::log::error("cvl::enhance::autoContrast() error: works only with single channel images\n");
+    }
+
+    // convertScaleAbs produce sempre 8 bit: su immagini a 16 bit lo stretch
+    // calcolato sul range 65535 saturerebbe quasi tutti i pixel a 255
+    if(image.depth() != CV_8U) {
+      cvl::log::error("cvl::enhance::autoContrast() error: works only with CV_8U images\n");
     }
 
     float alpha, beta;
@@ -187,51 +193,26 @@ namespace cvl::enhance {
   //****************************************************************************
   // Sharpen an image using unsharp masking.
   inline void unsharpMask(cv::Mat & src, int size = 3, double sigma = 1, double threshold = 5, double amount = 3) {
-    
-    #if(1)
-    
-    cv::Mat srcF32;
-    
-    src.convertTo(srcF32, CV_32FC1);
 
-    cv::Mat blurred;
-    
-    cv::GaussianBlur(srcF32, blurred, cv::Size(size,size), sigma, sigma);
-      
-    cv::Mat lowConstrastMask = cv::abs(srcF32 - blurred) < threshold;
-    
-    cv::Mat sharpened = srcF32*(1+amount) + blurred*(-amount);
-    
-    srcF32.copyTo(sharpened, lowConstrastMask);
-    
-    sharpened.convertTo(src , CV_8UC1); 
-    
-		#else
-
+    // GaussianBlur richiede un kernel di lato dispari
     size += (1 - (size % 2));
-    
+
     cv::Mat srcF32;
-    
+
     src.convertTo(srcF32, CV_32FC1);
-    
+
     cv::Mat blurred;
-    
+
     cv::GaussianBlur(srcF32, blurred, cv::Size(size,size), sigma, sigma);
-    
-    cv::Mat hp = srcF32 - blurred;
-    
-    cv::Mat hpabs = cv::abs(hp);
-    
-    cv::Mat hpthr;
-    
-    cv::threshold(hpabs, hpthr, threshold, 1.0, cv::THRESH_BINARY);
-    
-    cv::Mat ret1 = srcF32 + amount * hp.mul(hpthr);
-    
-    ret1.convertTo(src, CV_8UC1);
-		
-		#endif
-		
+
+    cv::Mat lowConstrastMask = cv::abs(srcF32 - blurred) < threshold;
+
+    cv::Mat sharpened = srcF32*(1+amount) + blurred*(-amount);
+
+    srcF32.copyTo(sharpened, lowConstrastMask);
+
+    sharpened.convertTo(src , CV_8UC1);
+
   }
   
   //****************************************************************************

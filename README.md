@@ -76,14 +76,21 @@ int main() {
 | `opencv` | `cvl` | OpenCV helpers (I/O, resize, histograms, text/markers, operators) |
 | `pose` | `cvl::pose` | Pose / stereo utilities |
 | `subpixel` | `cvl::subpixel` | Sub-pixel corner refinement (old `cv::cornerSubPix` + new ROCHADE-like detector) |
-| `targetMass` | `cvl::targetmass` | Split / erode blobs by mass |
 | `threshold` | `cvl::threshold` | Thresholding utilities (otsu, adaptive, global, median, mode, percentile) |
 | `utils` | `cvl::io`, `cvl::log`, `cvl::utils`, `cvl` | Self-contained helpers: path/file I/O, logging, `loader`, clustering primitives, `itoa`/`decToHex` |
 | `window` | `cvl` | `window_t`, an OpenCV window wrapper with event hooks |
 
-## Documentation
+## Caveats
 
-- [REFERENCE.md](REFERENCE.md) – a compact, flat list of the public functions and their signatures.
+- Unless stated otherwise, functions assume single-channel 8-bit (`CV_8UC1`) images;
+  color or 16-bit inputs are only supported where explicitly documented
+  (`convert`, `histogram16bit`, `open16bitC1`, `background::lightest/darkest/avg`, …).
+- Error handling is fail-fast: `cvl::log::error()` prints to `stderr` and calls
+  `exit(EXIT_FAILURE)`. The library does not throw recoverable exceptions.
+- The library is **not thread-safe** (lazy-initialized color palette, global
+  detector parameters in `subpixel`, shared window registry in `window_t`).
+- Barycenters follow a pixel-center convention: the `baricenter::*` functions add
+  **+0.5** to the averaged integer pixel coordinates.
 
 ## Future optimizations
 

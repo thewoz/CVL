@@ -28,6 +28,7 @@
 #include <cstdio>
 
 #include <string>
+#include <vector>
 
 //*****************************************************************************/
 // namespace cvl::denoising
@@ -274,19 +275,16 @@ namespace cvl::denoising {
     }
       
     if(algo.compare("STARFLAG") == 0) {
-      
-      uchar * denoiseMatrix = (uchar *) malloc(size * size * sizeof (uchar));
-      //TODO to check the return value
-      
+
+      std::vector<uchar> denoiseMatrix((size_t)size * size);
+
       cv::Mat workImage = cv::Mat(src.size(), CV_8UC1);
 
       for(int i=0; i<time; i++)
-        starflag(src, workImage, size, denoiseMatrix);
-      
-      free(denoiseMatrix);
+        starflag(src, workImage, size, denoiseMatrix.data());
 
       return;
-      
+
     }
     
     cvl::log::error("cvl::denoising::get() error: unknown denoising type '%s'\n"

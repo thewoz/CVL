@@ -675,18 +675,25 @@ inline void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, cons
   // save
   //*****************************************************************************/
   // Save an image to disk, expanding paths and validating the write.
-  inline bool save(cv::Mat & image, std::string str) {
-    
+  inline bool save(const cv::Mat & image, std::string str) {
+
     cvl::io::expandPath(str);
 
-    int status = cv::imwrite(str, image);
-    
+    bool status = false;
+
+    // imwrite lancia cv::Exception per estensioni/formati non supportati
+    try {
+      status = cv::imwrite(str, image);
+    } catch(const cv::Exception & e) {
+      cvl::log::error("cvl::save() error: cannot write the file '%s': %s\n", str.c_str(), e.what());
+    }
+
     if(!status) {
       cvl::log::error("cvl::save() error: cannot write the file '%s'\n", str.c_str());
     }
-    
+
     return true;
-    
+
   }
   
   //*****************************************************************************/
@@ -955,6 +962,6 @@ inline void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, cons
 //}
   
 
-} /* namespace opencv */
+} /* namespace cvl */
 
 #endif /* _H_CVL_OPENCV_H_ */

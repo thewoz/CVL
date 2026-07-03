@@ -73,7 +73,14 @@ namespace cvl::background {
   // Build a background image taking the per-pixel median.
   inline void median(const std::vector<cv::Mat> & src, cv::Mat & dst) {
 
+    // l'accesso per riga assume CV_8UC1 e immagini tutte della stessa dimensione
+    for(size_t i=0; i<src.size(); ++i)
+      if(src[i].type() != CV_8UC1 || src[i].size() != src[0].size())
+        cvl::log::error("cvl::background::median() error: the input images must be CV_8UC1 and all of the same size\n");
+
     if(dst.empty()) dst.create(src[0].size(), src[0].type());
+    else if(dst.type() != CV_8UC1 || dst.size() != src[0].size())
+      cvl::log::error("cvl::background::median() error: dst must be empty or a CV_8UC1 image of the same size as the input\n");
 
     int histo[256];
 
@@ -123,7 +130,14 @@ namespace cvl::background {
   // Build a background image taking the per-pixel mode (most frequent value).
   inline void moda(const std::vector<cv::Mat> & src, cv::Mat & dst) {
 
+    // l'accesso per riga assume CV_8UC1 e immagini tutte della stessa dimensione
+    for(size_t i=0; i<src.size(); ++i)
+      if(src[i].type() != CV_8UC1 || src[i].size() != src[0].size())
+        cvl::log::error("cvl::background::moda() error: the input images must be CV_8UC1 and all of the same size\n");
+
     if(dst.empty()) dst.create(src[0].size(), src[0].type());
+    else if(dst.type() != CV_8UC1 || dst.size() != src[0].size())
+      cvl::log::error("cvl::background::moda() error: dst must be empty or a CV_8UC1 image of the same size as the input\n");
 
     int histo[256];
 
@@ -223,7 +237,13 @@ namespace cvl::background {
   // Copy pixels above a threshold from the source to the destination.
   inline void fixed(const cv::Mat & src, cv::Mat & dst, uchar value) {
 
+    // l'accesso per riga assume CV_8UC1
+    if(src.type() != CV_8UC1)
+      cvl::log::error("cvl::background::fixed() error: the input image must be a CV_8UC1 image\n");
+
     if(dst.empty()) dst = cv::Mat::zeros(src.size(), src.type());
+    else if(dst.type() != CV_8UC1 || dst.size() != src.size())
+      cvl::log::error("cvl::background::fixed() error: dst must be empty or a CV_8UC1 image of the same size as the input\n");
 
     for(int y=0; y<src.rows; ++y) {
       const uchar * srcRow = src.ptr<uchar>(y);

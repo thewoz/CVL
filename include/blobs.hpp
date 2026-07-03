@@ -135,31 +135,34 @@ namespace cvl {
     //*****************************************************************************
     // Sort blobs, recompute stats, labels, and global barycenter.
     void finalize() {
-      
-      // ordino i punti
-      std::sort(blobs.begin(), blobs.end());
-      
+
       baricenter = cv::Point2d(0,0);
-      
+
       if(blobs.empty()) return;
-      
-      // mi calcolo il baricentro e rinomino i label dei punti
+
+      // mi calcolo le statistiche (baricentro compreso) di ogni blob
       for(size_t i=0; i<blobs.size(); ++i) {
-        
+
         blobs[i].finalize();
-        
+
         if(!std::isfinite(blobs[i].baricenter.x) || !std::isfinite(blobs[i].baricenter.y)) {
           cvl::log::error("cvl::blobs_t::finalize() error: bad baricenter\n");
         }
-        
+
         baricenter += blobs[i].baricenter;
-        
-        blobs[i].label = (int)i;
-        
+
       }
-      
+
+      // ordino i blob per baricentro (row-major); va fatto dopo averli
+      // calcolati, altrimenti il sort confronta baricentri non inizializzati
+      std::sort(blobs.begin(), blobs.end());
+
+      // rinomino i label dei blob secondo il nuovo ordine
+      for(size_t i=0; i<blobs.size(); ++i)
+        blobs[i].label = (int)i;
+
       baricenter /= (double) blobs.size();
-      
+
     }
   
     //*****************************************************************************
@@ -270,7 +273,10 @@ namespace cvl {
     //*****************************************************************************
     // Compute a minimum enclosing circle of blob barycenters.
     void enclosingCircle(cv::Point2f & center, float & radius) const {
-      
+
+      if(blobs.empty())
+        cvl::log::error("cvl::blobs_t::enclosingCircle() error: the blob collection is empty\n");
+
       std::vector<cv::Point2f> points(blobs.size());
       
       for(size_t i=0; i<blobs.size(); ++i)
@@ -285,7 +291,10 @@ namespace cvl {
     //*****************************************************************************
     // Compute the convex hull of blob barycenters.
     void getConvexHull(std::vector<cv::Point2f> & hull) const {
-      
+
+      if(blobs.empty())
+        cvl::log::error("cvl::blobs_t::getConvexHull() error: the blob collection is empty\n");
+
       std::vector<cv::Point2f> points(blobs.size());
       
       for(size_t i=0; i<blobs.size(); ++i)
@@ -300,7 +309,10 @@ namespace cvl {
     //*****************************************************************************
     // Compute a bounding box around blob barycenters.
     void boundingRect(cv::Rect & roi) const{
-      
+
+      if(blobs.empty())
+        cvl::log::error("cvl::blobs_t::boundingRect() error: the blob collection is empty\n");
+
       std::vector<cv::Point2f> points(blobs.size());
       
       for(size_t i=0; i<blobs.size(); ++i)
@@ -363,7 +375,7 @@ namespace cvl {
         fprintf(outputPoints, "%d %04d %04d %.4f %.4f %.1f\n", camera, frame, blobs[i].label, blobs[i].baricenter.x, blobs[i].baricenter.y, blobs[i].avgIntensity);
       
       if(outputFrame != NULL) {
-        fprintf(outputFrame, "%04d %04lu\n", frame, blobs.size());
+        fprintf(outputFrame, "%04d %04zu\n", frame, blobs.size());
         fflush(outputFrame);
       }
       

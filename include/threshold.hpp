@@ -271,6 +271,8 @@ namespace cvl::threshold {
   // otsu
   //****************************************************************************/
   // Apply Otsu thresholding to the source image.
+  // NOTE: the mask is applied to the output only; it does NOT affect the
+  // computed threshold (for a mask-aware threshold see utils::otsu above).
   inline double otsu(cv::Mat & src, cv::Mat & dst, const cv::Mat & mask = cv::Mat()) {
     
     // TODO: qua dovrei controlalre che è grande uguale e dello stesso tipo

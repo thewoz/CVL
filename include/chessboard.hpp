@@ -157,7 +157,7 @@ namespace cvl::chessboard {
       size_t y = int(i/cols);
       size_t x = i - (y * cols);
 
-      fprintf(output, "%s %lu %lu 0 %.8f %.8f\n", (cvl::io::subdirName(file) + "_" + cvl::io::basename(file)).c_str(), x, y, corners[i].x, corners[i].y);
+      fprintf(output, "%s %zu %zu 0 %.8f %.8f\n", (cvl::io::subdirName(file) + "_" + cvl::io::basename(file)).c_str(), x, y, corners[i].x, corners[i].y);
 
     }
     

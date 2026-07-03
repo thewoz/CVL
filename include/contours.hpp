@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _H_CVL_COUNTOURS_H_
-#define _H_CVL_COUNTOURS_H_
+#ifndef _H_CVL_CONTOURS_H_
+#define _H_CVL_CONTOURS_H_
 
 #ifndef _H_CVL_H_
   #error "Do not include this header directly; include <cvl/cvl.hpp> instead."
@@ -157,5 +157,5 @@ namespace cvl::contours {
   
 } /* namespace */
 
-#endif /* _H_CVL_COUNTOURS_H_ */
+#endif /* _H_CVL_CONTOURS_H_ */
 

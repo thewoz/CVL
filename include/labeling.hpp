@@ -32,7 +32,7 @@
 #include <string>
 #include <utility>
 
-#define MERGE_MASS_LABEL(a,b) { labelMass[b] += labelMass[a]; labelMass[a] = -b; }
+#define MERGE_MASS_LABEL(a,b) do { labelMass[b] += labelMass[a]; labelMass[a] = -b; } while(0)
 
 //*****************************************************************************/
 // namespace cvl::labeling
@@ -66,10 +66,15 @@ namespace cvl::labeling {
   // get
   //*****************************************************************************/
   // Label connected components and return them as blobs.
-  inline void get(cv::Mat & src, int neighboursType, size_t minClusterMass, cvl::blobs_t & blobs, const cv::Mat & original, const cv::Point & offset = cv::Point(0,0)) {
+  inline void get(const cv::Mat & src, int neighboursType, size_t minClusterMass, cvl::blobs_t & blobs, const cv::Mat & original, const cv::Point & offset = cv::Point(0,0)) {
 
     if(src.empty() || src.type() != CV_8UC1) {
       cvl::log::error("cvl::labeling::get() error: the input image must be a non-empty CV_8UC1 image\n");
+    }
+
+    // le intensità dei blob vengono lette da original con at<uchar>
+    if(original.empty() || original.type() != CV_8UC1) {
+      cvl::log::error("cvl::labeling::get() error: the original image must be a non-empty CV_8UC1 image\n");
     }
 
     bool eight_connectivity = true;

@@ -153,7 +153,7 @@ namespace cvl {
       fprintf(out, "offset: %f %f\n", offset.x, offset.y);
       fprintf(out, "baricenter: %f %f\n", baricenter.x, baricenter.y);
       fprintf(out, "iMin: %d iMax: %d\n", iMin, iMax);
-      fprintf(out, "size: %lu\n", pixels.size());
+      fprintf(out, "size: %zu\n", pixels.size());
       fprintf(out, "pixels:\n");
       for(int i=0; i<(int)pixels.size(); ++i) fprintf(out, "\t%d) %d %d - %d\n", i, pixels[i].x, pixels[i].y, pixels[i].z);
       fprintf(out, "\n");
@@ -196,6 +196,10 @@ namespace cvl {
     
     //*****************************************************************************
     // draw
+    //*****************************************************************************
+    // NOTA (vale per tutti i draw*): i pixel vengono scritti con at<>() senza
+    // bounds check; dst, tenuto conto di offset, deve essere abbastanza grande
+    // da contenere il ROI del blob, altrimenti la scrittura è out-of-bounds.
     //*****************************************************************************
     // Draw the blob onto dst using the provided color (8-bit 1 or 3 channel).
     void draw(cv::Mat & dst, const cv::Vec3b & color, const cv::Point & offset = cv::Point(0,0)) const {
@@ -385,7 +389,7 @@ namespace cvl {
     // Save blob contour points to a stream.
     void saveContours(FILE * output, int camera, int frame) const {
       
-      fprintf(output, "%d %d %d %lu ", camera, frame, label, pixels.size());
+      fprintf(output, "%d %d %d %zu ", camera, frame, label, pixels.size());
       
       for(size_t i=0; i<pixels.size(); ++i)
         fprintf(output, "%d %d ", pixels[i].x, pixels[i].y);
@@ -400,7 +404,7 @@ namespace cvl {
     // Print blob pixel coordinates in a simple text format.
     void println(FILE * output = stdout) const {
       
-      fprintf(output, "%d %d %lu\n", frame, label, pixels.size());
+      fprintf(output, "%d %d %zu\n", frame, label, pixels.size());
       
       for(size_t i=0; i<pixels.size(); ++i)
         fprintf(output, "\t %d %d\n", pixels[i].x, pixels[i].y);

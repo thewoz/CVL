@@ -89,13 +89,13 @@ namespace cvl {
     // processMouseEvent
     //****************************************************************************/
     // Override to handle mouse events.
-    virtual void processMouseEvent(int event, int x, int y, int flags) { }
+    virtual void processMouseEvent(int /* event */, int /* x */, int /* y */, int /* flags */) { }
     
     //****************************************************************************/
     // processKeyboardEvent
     //****************************************************************************/
     // Override to handle keyboard events.
-    virtual void processKeyboardEvent(int key) { }
+    virtual void processKeyboardEvent(int /* key */) { }
     
     //****************************************************************************/
     // processProgramEvent
@@ -373,9 +373,11 @@ namespace cvl {
       cv::setDefaultCursor(name, cursorTypes);
       
 #else
-      
+
+      (void) cursorTypes;
+
       cvl::log::warning("cvl::window_t::setCursor() warning: the function is not available with this version of OpenCV\n");
-      
+
 #endif
       
     }

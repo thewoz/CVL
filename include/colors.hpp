@@ -507,7 +507,7 @@ namespace cvl {
       
     }
     
-  }; /* class glColors */
+  }; /* class colors */
 
   inline std::map<std::string, cv::Vec3b> cvl::colors::_colors = std::map<std::string, cv::Vec3b>();
 
