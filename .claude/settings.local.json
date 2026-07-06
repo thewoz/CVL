@@ -12,7 +12,11 @@
       "Bash(echo \"RUN OK \\(exit $?\\)\")",
       "Bash(rm -f /tmp/cvl_test*.cpp /tmp/cvl_test /tmp/cvl_test2 /tmp/cvl_test3)",
       "Bash(git -C /Users/thewoz/Dropbox/Research/CVL diff --stat)",
-      "Bash(grep -rln \"targetmass\\\\|blobsplitting\" ~/Dropbox/Research/COBBS 2>/dev/null)"
+      "Bash(grep -rln \"targetmass\\\\|blobsplitting\" ~/Dropbox/Research/COBBS 2>/dev/null)",
+      "Bash(git -C /Users/thewoz/Dropbox/Research/CVL status --short)",
+      "Bash(git -C /Users/thewoz/Dropbox/Research/CVL log --oneline -3)",
+      "Bash(git -C /Users/thewoz/Dropbox/Research/CVL show --stat HEAD)",
+      "Bash(git -C /Users/thewoz/Dropbox/Research/CVL log --format=\"%h %ci %s\" -3)"
     ]
   }
 }
