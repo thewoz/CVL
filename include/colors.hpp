@@ -480,8 +480,9 @@ namespace cvl {
     // Return a random BGR color.
     static const cv::Vec3b getRandom() {
 
-      static std::default_random_engine generator;
-      static std::uniform_int_distribution<int> distribution(0,255);
+      std::uniform_int_distribution<int> distribution(0,255);
+
+      auto & generator = cvl::utils::rng();
 
       return cv::Vec3b(distribution(generator), distribution(generator), distribution(generator));
 

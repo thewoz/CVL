@@ -699,7 +699,7 @@ namespace cvl::subpixel {
   // get() -
   //*****************************************************************************/
   // Refine corner positions to subpixel accuracy.
-  inline void get(const cv::Mat image, std::vector<cv::Point2f> & corners, int roiSize = 15, const std::string & algorithm = "old") {
+  inline void get(const cv::Mat & image, std::vector<cv::Point2f> & corners, int roiSize = 15, const std::string & algorithm = "old") {
 
     if(algorithm.compare("old") != 0 && algorithm.compare("new") != 0) {
       cvl::log::error("cvl::subpixel::get() error: unknown algorithm '%s'\n"

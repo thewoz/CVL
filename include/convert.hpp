@@ -52,6 +52,10 @@ namespace cvl::convert {
   // from16to8()
   //****************************************************************************/
   // Convert a 16-bit grayscale image to 8-bit using the chosen mode.
+  // Returns the (alpha, beta) pair actually used; for the non-linear
+  // UPPER/LOWER modes returns (INFINITY, INFINITY).
+  // For LINEAR_CUTWINGS 'value' is the FRACTION (0..1, not a percent) of
+  // pixels to clip on each histogram wing.
   inline std::pair<double,double> from16to8(const cv::Mat & src, cv::Mat & dst, int mode, double value = 0) {
   
     if(src.empty() || src.type() != CV_16UC1) {

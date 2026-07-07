@@ -328,16 +328,16 @@ namespace cvl {
     //cv::Point2d getBaricenter() const { return baricenter; }
     
     //*****************************************************************************
-    // getBarycenters
+    // getBaricenters
     //*****************************************************************************
-    // Fill a vector with all blob barycenters.
-    void getBarycenters(std::vector<cv::Point2f> & barycenters) const {
-      
-      barycenters.resize(blobs.size());
-      
+    // Fill a vector with all blob baricenters.
+    void getBaricenters(std::vector<cv::Point2f> & baricenters) const {
+
+      baricenters.resize(blobs.size());
+
       for(size_t i=0; i<blobs.size(); ++i)
-        barycenters[i] = blobs[i].baricenter;
-      
+        baricenters[i] = blobs[i].baricenter;
+
     }
     
     //*****************************************************************************

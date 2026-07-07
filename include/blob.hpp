@@ -159,41 +159,7 @@ namespace cvl {
       fprintf(out, "\n");
       
     }
-    
-//    //*****************************************************************************
-//    // draw
-//    //*****************************************************************************
-//      void draw(cv::Mat & dst, const cv::Mat & src, const cv::Point & offset = cv::Point(0,0)) const {
-//    
-//        if(dst.channels() != 1 && dst.channels() !=3)
-//          cvl::log::error("The destination image is not a one or three channel image.\n");
-//    
-//        if(dst.channels() == 1) {
-//    
-//          for(uint32_t i=0; i<pixels.size(); i++)
-//            dst.at<uchar>(pixels[i].y-offset.y, pixels[i].x-offset.x) = src.at<uchar>(pixels[i].y-offset.y, pixels[i].x-offset.x);
-//    
-//        }
-//    
-//        if(dst.channels() == 3) {
-//    
-//          for(uint32_t i=0; i<pixels.size(); i++)
-//            dst.at<cv::Vec3b>(pixels[i].y-offset.y, pixels[i].x-offset.x) = src.at<cv::Vec3b>(pixels[i].y-offset.y, pixels[i].x-offset.x);
-//    
-//        }
-//    
-//      }
-    
-//    //*****************************************************************************
-//    // draw
-//    //*****************************************************************************
-//    void draw(cv::Mat & dst, int value) {
-//      
-//      for(uint32_t i=0; i<pixels.size(); i++)
-//        dst.at<int>(pixels[i].y, pixels[i].x) = value;
-//      
-//    }
-    
+
     //*****************************************************************************
     // draw
     //*****************************************************************************
@@ -410,76 +376,9 @@ namespace cvl {
         fprintf(output, "\t %d %d\n", pixels[i].x, pixels[i].y);
       
       fprintf(output, "\n");
-      
+
     }
-        
-    //*****************************************************************************
-    // drawContours
-    //  /*****************************************************************************/
-    //  void drawContours(cv::Mat & dst, bool mode, const cv::Vec3b & color = cv::Vec3b(0,0,255)) const {
-    //
-    //    if(dst.channels() != 3)
-    //      cvl::log::error("The destination image not have three channel.\n");
-    //
-    //    std::vector<cv::Point> contours;
-    //
-    //    getContour(mode, contours);
-    //
-    //    for(uint32_t i=0; i<contours.size(); ++i)
-    //      dst.at<cv::Vec3b>(contours[i]) = color;
-    //
-    //  }
-    
-    //*****************************************************************************
-    // drawBaricenter
-    //*****************************************************************************
-    //  void drawBaricenter(cv::Mat & dst, const char * algo, const cv::Vec3b & color = cv::Vec3b(255,0,0)) {
-    //
-    //    if(dst.channels() != 3)
-    //      cvl::log::error("The destination image not have three channel.\n");
-    //
-    //    computeBaricenter(algo);
-    //
-    //    int32_t x = (int32_t) baricenter.x;
-    //    int32_t y = (int32_t) baricenter.y;
-    //
-    //    if(y<0 || y>=dst.rows || x<0 || x>=dst.cols)
-    //      cvl::log::error("Baricenter position not in image range.\n");
-    //
-    //    dst.at<cv::Vec3b>(y,x) = color;
-    //
-    //  }
-    
-    //*****************************************************************************
-    // shift
-    //*****************************************************************************
-    //  void shift(const cv::Point & offset) {
-    //
-    //    for(uint32_t i=0; i<pixels.size(); i++) {
-    //      pixels[i].x += offset.x;
-    //      pixels[i].y += offset.y;
-    //    }
-    //
-    //  }
-    
-    //*****************************************************************************
-    // setPixels
-    //*****************************************************************************
-    //  void setPixels(const cv::Mat & src, const cv::Point & offset = cv::Point(0,0)) {
-    //
-    //    iMin = UINT_MAX; iMax = 0;
-    //
-    //    for(uint32_t i=0; i<pixels.size(); i++) {
-    //
-    //      pixels[i].z = src.at<uchar>(pixels[i].y-offset.y, pixels[i].x-offset.x);
-    //
-    //      if(pixels[i].z > iMax) iMax = pixels[i].z;
-    //      if(pixels[i].z < iMin) iMin = pixels[i].z;
-    //
-    //    }
-    //
-    //  }
-    
+
     //*****************************************************************************
     // operator <
     //*****************************************************************************
@@ -501,69 +400,7 @@ namespace cvl {
     // Access a pixel by index.
     const cv::Point3i & operator [] (size_t index) const { return pixels[index]; }
           cv::Point3i & operator [] (size_t index)       { return pixels[index]; }
-    
-    //*****************************************************************************
-    // getContour
-    //*****************************************************************************
-    //void getContour(bool mode, std::vector<cv::Point> & contours) const {
-    //  void getContour(std::vector<cv::Point> & contours) const {
-    //
-    //    cv::Size size_i;
-    //
-    //    size_i.width  = size.width  + 2;
-    //    size_i.height = size.height + 2;
-    //
-    //    cv::Point offset_i;
-    //
-    //    offset_i.x = offset.x - 1;
-    //    offset_i.y = offset.y - 1;
-    //
-    //    cv::Mat image = cv::Mat::zeros(size_i, CV_8UC1);
-    //
-    //    drawMask(image, offset_i);
-    //
-    //    contours.clear();
-    //
-    //    for(int32_t y=0; y<image.rows; ++y) {
-    //
-    //      for(int32_t x=0; x<image.cols; ++x) {
-    //
-    //        // con !0 faccio l'esterno con ==0 l'interno
-    //        //if(mode == EXTERNAL_CONTOUR && image.at<uchar>(y,x) != 0) continue;
-    //        //if(mode == INTERNAL_CONTOUR && image.at<uchar>(y,x) == 0) continue;
-    //        if(image.at<uchar>(y,x) != 0) continue;
-    //
-    //        if((y-1) >= 0 && image.at<uchar>(y-1,x) != 0){
-    //          contours.push_back(cv::Point(x,y));
-    //          continue;
-    //        }
-    //
-    //        if((y+1) >= 0 && image.at<uchar>(y+1,x) != 0){
-    //          contours.push_back(cv::Point(x,y));
-    //          continue;
-    //        }
-    //
-    //        if((x+1) >= 0 && image.at<uchar>(y,x+1) != 0){
-    //          contours.push_back(cv::Point(x,y));
-    //          continue;
-    //        }
-    //
-    //        if((x-1) >= 0 && image.at<uchar>(y,x-1) != 0){
-    //          contours.push_back(cv::Point(x,y));
-    //          continue;
-    //        }
-    //
-    //      }
-    //
-    //    }
-    //
-    //    for(uint32_t i=0; i<contours.size(); ++i){
-    //      contours[i].x += offset_i.x;
-    //      contours[i].y += offset_i.y;
-    //    }
-    //
-    //  }
-    
+
   };
 
   //*****************************************************************************

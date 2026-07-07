@@ -177,10 +177,16 @@ namespace cvl::blobsplitting {
   //    bool recursiveSplitting;
   //*****************************************************************************
   // Split a single blob into smaller ones (via erosion or iterative thresholding).
+  // NOTA: il blob deve essere "finalized" (blob_t::finalize() già chiamata):
+  // untilSplit/untilErode usano iMin/iMax/roi/offset, che altrimenti sono garbage.
   inline void split(const cvl::blob_t & blob, const cv::Mat & splitOn, const cv::Mat & original, cvl::blobs_t & blobsFound, const std::string & mode, int enterMass, int exitMass, int minMass, bool recursiveSplitting, int labelingNeighboursType) {
 
     if(exitMass < minMass) {
       cvl::log::error("cvl::blobsplitting::split() error: exitMass must be greater than or equal to minMass\n");
+    }
+
+    if(blob.size() == 0 || blob.roi.width <= 0 || blob.roi.height <= 0) {
+      cvl::log::error("cvl::blobsplitting::split() error: the blob is empty or not finalized (call blob_t::finalize() first)\n");
     }
 
     // vettore che contiene i blob che saranno trovati

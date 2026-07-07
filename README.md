@@ -59,7 +59,7 @@ int main() {
 | Header | Namespace | Purpose |
 | --- | --- | --- |
 | `background` | `cvl::background` | Background estimation (lightest, darkest, median, mode, average, bucket, fixed) |
-| `baricenter` | `cvl::baricenter` | Barycenter computations (geometric / intensity weighted) |
+| `baricenter` | `cvl::baricenter` | Baricenter computations (geometric / intensity weighted) |
 | `blob` / `blobs` | `cvl` | `blob_t` / `blobs_t` data structures and drawing helpers |
 | `blobSplitting` | `cvl::blobsplitting` | Blob splitting via iterative thresholding + watershed |
 | `chessboard` | `cvl::chessboard`, `cvl` | Checkerboard / circle-grid detection and `chessboard_t` |
@@ -89,8 +89,22 @@ int main() {
   `exit(EXIT_FAILURE)`. The library does not throw recoverable exceptions.
 - The library is **not thread-safe** (lazy-initialized color palette, global
   detector parameters in `subpixel`, shared window registry in `window_t`).
-- Barycenters follow a pixel-center convention: the `baricenter::*` functions add
+- Baricenters follow a pixel-center convention: the `baricenter::*` functions add
   **+0.5** to the averaged integer pixel coordinates.
+
+## Testing
+
+A smoke-test suite lives in `tests/test_cvl.cpp` and exercises every module
+against known inputs. Run it from the repository root:
+
+```sh
+make test
+```
+
+It builds against the working-tree headers (no install needed) and prints
+`ALL <n> CHECKS PASSED` on success, or the failing file/line and aborts with a
+non-zero exit code on a regression. Requires `pkg-config` with an `opencv4`
+package.
 
 ## Future optimizations
 
@@ -98,4 +112,5 @@ Ideas left for later, only worth doing if they become real bottlenecks:
 
 - **Spatial index for clustering.** `cvl::utils::connectedComponents` and `cvl::utils::medianFirstNNDistance` (in `utils.hpp`) are brute-force, O(n²) in the number of blobs. For large blob counts a uniform spatial grid (or a k-d tree) would bring the neighbor search down to roughly O(n).
 - **OpenCV-based connected components.** `cvl::labeling::get` uses a hand-written union-find over a contiguous label matrix. Replacing the core with `cv::connectedComponentsWithStats` (SIMD-optimized, supports 4/8-connectivity) would likely be faster; it is a larger refactor because the per-blob pixel lists still have to be collected afterwards.
+- **Integral images for deflickering.** `asDeflickering::deflicker` (in `deflickering.hpp`) recomputes the mean of a `deflickerMatrixSize`×`deflickerMatrixSize` window for every pixel and every frame, giving roughly O(W·H·T·k²). Precomputing one integral image per frame (`cv::integral`) would make each window mean O(1), bringing the whole pass down to about O(W·H·T). This is the heaviest bottleneck on real video.
 

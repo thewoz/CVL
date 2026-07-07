@@ -89,11 +89,22 @@ public:
 
     halfDeflickerTime = (int)(deflickerTime * 0.5);
 
+    if((int)images.size() < deflickerWindows){
+      cvl::log::error("asDeflickering::init() error: %zu images provided but the deflicker window is %d\n", images.size(), deflickerWindows);
+    }
+
     // copy the input images into the working list
     imageList.resize(deflickerWindows);
 
-    for(int i=0; i<deflickerWindows; ++i)
+    for(int i=0; i<deflickerWindows; ++i){
+
+      if(images[i].empty() || images[i].type() != CV_8UC1 || images[i].size() != images[0].size()){
+        cvl::log::error("asDeflickering::init() error: the input images must be non-empty CV_8UC1 images of the same size\n");
+      }
+
       imageList[i] = images[i].clone();
+
+    }
 
     // load the mask from file, or use an all-white mask when no path is given
     if(!maskPath.empty()){
@@ -102,53 +113,16 @@ public:
 
       mask = cvl::open(maskPath, cv::IMREAD_GRAYSCALE);
 
+      // deflicker() indicizza mask e immagini con le stesse coordinate
+      if(mask.type() != CV_8UC1 || mask.size() != imageList[0].size()){
+        cvl::log::error("asDeflickering::init() error: the mask must be a CV_8UC1 image of the same size as the input images\n");
+      }
+
     } else { mask = cv::Mat(imageList[0].size(), CV_8UC1, cv::Scalar(255)); }
 
     inited = true;
 
   }
-
-  
-
-  //***************************************************************************************************//
-  // initImages
-  //***************************************************************************************************//
-//  void initImages(std::vector<cv::Mat> & images) {
-//
-//    if(!inited){
-//      fprintf(stderr, "asDeflickering class must be initializaetd\n");
-//      exit(EXIT_FAILURE);
-//    }
-//
-//    for(int i=0; i<deflickerWindows; ++i)
-//      imageList[i] = images[i].clone();
-//
-//    deflicker(images);
-//
-//  }
-
-
-
-  //***************************************************************************************************//
-  // addImage
-  //***************************************************************************************************//
-//  void addImage(cv::Mat & image) {
-//
-//    if(!inited){
-//      fprintf(stderr, "asDeflickering class must be initializaetd\n");
-//      exit(EXIT_FAILURE);
-//    }
-//
-//    /* shift the others */
-//    for(int j=1; j<deflickerWindows; ++j)
-//      imageList[j-1] = imageList[j];
-//
-//    /* load the new one */
-//    imageList[deflickerWindows-1] = image.clone();
-//
-//  }
-
-
 
   //***************************************************************************************************//
   // deflicker
@@ -158,6 +132,12 @@ public:
 
     if(!inited){
       cvl::log::error("asDeflickering::deflicker() error: the class must be initialized first\n");
+    }
+
+    for(size_t i=0; i<images.size(); ++i){
+      if(images[i].empty() || images[i].type() != CV_8UC1 || images[i].size() != mask.size()){
+        cvl::log::error("asDeflickering::deflicker() error: the images must be non-empty CV_8UC1 images of the same size as the mask\n");
+      }
     }
 
     int rS, rE, cS, cE;
@@ -290,28 +270,5 @@ private:
 
 
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif

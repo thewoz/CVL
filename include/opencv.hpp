@@ -29,6 +29,7 @@
 
 #include <string>
 #include <ostream>
+#include <random>
 
 
 // cv::Point2d += cv::Point
@@ -78,75 +79,7 @@ inline cv::Point2d operator-(const cv::Point& lhs, const cv::Point2d& rhs)
 }
 
 namespace cvl {
-  
-//  template<typename _Tp1, typename _Tp2>
-//  static inline Point_<_Tp1> operator - (const Point_<_Tp1> & a, const Point_<_Tp2> & b) {
-//    return Point_<_Tp1>( saturate_cast<_Tp1>(a.x - b.x), saturate_cast<_Tp1>(a.y - b.y));
-//  }
-//  
-//  
-//  template<typename _Tp1, typename _Tp2>
-//  static inline void operator /= (Point_<_Tp1> & a, const _Tp2 & b) {
-//    
-//    a.x /= b;
-//    a.y /= b;
-//
-//  }
-//
-//  template<typename _Tp1, typename _Tp2>
-//  static inline void operator /= (Point3_<_Tp1> & a, const _Tp2 & b) {
-//    
-//    a.x /= b;
-//    a.y /= b;
-//    a.z /= b;
-//
-//  }
-//  
-//  template<typename _TpA, typename _TpB> static inline
-//  Point_<_TpA>& operator += (Point_<_TpA>& a, const Point_<_TpB>& b)
-//  {
-//    a.x += b.x;
-//    a.y += b.y;
-//    return a;
-//  }
-//
-// 
-//  template<typename _TpA, typename _TpB> static inline
-//  Point3_<_TpA>& operator += (Point3_<_TpA> & a, const Point3_<_TpB> & b)
-//  {
-//    a.x += b.x;
-//    a.y += b.y;
-//    a.z += b.z;
-//    return a;
-//  }
-//
-//  template<typename TA, typename TB>
-//  static inline Point_<TA> operator + (const Point_<TA> & a, const TB & b) {
-//
-//    Point_<TA> point = a;
-//
-//    point.x += b;
-//    point.y += b;
-//
-//    return point;
-//
-//  }
-  
-  
-//  template <class T1, class T2>
-//  inline double norm(const cv::Point_<T1> & a, const cv::Point_<T2> & b) {
-//    
-//    return std::sqrt(((a.x-b.x) * (a.x-b.x)) + ((a.y-b.y) * (a.y-b.y)));
-//    
-//  }
-//  
-//  template <class T1, class T2>
-//  inline double norm(const cv::Point3_<T1> & a, const cv::Point3_<T2> & b) {
-//    
-//    return std::sqrt(((a.x-b.x) * (a.x-b.x)) + ((a.y-b.y) * (a.y-b.y)) + ((a.z-b.z) * (a.z-b.z)));
-//    
-//  }
-  
+
 
 #ifdef __APPLE__
 
@@ -478,7 +411,9 @@ inline void shrinkLine(cv::Point & p1, cv::Point & p2, int cut) {
 //*****************************************************************************
 // Scale a segment about its midpoint.
 inline void scaleLine(cv::Point & p1, cv::Point & p2, double scale) {
-  cv::Point2d center = (p1 + p2) * 0.5;
+  // il punto medio va calcolato in double: (p1+p2)*0.5 è un cv::Point e
+  // arrotonderebbe il centro a coordinate intere (scaling asimmetrico)
+  cv::Point2d center = (cv::Point2d(p1) + cv::Point2d(p2)) * 0.5;
   p1.x = center.x + (p1.x - center.x) * scale;
   p1.y = center.y + (p1.y - center.y) * scale;
   p2.x = center.x + (p2.x - center.x) * scale;
@@ -597,17 +532,17 @@ inline void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, cons
   inline void drawParabola(cv::Mat & dst, const cv::Vec3d & coeffs, const cv::Vec3b & color) {
     
      for(int x=0; x<dst.cols; ++x) {
-       
+
        double y = coeffs[0] * x * x + coeffs[1] * x + coeffs[2];
-       
-       cv::Point pt(x, (int)(y));
-       
-       if(pt.y >= 0 && pt.y < dst.rows){
+
+       // il confronto va fatto in double: il cast a int di un valore fuori
+       // range è undefined behavior
+       if(y >= 0 && y < dst.rows){
+         cv::Point pt(x, (int)(y));
          if(dst.channels() == 1) dst.at<uchar>(pt) = color[0];
          if(dst.channels() == 3) dst.at<cv::Vec3b>(pt) = color;
        }
-         
-       
+
      }
     
   }
@@ -651,13 +586,17 @@ inline void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, cons
     if(minBright > 255) minBright = 255;
 
     cv::Vec3b color;
-    
+
+    std::uniform_int_distribution<int> distribution(0,255);
+
+    auto & generator = cvl::utils::rng();
+
     for(;;) {
-      
-      color.val[0] = (uchar)((rand() / (double) RAND_MAX) * 255);
-      color.val[1] = (uchar)((rand() / (double) RAND_MAX) * 255);
-      color.val[2] = (uchar)((rand() / (double) RAND_MAX) * 255);
-      
+
+      color.val[0] = (uchar) distribution(generator);
+      color.val[1] = (uchar) distribution(generator);
+      color.val[2] = (uchar) distribution(generator);
+
       if(minBright == -1) break;
 
       // luma BT.601 su canali BGR
@@ -801,76 +740,20 @@ inline void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, cons
     
   }
 
-  //*****************************************************************************/
-  // open
-  //*****************************************************************************/
-//  void open(std::string str, cv::Mat & image, uint32_t mode = cv::IMREAD_UNCHANGED){
-//    
-//    cvl::io::expandPath(str);
-//    
-//    cv::imread(str, image, mode);
-//    
-//    if(image.data==NULL){
-//      fprintf(stderr, "cvl::open() error: cannot open the image '%s'\n", str.c_str());
-//      exit(EXIT_FAILURE);
-//    }
-//      
-//  }
-
-  
-#if(0)
-  /*****************************************************************************/
-  // median
-  /*****************************************************************************/
-  //TODO: testare con minvAlue ecc
-  double median(cv::Mat src, int minValue = 0, int maxValue = 256) {
-    
-    int histSize = 256;
-    
-    float range[] = { (float)(minValue), (float)(maxValue) };
-    
-    const float* histRange = { range };
-    
-    cv::Mat hist;
-    
-    cv::calcHist( &src, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
-    
-    double m = (src.rows*src.cols) / 2.0;
-    
-    int bin = 0;
-    
-    double med = -1.0;
-    
-    for(int i = 0; i < histSize && med < 0.0; ++i) {
-      
-      bin += cvRound(hist.at<float>(i));
-      
-      if(bin>m && med<0.0) med = i;
-      
-    }
-    
-    return med;
-    
-  }
-#endif
-
-
   //****************************************************************************/
   // histogram8bit
   //****************************************************************************/
   // Compute the 256-bin histogram of a CV_8UC1 image, optionally masking pixels
   // and skipping a given intensity value.
   inline void histogram8bit(const cv::Mat & src, cv::Mat & histo, cv::Mat & mask, int valueToSkip = -1) {
-    
+
     if(src.empty() || src.type() != CV_8UC1) {
       cvl::log::error("cvl::histogram8bit() error: the input image must be a non-empty CV_8UC1 image\n");
     }
-    
+
     if(!mask.empty() && mask.type() != CV_8UC1) {
       cvl::log::error("cvl::histogram8bit() error: the mask must be a CV_8UC1 image\n");
     }
-
-    //FIXME: devo controllare che sia ad 8bit
 
     int histSize = 256;
     float range[] = { 0, 256 };
@@ -943,24 +826,6 @@ inline void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, cons
     }
     
   }
-
-
-//// 2D cross product of OA and OB vectors, i.e. z-component of their 3D cross product.
-//// Returns a positive value, if OAB makes a counter-clockwise turn,
-//// negative for clockwise turn, and zero if the points are collinear.
-//template <typename T>
-//T cross(const cv::Point_<T> & O, const cv::Point_<T> & A, const cv::Point_<T> & B)
-//{
-//  return (A.x - O.x) * (B.y - O.y) - (A.y - O.y) * (B.x - O.x);
-//}
-//
-//template <typename T>
-//bool operator < (const cv::Point_<T> & p1, const cv::Point_<T> & p2) {
-//  
-//    return p1.x < p2.x || (p1.x == p2.x && p1.y < p2.y);
-//  
-//}
-  
 
 } /* namespace cvl */
 

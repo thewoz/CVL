@@ -44,3 +44,6 @@ Vallado/C++/Vallado.xcodeproj/xcuserdata/*
 
 # Output
 /bin/*
+
+# Test binary
+/tests/test_cvl

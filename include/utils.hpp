@@ -39,6 +39,7 @@
 #include <sstream>
 #include <algorithm>
 #include <functional>
+#include <random>
 
 #include <unistd.h>    // getcwd, getuid
 #include <pwd.h>       // getpwuid
@@ -525,6 +526,18 @@ namespace cvl {
   namespace utils {
 
     //*************************************************************************
+    // rng - shared, seeded pseudo-random generator
+    //*************************************************************************
+    // Single Mersenne-Twister engine seeded once from std::random_device,
+    // shared by every random helper in the library (colors::getRandom,
+    // getRandomColor, ...) so there is one generator instead of several
+    // unseeded ones.
+    inline std::mt19937 & rng() {
+      static std::mt19937 engine(std::random_device{}());
+      return engine;
+    }
+
+    //*************************************************************************
     // median
     //*************************************************************************
     template <typename T>
@@ -611,6 +624,9 @@ namespace cvl {
     //*************************************************************************
     template <typename T, typename Op = decltype(defaultDistanceOp)>
     void connectedComponents(const T & data, double maxDist, std::vector<std::vector<std::size_t>> & clusters, int minClusterSize = 0, Op op = defaultDistanceOp) {
+
+      // un valore negativo, castato a size_t nel confronto, scarterebbe tutti i cluster
+      if(minClusterSize < 0) minClusterSize = 0;
 
       clusters.clear();
 

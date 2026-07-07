@@ -144,11 +144,20 @@ namespace cvl {
     window_t(const std::string & _name, int flags = cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_NORMAL) : id (++idCounter) { init(_name, flags); }
     
     //****************************************************************************/
+    // copia vietata
+    //****************************************************************************/
+    // Il registro 'windows' e la mouse callback di OpenCV memorizzano il puntatore
+    // all'istanza: una copia risulterebbe inizializzata ma non registrata (UB alla
+    // distruzione) e la callback punterebbe comunque all'originale.
+    window_t(const window_t &) = delete;
+    window_t & operator = (const window_t &) = delete;
+
+    //****************************************************************************/
     // ~window_t()
     //****************************************************************************/
     // Close and unregister the window.
     ~window_t() { close(); }
-    
+
     //****************************************************************************/
     // close()
     //****************************************************************************/
@@ -156,8 +165,11 @@ namespace cvl {
     void close() {
       if(isInit) {
         isInit = false;
+        // la callback registrata tiene il puntatore a this: va sganciata,
+        // altrimenti un click dopo la distruzione è un use-after-free
+        cv::setMouseCallback(name, nullptr, nullptr);
         auto itr = std::find(windows.begin(), windows.end(), this);
-        windows.erase(itr);
+        if(itr != windows.end()) windows.erase(itr);
         //cv::destroyWindow(name);
       }
     }
