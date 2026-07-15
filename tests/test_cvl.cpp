@@ -8,7 +8,7 @@
  * result. Failure prints the line and the failed condition and aborts with a
  * non-zero exit code, so `make test` fails loudly on a regression.
  *
- * NOTE: cvl::log::error() calls exit(EXIT_FAILURE), so the intentional-error
+ * NOTE: cvl::log::error() calls abort(), so the intentional-error
  * paths (bad arguments, empty inputs, ...) cannot be exercised in-process and
  * are not covered here.
  */
@@ -375,6 +375,13 @@ static void test_blob_draw() {
 // main
 //****************************************************************************/
 int main() {
+
+  // su macOS il driver OpenCL Apple/Intel crasha in modo intermittente
+  // (fuori dal codice CVL); cv::ocl::setUseOpenCL(false) non basta perche'
+  // vale solo per il thread chiamante e il detector subpixel usa parallel_for_,
+  // quindi disabilito il runtime OpenCL a livello di processo prima che
+  // OpenCV lo inizializzi
+  setenv("OPENCV_OPENCL_RUNTIME", "disabled", 1);
 
   char tmpl[] = "/tmp/cvl_test_XXXXXX";
   char * dir = mkdtemp(tmpl);

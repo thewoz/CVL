@@ -66,7 +66,7 @@ synthesize in-process:
 - **I/O to disk**: `open`, `open16bitC1`, `save`, `resize`-from-file — filesystem
   and codec dependent. `expandPath`'s `~`/relative/absolute expansion was checked
   during development but is not in the permanent suite (it depends on `$HOME`/cwd).
-- **Error paths** — every `cvl::log::error()` call ends in `exit(EXIT_FAILURE)`,
+- **Error paths** — every `cvl::log::error()` call ends in `abort()`,
   so bad-argument / empty-input branches cannot be exercised from inside the same
   process without forking. The new validation checks (empty blob collections,
   non-CV_8UC1 inputs, negative frame indices, empty loader column lists, …) are
@@ -76,6 +76,26 @@ synthesize in-process:
 - **Randomness** — `colors::getRandom` / `getRandomColor` now share a seeded
   `std::mt19937` (`cvl::utils::rng`), but the suite does not assert on the random
   values themselves.
+
+## Sanitizer runs
+
+The suite runs clean under AddressSanitizer + UndefinedBehaviorSanitizer:
+
+```sh
+c++ -std=c++17 -g -O1 -fno-omit-frame-pointer -fsanitize=address,undefined \
+    -D_DEBUG_CVL_LIBS_ $(pkg-config --cflags opencv4) -Iinclude \
+    tests/test_cvl.cpp -o tests/test_cvl_san $(pkg-config --libs opencv4)
+OPENCV_OPENCL_RUNTIME=disabled ASAN_OPTIONS=detect_leaks=0 ./tests/test_cvl_san
+```
+
+Note on OpenCL: on macOS the Apple Intel GPU OpenCL driver crashes
+intermittently during kernel handling (SEGV/GPU hang inside
+`AppleIntelKBLGraphicsGLDriver`, outside CVL code), with or without sanitizers.
+The suite therefore sets `OPENCV_OPENCL_RUNTIME=disabled` via `setenv` at the
+top of `main()`, which disables OpenCL process-wide before OpenCV initializes
+it. (`cv::ocl::setUseOpenCL(false)` is NOT enough: it only affects the calling
+thread, and the subpixel detector runs under `parallel_for_`.)
+`detect_leaks=0` silences one-time allocations inside OpenCV/highgui.
 
 ## How to strengthen this later
 

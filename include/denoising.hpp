@@ -29,6 +29,8 @@
 
 #include <string>
 #include <vector>
+#include <cstring>
+#include <cfloat>
 
 //*****************************************************************************/
 // namespace cvl::denoising

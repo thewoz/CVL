@@ -86,7 +86,7 @@ namespace cvl {
 
       fflush(stderr);
 
-      exit(EXIT_FAILURE);
+      abort();
 
     }
 
@@ -549,7 +549,7 @@ namespace cvl {
 
       T set = _set;
 
-      std::size_t halfSize = set.size() * 0.5;
+      std::size_t halfSize = set.size() / 2;
 
       // partial selection (O(n)) is enough to locate the median element(s),
       // no need to fully sort the container

@@ -31,6 +31,7 @@
 #include <map>
 #include <string>
 #include <utility>
+#include <climits>
 
 #define MERGE_MASS_LABEL(a,b) do { labelMass[b] += labelMass[a]; labelMass[a] = -b; } while(0)
 

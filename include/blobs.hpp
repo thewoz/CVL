@@ -31,6 +31,8 @@
 #include <string>
 #include <utility>
 #include <iterator>
+#include <algorithm>
+#include <cmath>
 
 //*****************************************************************************
 // namespace

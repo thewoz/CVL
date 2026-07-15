@@ -30,6 +30,10 @@
 #include <string>
 #include <ostream>
 #include <random>
+#include <vector>
+#include <cmath>
+#include <cstring>
+#include <climits>
 
 
 // cv::Point2d += cv::Point

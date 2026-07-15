@@ -28,6 +28,8 @@
 #include <cstdlib>
 
 #include <vector>
+#include <limits>
+#include <string>
 
 //****************************************************************************/
 // cvl::chessboard

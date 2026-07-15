@@ -28,6 +28,8 @@
 #include <cstdlib>
 
 #include <string>
+#include <vector>
+#include <algorithm>
 
 //****************************************************************************/
 // namescape cvl

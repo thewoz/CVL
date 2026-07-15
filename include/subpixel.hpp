@@ -31,6 +31,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <algorithm>
 
 //****************************************************************************/
 // cvl::subpixel
@@ -155,8 +156,8 @@ namespace cvl::subpixel {
       out = cv::Mat::zeros(images.rows,images.cols,CV_32FC1); // istogramma (?)
       const float *pout_end = reinterpret_cast<const float*>(out.dataend);
       for(float *pout=out.ptr<float>(0,0);pout != pout_end;++pout) {
-        //reset values
-        rating = 0.0; count1 = 0;
+        //reset values (rating viene assegnato solo nel ramo che lo usa)
+        count1 = 0;
         noise = 255; signal = 0;
 
         //calc rating

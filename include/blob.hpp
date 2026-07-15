@@ -29,6 +29,7 @@
 
 #include <vector>
 #include <string>
+#include <climits>
 
 //*****************************************************************************
 // namespace
@@ -168,20 +169,20 @@ namespace cvl {
     // da contenere il ROI del blob, altrimenti la scrittura è out-of-bounds.
     //*****************************************************************************
     // Draw the blob onto dst using the provided color (8-bit 1 or 3 channel).
-    void draw(cv::Mat & dst, const cv::Vec3b & color, const cv::Point & offset = cv::Point(0,0)) const {
+    void draw(cv::Mat & dst, const cv::Vec3b & color, const cv::Point & _offset = cv::Point(0,0)) const {
       
       bool status = false;
 
       if(dst.type() == CV_8UC1) {
         for(size_t i=0; i<pixels.size(); i++){
-          dst.at<uchar>(pixels[i].y-offset.y, pixels[i].x-offset.x) = color[0];
+          dst.at<uchar>(pixels[i].y-_offset.y, pixels[i].x-_offset.x) = color[0];
         }
         status = true;
       }
       
       if(dst.type() == CV_8UC3) {
         for(size_t i=0; i<pixels.size(); i++)
-          dst.at<cv::Vec3b>(pixels[i].y-offset.y, pixels[i].x-offset.x) = color;
+          dst.at<cv::Vec3b>(pixels[i].y-_offset.y, pixels[i].x-_offset.x) = color;
         status = true;
       }
        
@@ -195,13 +196,13 @@ namespace cvl {
     // draw
     //*****************************************************************************
     // Draw the blob onto an int label image.
-    void draw(cv::Mat & dst, int color, const cv::Point & offset = cv::Point(0,0)) const {
+    void draw(cv::Mat & dst, int color, const cv::Point & _offset = cv::Point(0,0)) const {
       
       bool status = false;
       
       if(dst.type() == CV_32SC1) {
         for(size_t i=0; i<pixels.size(); i++){
-          dst.at<int>(pixels[i].y-offset.y, pixels[i].x-offset.x) = color;
+          dst.at<int>(pixels[i].y-_offset.y, pixels[i].x-_offset.x) = color;
         }
         status = true;
       }
@@ -216,19 +217,19 @@ namespace cvl {
     // draw
     //*****************************************************************************
     // Draw the blob using stored intensity values.
-    void draw(cv::Mat & dst, const cv::Point & offset = cv::Point(0,0)) const {
+    void draw(cv::Mat & dst, const cv::Point & _offset = cv::Point(0,0)) const {
       
       bool status = false;
       
       if(dst.type() == CV_8UC1) {
         for(size_t i=0; i<pixels.size(); i++)
-          dst.at<uchar>(pixels[i].y-offset.y, pixels[i].x-offset.x) = pixels[i].z;
+          dst.at<uchar>(pixels[i].y-_offset.y, pixels[i].x-_offset.x) = pixels[i].z;
         status = true;
       }
       
       if(dst.type() == CV_8UC3) {
         for(size_t i=0; i<pixels.size(); i++)
-          dst.at<cv::Vec3b>(pixels[i].y-offset.y, pixels[i].x-offset.x) = cv::Vec3b(pixels[i].z, pixels[i].z, pixels[i].z);
+          dst.at<cv::Vec3b>(pixels[i].y-_offset.y, pixels[i].x-_offset.x) = cv::Vec3b(pixels[i].z, pixels[i].z, pixels[i].z);
         status = true;
       }
       
@@ -242,7 +243,7 @@ namespace cvl {
     // draw
     //*****************************************************************************
     // Draw the blob by sampling pixel values from the original image.
-    void draw(cv::Mat & dst, const cv::Mat & ori, const cv::Point & offset = cv::Point(0,0)) const {
+    void draw(cv::Mat & dst, const cv::Mat & ori, const cv::Point & _offset = cv::Point(0,0)) const {
       
       bool status = false;
       
@@ -252,8 +253,8 @@ namespace cvl {
       
       if(dst.type() == CV_8UC1) {
         for(size_t i=0; i<pixels.size(); i++) {
-          int x = pixels[i].x - offset.x;
-          int y = pixels[i].y - offset.y;
+          int x = pixels[i].x - _offset.x;
+          int y = pixels[i].y - _offset.y;
           dst.at<uchar>(y,x) = ori.at<uchar>(pixels[i].y, pixels[i].x);
         }
         status = true;
@@ -261,8 +262,8 @@ namespace cvl {
       
       if(dst.type() == CV_8UC3) {
         for(size_t i=0; i<pixels.size(); i++){
-          int x = pixels[i].x - offset.x;
-          int y = pixels[i].y - offset.y;
+          int x = pixels[i].x - _offset.x;
+          int y = pixels[i].y - _offset.y;
           dst.at<cv::Vec3b>(y,x) = ori.at<cv::Vec3b>(pixels[i].y, pixels[i].x);
         }
         status = true;
@@ -278,19 +279,19 @@ namespace cvl {
     // drawInv
     //*****************************************************************************
     // Draw the blob with inverted intensity values.
-    void drawInv(cv::Mat & dst, const cv::Point & offset = cv::Point(0,0)) const {
+    void drawInv(cv::Mat & dst, const cv::Point & _offset = cv::Point(0,0)) const {
       
       bool status = false;
 
       if(dst.type() == CV_8UC1) {
         for(size_t i=0; i<pixels.size(); i++)
-          dst.at<uchar>(pixels[i].y-offset.y, pixels[i].x-offset.x) = 255 - pixels[i].z;
+          dst.at<uchar>(pixels[i].y-_offset.y, pixels[i].x-_offset.x) = 255 - pixels[i].z;
         status = true;
       }
       
       if(dst.type() == CV_8UC3) {
         for(size_t i=0; i<pixels.size(); i++)
-          dst.at<cv::Vec3b>(pixels[i].y-offset.y, pixels[i].x-offset.x) = cv::Vec3b(255 - pixels[i].z, 255 - pixels[i].z, 255 - pixels[i].z);
+          dst.at<cv::Vec3b>(pixels[i].y-_offset.y, pixels[i].x-_offset.x) = cv::Vec3b(255 - pixels[i].z, 255 - pixels[i].z, 255 - pixels[i].z);
         status = true;
       }
       
@@ -304,14 +305,14 @@ namespace cvl {
     // drawInv
     //*****************************************************************************
     // Draw the blob with inverted intensity values from the original image.
-    void drawInv(cv::Mat & dst, const cv::Mat & ori, const cv::Point & offset = cv::Point(0,0)) const {
+    void drawInv(cv::Mat & dst, const cv::Mat & ori, const cv::Point & _offset = cv::Point(0,0)) const {
       
       bool status = false;
       
       if(dst.type() == CV_8UC1) {
         for(size_t i=0; i<pixels.size(); i++) {
-          int x = pixels[i].x - offset.x;
-          int y = pixels[i].y - offset.y;
+          int x = pixels[i].x - _offset.x;
+          int y = pixels[i].y - _offset.y;
           dst.at<uchar>(y,x) = 255 - ori.at<uchar>(pixels[i].y, pixels[i].x);
         }
         status = true;
@@ -319,8 +320,8 @@ namespace cvl {
       
       if(dst.type() == CV_8UC3) {
         for(size_t i=0; i<pixels.size(); i++){
-          int x = pixels[i].x - offset.x;
-          int y = pixels[i].y - offset.y;
+          int x = pixels[i].x - _offset.x;
+          int y = pixels[i].y - _offset.y;
           const cv::Vec3b & value = ori.at<cv::Vec3b>(pixels[i].y, pixels[i].x);
           dst.at<cv::Vec3b>(y,x) = cv::Vec3b(255 - value[0], 255 - value[1], 255 - value[2]);
         }
@@ -337,7 +338,7 @@ namespace cvl {
     // drawMask
     //*****************************************************************************
     // Draw a white mask of the blob.
-    void drawMask(cv::Mat & dst, const cv::Point & offset = cv::Point(0,0)) const { draw(dst, cv::Vec3b(255,255,255), offset); }
+    void drawMask(cv::Mat & dst, const cv::Point & _offset = cv::Point(0,0)) const { draw(dst, cv::Vec3b(255,255,255), _offset); }
     
     //*****************************************************************************
     // drawLabel
@@ -353,9 +354,9 @@ namespace cvl {
     // saveContours
     //*****************************************************************************
     // Save blob contour points to a stream.
-    void saveContours(FILE * output, int camera, int frame) const {
+    void saveContours(FILE * output, int camera, int _frame) const {
       
-      fprintf(output, "%d %d %d %zu ", camera, frame, label, pixels.size());
+      fprintf(output, "%d %d %d %zu ", camera, _frame, label, pixels.size());
       
       for(size_t i=0; i<pixels.size(); ++i)
         fprintf(output, "%d %d ", pixels[i].x, pixels[i].y);

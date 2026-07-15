@@ -86,7 +86,7 @@ int main() {
   color or 16-bit inputs are only supported where explicitly documented
   (`convert`, `histogram16bit`, `open16bitC1`, `background::lightest/darkest/avg`, …).
 - Error handling is fail-fast: `cvl::log::error()` prints to `stderr` and calls
-  `exit(EXIT_FAILURE)`. The library does not throw recoverable exceptions.
+  `abort()`. The library does not throw recoverable exceptions.
 - The library is **not thread-safe** (lazy-initialized color palette, global
   detector parameters in `subpixel`, shared window registry in `window_t`).
 - Baricenters follow a pixel-center convention: the `baricenter::*` functions add
@@ -106,11 +106,7 @@ It builds against the working-tree headers (no install needed) and prints
 non-zero exit code on a regression. Requires `pkg-config` with an `opencv4`
 package.
 
-## Future optimizations
+## Open items
 
-Ideas left for later, only worth doing if they become real bottlenecks:
-
-- **Spatial index for clustering.** `cvl::utils::connectedComponents` and `cvl::utils::medianFirstNNDistance` (in `utils.hpp`) are brute-force, O(n²) in the number of blobs. For large blob counts a uniform spatial grid (or a k-d tree) would bring the neighbor search down to roughly O(n).
-- **OpenCV-based connected components.** `cvl::labeling::get` uses a hand-written union-find over a contiguous label matrix. Replacing the core with `cv::connectedComponentsWithStats` (SIMD-optimized, supports 4/8-connectivity) would likely be faster; it is a larger refactor because the per-blob pixel lists still have to be collected afterwards.
-- **Integral images for deflickering.** `asDeflickering::deflicker` (in `deflickering.hpp`) recomputes the mean of a `deflickerMatrixSize`×`deflickerMatrixSize` window for every pixel and every frame, giving roughly O(W·H·T·k²). Precomputing one integral image per frame (`cv::integral`) would make each window mean O(1), bringing the whole pass down to about O(W·H·T). This is the heaviest bottleneck on real video.
+Pending design decisions and deferred optimizations live in [TODO.md](TODO.md).
 
