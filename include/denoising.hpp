@@ -171,7 +171,13 @@ namespace cvl::denoising {
   //*****************************************************************************/
   // Apply the Starflag denoising algorithm.
   inline void starflag(cv::Mat & src, cv::Mat & workImage, int kernel_size, uchar * denoiseMatrix) {
-    
+
+    // l'accesso con ptr<uchar> assume CV_8UC1: su immagini a più canali il
+    // risultato sarebbe silenziosamente privo di senso
+    if(src.type() != CV_8UC1 || workImage.type() != CV_8UC1 || src.size() != workImage.size()) {
+      cvl::log::error("cvl::denoising::starflag() error: the images must be CV_8UC1 and of the same size\n");
+    }
+
     int alfa = (int) ((kernel_size - 1) * 0.5);
     
     for (int y = 0; y < src.rows; ++y) {

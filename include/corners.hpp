@@ -40,9 +40,13 @@ namespace cvl {
   //****************************************************************************/
   // Container for loading and accessing 2D corner tracks from files.
   class corners_t {
-    
+
   public:
-    
+
+    // un indice di frame oltre questa soglia indica un file corrotto: meglio
+    // fermarsi subito che allocare coords[frame] per milioni di frame vuoti
+    static constexpr int MAX_FRAME_INDEX = 10000;
+
     std::vector<std::vector<cv::Point2d>> coords;
     
     //****************************************************************************/
@@ -79,9 +83,10 @@ namespace cvl {
 
       int frame = arguments.get<int>(0);
 
-      // un frame negativo (file corrotto) manderebbe coords[frame] out-of-bounds
-      if(frame < 0)
-        cvl::log::error("cvl::corners_t error: negative frame index %d\n", frame);
+      // un frame negativo manderebbe coords[frame] out-of-bounds, uno abnorme
+      // farebbe esplodere la resize: entrambi indicano un file corrotto
+      if(frame < 0 || frame > MAX_FRAME_INDEX)
+        cvl::log::error("cvl::corners_t error: bad frame index %d in the input file (valid range [0, %d])\n", frame, MAX_FRAME_INDEX);
 
       cv::Point2d coord;
       

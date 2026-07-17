@@ -63,11 +63,18 @@ namespace cvl::contours {
   // get
   //*****************************************************************************/
   // Extract external or internal contour pixels from a binary image.
-  inline void get(const cv::Mat & image, bool mode, std::vector<cv::Point> & contours) {
-    
+  inline void get(const cv::Mat & image, int mode, std::vector<cv::Point> & contours) {
+
     if(image.channels() != 1)
       cvl::log::error("cvl::contours::get() error: the input image must be a one channel image\n");
-    
+
+    // con il vecchio parametro bool un valore fuori range diventava
+    // silenziosamente INTERNAL
+    if(mode != EXTERNAL && mode != INTERNAL)
+      cvl::log::error("cvl::contours::get() error: unknown contour mode\n"
+                      "You can choose between:\n"
+                      "      EXTERNAL, INTERNAL\n");
+
     contours.clear();
     
     if(mode == EXTERNAL){

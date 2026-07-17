@@ -40,7 +40,20 @@ namespace cvl::threshold {
   // namespace
   //****************************************************************************/
   namespace utils {
-  
+
+    //****************************************************************************/
+    // checkMask
+    //****************************************************************************/
+    // La maschera, se presente, deve essere CV_8UC1 e della stessa dimensione
+    // dell'input: altrimenti cv::bitwise_and lancerebbe una cv::Exception non
+    // gestita (terminate) invece dell'errore fail-fast di libreria.
+    inline void checkMask(const cv::Mat & src, const cv::Mat & mask, const char * caller) {
+
+      if(!mask.empty() && (mask.type() != CV_8UC1 || mask.size() != src.size()))
+        cvl::log::error("%s error: the mask must be a CV_8UC1 image of the same size as the input\n", caller);
+
+    }
+
     //****************************************************************************/
     // otsu() - ChatGPT
     // Funzione per calcolare la soglia di Otsu escludendo un valore specifico
@@ -276,8 +289,9 @@ namespace cvl::threshold {
   // NOTE: the mask is applied to the output only; it does NOT affect the
   // computed threshold (for a mask-aware threshold see utils::otsu above).
   inline double otsu(cv::Mat & src, cv::Mat & dst, const cv::Mat & mask = cv::Mat()) {
-    
-    // TODO: qua dovrei controlalre che è grande uguale e dello stesso tipo
+
+    utils::checkMask(src, mask, "cvl::threshold::otsu()");
+
     if(dst.empty()) {
       dst = cv::Mat(src.size(), CV_8UC1);
     }
@@ -297,7 +311,8 @@ namespace cvl::threshold {
   // Apply adaptive thresholding.
   inline double adaptive(cv::Mat & src, cv::Mat & dst, int adaptiveMethod, int thresholdType, int blockSize, double C, const cv::Mat & mask = cv::Mat()) {
 
-    // TODO: qua dovrei controlalre che è grande uguale e dello stesso tipo
+    utils::checkMask(src, mask, "cvl::threshold::adaptive()");
+
     if(dst.empty()) {
       dst = cv::Mat(src.size(), CV_8UC1);
     }
@@ -317,12 +332,13 @@ namespace cvl::threshold {
   // openCV global threshold doesn't use threshold value in a strict way. this means why there is -1 here!!!
   // Apply a global threshold using OpenCV's binary threshold.
   inline double global(cv::Mat & src, cv::Mat & dst, double threshold, const cv::Mat & mask = cv::Mat()) {
-    
-    if(src.type() > CV_8UC1){
+
+    if(src.type() != CV_8UC1){
       cvl::log::error("cvl::threshold::global() error: the input image must be a CV_8UC1 image\n");
     }
-    
-    // TODO: qua dovrei controlalre che è grande uguale e dello stesso tipo
+
+    utils::checkMask(src, mask, "cvl::threshold::global()");
+
     if(dst.empty()) {
       dst = cv::Mat(src.size(), CV_8UC1);
     }
@@ -341,16 +357,17 @@ namespace cvl::threshold {
   //*****************************************************************************/
   // Apply a median-based threshold with scaling.
   inline double median(cv::Mat & src, cv::Mat & dst, double factor, int valueToSkip, const cv::Mat & mask = cv::Mat()) {
-        
+
+    utils::checkMask(src, mask, "cvl::threshold::median()");
+
     double threshold = utils::median(src, mask, valueToSkip);
-        
+
     if(threshold == 0) {
       threshold = factor;
     } else {
       threshold *= factor;
     }
-    
-    // TODO: qua dovrei controllare che è grande uguale e dello stesso tipo
+
     if(dst.empty()) {
       dst = cv::Mat(src.size(), CV_8UC1);
     }
@@ -369,16 +386,17 @@ namespace cvl::threshold {
   //*****************************************************************************/
   // Apply a mode-based threshold with scaling.
   inline double moda(cv::Mat & src, cv::Mat & dst, double factor, int valueToSkip, const cv::Mat & mask = cv::Mat()) {
-    
+
+    utils::checkMask(src, mask, "cvl::threshold::moda()");
+
     double threshold = utils::moda(src, mask, valueToSkip);
-    
+
     if(threshold == 0) {
       threshold = factor;
     } else {
       threshold *= factor;
     }
-    
-    // TODO: qua dovrei controlalre che è grande uguale e dello stesso tipo
+
     if(dst.empty()) {
       dst = cv::Mat(src.size(), CV_8UC1);
     }
@@ -397,10 +415,11 @@ namespace cvl::threshold {
   //*****************************************************************************/
   // Apply a percentile-based threshold.
   inline double percentile(cv::Mat & src, cv::Mat & dst, double percentile, int valueToSkip, const cv::Mat & mask = cv::Mat()) {
-    
+
+    utils::checkMask(src, mask, "cvl::threshold::percentile()");
+
     double threshold = utils::percentile(src, percentile, mask, valueToSkip);
-   
-    // TODO: qua dovrei controlalre che è grande uguale e dello stesso tipo
+
     if(dst.empty()) {
       dst = cv::Mat(src.size(), CV_8UC1);
     }

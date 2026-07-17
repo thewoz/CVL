@@ -135,6 +135,13 @@ public:
       cvl::log::error("asDeflickering::deflicker() error: the class must be initialized first\n");
     }
 
+    // le finestre temporali coprono [0, deflickerWindows-1]: con meno immagini
+    // l'accesso a images[i] sarebbe out-of-bounds, con di più resterebbero
+    // frame mai elaborati
+    if((int)images.size() != deflickerWindows){
+      cvl::log::error("asDeflickering::deflicker() error: %zu images provided but the deflicker window is %d\n", images.size(), deflickerWindows);
+    }
+
     for(size_t i=0; i<images.size(); ++i){
       if(images[i].empty() || images[i].type() != CV_8UC1 || images[i].size() != mask.size()){
         cvl::log::error("asDeflickering::deflicker() error: the images must be non-empty CV_8UC1 images of the same size as the mask\n");

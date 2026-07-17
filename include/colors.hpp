@@ -399,9 +399,6 @@ namespace cvl {
       
     }
     
-    static std::string RGBtoHex(const cv::Vec3b & color) { return RGBtoHex(color[0], color[1], color[2]); }
-
-    
     //*****************************************************************************/
     // BGRtoHex()
     // Function to convert the BGR code to Hex color code
@@ -457,7 +454,8 @@ namespace cvl {
     // getRGBHex()
     //****************************************************************************//
     // Return the named color as an #RRGGBB hex string.
-    static const std::string getRGBHex(const std::string & str, bool create = false) { return RGBtoHex(get(str,create)); }
+    // La palette è in BGR, quindi la conversione passa da BGRtoHex.
+    static const std::string getRGBHex(const std::string & str, bool create = false) { return BGRtoHex(get(str,create)); }
     
 
     //****************************************************************************//

@@ -6,7 +6,8 @@ LIBRARY_NAME=cvl
 # Test build configuration
 CXX      ?= c++
 CXXFLAGS ?= -std=c++17 -Wall -Wextra -O2
-OPENCV_CFLAGS = $(shell pkg-config --cflags opencv4)
+# -isystem: gli header OpenCV non devono generare warning nelle build -Wpedantic
+OPENCV_CFLAGS = $(shell pkg-config --cflags opencv4 | sed 's/-I/-isystem /g')
 OPENCV_LIBS   = $(shell pkg-config --libs opencv4)
 OPENCV_LIBDIR = $(shell pkg-config --variable=libdir opencv4)
 TEST_SRC = tests/test_cvl.cpp

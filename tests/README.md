@@ -34,9 +34,10 @@ ground-truth data later.
 | `contours::get` | Oracle | filled 3×3 square → 8 internal / 12 external boundary pixels |
 | `convert::from16to8` (LINEAR_MINMAX) | Oracle | min→0, max→255; UPPER returns `(INF,INF)` |
 | `clustering::NN` | Oracle | 4 points in two far-apart pairs → 2 clusters of 2 |
-| `colors` (`RGBtoHex`, `get`), `utils::decToHex` | Oracle | `RGBtoHex(255,0,0)=="#FF0000"`, `get("red")==(0,0,255)` BGR, `decToHex(0)=="00"` |
+| `colors` (`RGBtoHex`, `BGRtoHex`, `getRGBHex`, `get`), `utils::decToHex` | Oracle | `RGBtoHex(255,0,0)=="#FF0000"`, `get("red")==(0,0,255)` BGR, `decToHex(0)=="00"`; **regression: `getRGBHex("red")=="#FF0000"`** (before the fix the BGR palette went through `RGBtoHex` and came out with R/B swapped) |
 | `utils::median` | Oracle | `{3,1,2}→2`, `{4,1,3,2}→2.5` |
-| `io::basename/subdirName/isToSkip` | Oracle | exact string / bool results |
+| `io::basename/subdirName/isToSkip` | Oracle | exact string / bool results; **regression: `subdirName("a/b.png")=="a"`** (top-level relative dirs used to return `""`) |
+| `io::expandPath` | Property | a path with `//` and `/./` inside the temp dir is normalized and the file stays reachable via `fopen` |
 | `opencv`: `minEnclosureRoi`, `shrinkLine`, `scaleLine`, `getTopRightPoint`, `histogram8bit/16bit` | Oracle | union rect; endpoint math; **`scaleLine` guards the int-midpoint fix**; exact histogram bins and 16-bit min/max |
 | `loader`, `corners_t`, `chessboard_t` | Oracle | text files with known columns → exact parsed values, frame grouping |
 | `blob_t::draw*` | Oracle (property) | `drawMask` sets exactly `size()` pixels; `blobs_t::getBaricenters` returns one point |
@@ -64,13 +65,17 @@ synthesize in-process:
   contract is verified elsewhere (copy ctor/assignment are `= delete`, so copying
   a window is a compile error).
 - **I/O to disk**: `open`, `open16bitC1`, `save`, `resize`-from-file — filesystem
-  and codec dependent. `expandPath`'s `~`/relative/absolute expansion was checked
-  during development but is not in the permanent suite (it depends on `$HOME`/cwd).
+  and codec dependent. `expandPath` has a normalization property test in the
+  suite (see the table), but its `~`/absolute expansion is still not asserted
+  (it depends on `$HOME`/cwd).
 - **Error paths** — every `cvl::log::error()` call ends in `abort()`,
   so bad-argument / empty-input branches cannot be exercised from inside the same
-  process without forking. The new validation checks (empty blob collections,
-  non-CV_8UC1 inputs, negative frame indices, empty loader column lists, …) are
-  therefore unverified by the suite.
+  process without forking. The validation checks (empty blob collections,
+  non-CV_8UC1 inputs, empty loader column lists, and the 2026-07-16 additions:
+  deflicker window mismatch, `threshold::*` mask validation, `starflag` type
+  check, `corners_t` frame bound, `contours::get` mode validation) are
+  therefore unverified by the suite. They were each exercised manually with
+  standalone programs during the review (clear message + abort confirmed).
 - **Exact numeric output of the filters** — `enhance` and `denoising` are only
   smoke-tested. Their pixel-level output is not compared against a reference.
 - **Randomness** — `colors::getRandom` / `getRandomColor` now share a seeded

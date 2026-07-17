@@ -40,8 +40,9 @@
 #include <algorithm>
 #include <functional>
 #include <random>
+#include <filesystem>
 
-#include <unistd.h>    // getcwd, getuid
+#include <unistd.h>    // getuid
 #include <pwd.h>       // getpwuid
 
 #ifndef LINE_MAX
@@ -103,23 +104,10 @@ namespace cvl {
       //***********************************************************************
       // resolveBasicPath - expand ~, relative and absolute paths
       //***********************************************************************
-      inline void resolveBasicPath(const char * srcPath, char * dst) {
-
-        // dst è grande almeno PATH_MAX: ogni copia va verificata prima,
-        // altrimenti un path troppo lungo corrompe lo stack del chiamante
-        size_t srcLen = strlen(srcPath);
+      inline std::string resolveBasicPath(const char * srcPath) {
 
         // absolute path
-        if(srcPath[0] == '/') {
-
-          if(srcLen >= PATH_MAX)
-            cvl::log::error("cvl::io::resolveBasicPath() error: the path is longer than PATH_MAX (%d)\n", PATH_MAX);
-
-          strcpy(dst, srcPath);
-
-          return;
-
-        }
+        if(srcPath[0] == '/') return srcPath;
 
         // home (~ oppure ~/...)
         if(srcPath[0] == '~') {
@@ -134,59 +122,19 @@ namespace cvl {
           if(!pw)
             cvl::log::error("cvl::io::resolveBasicPath() error: cannot resolve the home directory: %s\n", strerror(errno));
 
-          if(strlen(pw->pw_dir) + srcLen >= PATH_MAX)
-            cvl::log::error("cvl::io::resolveBasicPath() error: the path is longer than PATH_MAX (%d)\n", PATH_MAX);
-
-          strcpy(dst, pw->pw_dir);
-
-          if(srcPath[1] == '/')
-            strcat(dst, srcPath + 1);
-
-          return;
+          return std::string(pw->pw_dir) + (srcPath + 1);
 
         }
 
         // relative path
-        if(getcwd(dst, PATH_MAX) == nullptr)
-          cvl::log::error("cvl::io::resolveBasicPath() error: getcwd() failed: %s\n", strerror(errno));
+        std::error_code ec;
 
-        if(strlen(dst) + 1 + srcLen >= PATH_MAX)
-          cvl::log::error("cvl::io::resolveBasicPath() error: the path is longer than PATH_MAX (%d)\n", PATH_MAX);
+        std::filesystem::path cwd = std::filesystem::current_path(ec);
 
-        strcat(dst, "/");
-        strcat(dst, srcPath);
+        if(ec)
+          cvl::log::error("cvl::io::resolveBasicPath() error: cannot get the current directory: %s\n", ec.message().c_str());
 
-      }
-
-      //***********************************************************************
-      // removeJunk
-      //***********************************************************************
-      inline void removeJunk(char * begin, char * end) {
-        while(*end != 0) { *begin++ = *end++; }
-        *begin = 0;
-      }
-
-      //***********************************************************************
-      // manualPathFold - collapse /../, /./ and // when realpath fails
-      //***********************************************************************
-      inline char * manualPathFold(char * path) {
-
-        char * s, * priorSlash;
-
-        while((s = strstr(path, "/../")) != NULL) {
-          *s = 0;
-          if((priorSlash = strrchr(path, '/')) == NULL) { *s = '/'; break; }
-          removeJunk(priorSlash, s + 3);
-        }
-
-        while((s = strstr(path, "/./")) != NULL) { removeJunk(s, s + 2); }
-        while((s = strstr(path, "//"))  != NULL) { removeJunk(s, s + 1); }
-
-        s = path + (strlen(path) - 1);
-
-        if(s != path && *s == '/') { *s = 0; }
-
-        return path;
+        return (cwd / srcPath).string();
 
       }
 
@@ -205,29 +153,42 @@ namespace cvl {
     } // namespace util
 
     //*************************************************************************
-    // expandPath
-    //*************************************************************************
-    inline void expandPath(const char * srcPath, char * destPath) {
-
-      char buff[PATH_MAX+1];
-
-      util::resolveBasicPath(srcPath, buff);
-
-      if(realpath(buff, destPath) == nullptr)
-        strcpy(destPath, util::manualPathFold(buff));
-
-    }
-
-    //*************************************************************************
     // expandPath - in place
     //*************************************************************************
     inline void expandPath(std::string & path) {
 
-      char buff[PATH_MAX+1];
+      namespace fs = std::filesystem;
 
-      expandPath(path.c_str(), buff);
+      std::string resolved = util::resolveBasicPath(path.c_str());
 
-      path = buff;
+      // canonicalizza risolvendo i symlink sul prefisso esistente; se fallisce
+      // (es. permessi) ripiega sulla normalizzazione puramente lessicale
+      std::error_code ec;
+
+      fs::path canonical = fs::weakly_canonical(resolved, ec);
+
+      path = (ec ? fs::path(resolved).lexically_normal() : canonical).string();
+
+      // niente slash finale (tranne la radice), come faceva realpath
+      while(path.size() > 1 && path.back() == '/') path.pop_back();
+
+    }
+
+    //*************************************************************************
+    // expandPath
+    //*************************************************************************
+    inline void expandPath(const char * srcPath, char * destPath) {
+
+      // destPath è un buffer del chiamante grande almeno PATH_MAX:
+      // la copia va verificata, altrimenti un path troppo lungo lo corrompe
+      std::string path(srcPath);
+
+      expandPath(path);
+
+      if(path.size() >= PATH_MAX)
+        cvl::log::error("cvl::io::expandPath() error: the path is longer than PATH_MAX (%d)\n", PATH_MAX);
+
+      strcpy(destPath, path.c_str());
 
     }
 
@@ -248,23 +209,18 @@ namespace cvl {
     //*************************************************************************
     inline std::string subdirName(const std::string & filePath) {
 
-      if(filePath.empty() == false) {
+      size_t slash = filePath.find_last_of('/');
 
-        size_t toPos = filePath.find_last_of('/') - 1;
+      // nessuna directory nel path, oppure file nella radice
+      if(slash == std::string::npos || slash == 0) return "";
 
-        if(toPos != std::string::npos) {
+      // la directory può essere il primo componente del path ("a/b.png" -> "a"):
+      // in quel caso find_last_of ritorna npos e si parte dall'inizio
+      size_t from = filePath.find_last_of('/', slash - 1);
 
-          size_t fromPos = filePath.find_last_of('/', toPos);
+      size_t start = (from == std::string::npos) ? 0 : from + 1;
 
-          if(fromPos != std::string::npos) {
-            return filePath.substr(fromPos + 1, toPos - fromPos);
-          }
-
-        }
-
-      }
-
-      return "";
+      return filePath.substr(start, slash - start);
 
     }
 
@@ -402,9 +358,9 @@ namespace cvl {
     //*************************************************************************
     // operator ()
     //*************************************************************************
-    void operator () (const std::string & inputFile, const std::string & columnsToRead, std::function<void(const loader::data & arguments)> fillerFun = NULL) {
+    void operator () (const std::string & inputFile, const std::string & columnsToRead, std::function<void(const loader::data & arguments)> fillerFun = nullptr) {
 
-      if(fillerFun == NULL) fillerFun = std::bind(&loader::filler, this, std::placeholders::_1);
+      if(!fillerFun) fillerFun = [this](const loader::data & arguments) { filler(arguments); };
 
       std::vector<int> columns;
 
@@ -485,7 +441,7 @@ namespace cvl {
     //*************************************************************************
     template <typename T>
     inline void operator () (const std::string & inputFile, const std::string & columnsToRead, T & container, void(T::*fillerFun)(const loader::data & arguments)) {
-      (*this)(inputFile, columnsToRead, std::bind(fillerFun, &container, std::placeholders::_1));
+      (*this)(inputFile, columnsToRead, [&container, fillerFun](const loader::data & arguments) { (container.*fillerFun)(arguments); });
     }
 
     //*************************************************************************
@@ -493,7 +449,7 @@ namespace cvl {
     //*************************************************************************
     template <typename T>
     inline void operator () (const std::string & inputFile, const std::string & columnsToRead, T * container, void(T::*fillerFun)(const loader::data & arguments)) {
-      (*this)(inputFile, columnsToRead, std::bind(fillerFun, container, std::placeholders::_1));
+      (*this)(inputFile, columnsToRead, [container, fillerFun](const loader::data & arguments) { (container->*fillerFun)(arguments); });
     }
 
   protected:

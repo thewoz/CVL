@@ -266,6 +266,11 @@ static void test_colors() {
   CHECK(cvl::utils::decToHex(0) == "00");
   CHECK(cvl::utils::decToHex(255) == "FF");
   CHECK(cvl::colors::get("red") == cv::Vec3b(0, 0, 255));
+  // regression (FIX-002): getRGBHex deve produrre #RRGGBB dalla palette BGR
+  // (prima della correzione "red" usciva #0000FF, con R e B scambiati)
+  CHECK(cvl::colors::getRGBHex("red") == "#FF0000");
+  CHECK(cvl::colors::getRGBHex("blue") == "#0000FF");
+  CHECK(cvl::colors::BGRtoHex(cvl::colors::get("red")) == "#FF0000");
 }
 
 //****************************************************************************/
@@ -276,6 +281,23 @@ static void test_io() {
   CHECK(cvl::io::subdirName("/a/b/c.png") == "b");
   CHECK(cvl::io::isToSkip("   # x") == true);
   CHECK(cvl::io::isToSkip("data") == false);
+  // regression (FIX-003): directory come primo componente di un path relativo
+  // (prima della correzione "a/b.png" restituiva "")
+  CHECK(cvl::io::subdirName("a/b.png") == "a");
+  CHECK(cvl::io::subdirName("/x/a/b.png") == "a");
+  CHECK(cvl::io::subdirName("c.png") == "");
+  CHECK(cvl::io::subdirName("/c.png") == "");
+  // expandPath (FIX-013): normalizza // e /./ e il file resta raggiungibile
+  std::string messy = g_tmpDir + "//./expand.txt";
+  FILE * f = fopen((g_tmpDir + "/expand.txt").c_str(), "w");
+  fprintf(f, "x\n");
+  fclose(f);
+  cvl::io::expandPath(messy);
+  CHECK(messy.find("//") == std::string::npos);
+  CHECK(messy.find("/./") == std::string::npos);
+  FILE * g = fopen(messy.c_str(), "r");
+  CHECK(g != nullptr);
+  fclose(g);
 }
 
 //****************************************************************************/

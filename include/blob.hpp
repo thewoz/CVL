@@ -54,17 +54,19 @@ namespace cvl {
 
     int frame = -1;
 
-    int label;
-    
-    int iMin; int iMax;
-    
+    int label = -1;
+
+    // inizializzati da finalize(); il valore di default evita letture
+    // indeterminate (print(), untilSplit) su blob mai finalizzati
+    int iMin = 0; int iMax = 0;
+
     cv::Point2d baricenter;
-    
+
     cv::Rect roi;
-    
+
     cv::Point2d offset;
-    
-    double avgIntensity;
+
+    double avgIntensity = 0;
     
     //cv::RotatedRect rotatedRect;
     

@@ -8,7 +8,7 @@ drawing utilities.
 
 ## Requirements
 
-A **C++17** compiler and the library **OpenCV 4**
+A **C++17** compiler with `std::filesystem` support and the library **OpenCV 4**
 
 
 ## Installation
@@ -91,6 +91,15 @@ int main() {
   detector parameters in `subpixel`, shared window registry in `window_t`).
 - Baricenters follow a pixel-center convention: the `baricenter::*` functions add
   **+0.5** to the averaged integer pixel coordinates.
+- The optional `mask` of the `threshold::*` functions must be a `CV_8UC1` image of
+  the same size as the input (validated, fail-fast); the mask is applied to the
+  *output* only and does not affect the computed threshold.
+- `asDeflickering::deflicker()` must be called with exactly `deflickerWindows`
+  images (validated, fail-fast).
+- `corners_t` rejects frame indices outside `[0, corners_t::MAX_FRAME_INDEX]`
+  (10000) as corrupted input files.
+- All the color palette values (`cvl::red`, `colors::get`, ...) are **BGR**;
+  `colors::getRGBHex()` converts them to `#RRGGBB` hex strings.
 
 ## Testing
 

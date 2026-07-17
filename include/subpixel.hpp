@@ -72,7 +72,9 @@ namespace cvl::subpixel {
 
     };
 
-    static Parameters parameters;
+    // inline (C++17): una sola istanza condivisa anche in progetti multi-TU
+    // (con static ogni translation unit avrebbe la propria copia)
+    inline Parameters parameters;
 
     //**************************************************************************/
     // ChessBoardParameters - parametri di rilevamento della scacchiera
@@ -108,7 +110,7 @@ namespace cvl::subpixel {
 
     };
 
-    static ChessBoardParameters CBparameters;
+    inline ChessBoardParameters CBparameters;
 
     //**************************************************************************/
     // rotate() -
