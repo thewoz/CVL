@@ -21,7 +21,7 @@
 #ifndef _H_CVL_H_
 #define _H_CVL_H_
 
-#define CVL_LIB_VERSION "Cvl Lib v3.2.6"
+#define CVL_LIB_VERSION "Cvl Lib v4.0"
 
 //****************************************************************************/
 // General third-party includes (centralized here so the single headers do
