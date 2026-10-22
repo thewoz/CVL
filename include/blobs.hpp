@@ -371,10 +371,11 @@ namespace cvl {
     // save
     //*****************************************************************************
     // Save blob barycenters and optional frame summary to streams.
-    void save(FILE * outputPoints, int camera, int frame, FILE * outputFrame = NULL) const {
-      
+    // The intensity column is the blob peak: iMin for dark objects, iMax otherwise.
+    void save(FILE * outputPoints, int camera, int frame, FILE * outputFrame = NULL, bool darkObjects = false) const {
+
       for(size_t i=0; i<blobs.size(); ++i)
-        fprintf(outputPoints, "%d %04d %04d %.4f %.4f %.1f\n", camera, frame, blobs[i].label, blobs[i].baricenter.x, blobs[i].baricenter.y, blobs[i].avgIntensity);
+        fprintf(outputPoints, "%d %04d %04d %.4f %.4f %.1f\n", camera, frame, blobs[i].label, blobs[i].baricenter.x, blobs[i].baricenter.y, (double)(darkObjects ? blobs[i].iMin : blobs[i].iMax));
       
       if(outputFrame != NULL) {
         fprintf(outputFrame, "%04d %04zu\n", frame, blobs.size());
