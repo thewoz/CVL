@@ -32,7 +32,7 @@ improvements, kept out of the README on purpose.
   - Add `tests/data/` with a real chessboard image + expected corners to cover
     `chessboard::get` and the stereo `pose::*` functions end-to-end.
   - Fork-based death tests for the `log::error()` paths, including the checks
-    added in the 2026-07-16 review: deflicker window mismatch, `threshold::*`
+    added in the 2026-07-16 review: deflicker time/local means mismatch, `threshold::*`
     mask validation, `starflag` type check, `corners_t` frame bound,
     `contours::get` mode validation.
 
@@ -60,9 +60,3 @@ improvements, kept out of the README on purpose.
     `cv::connectedComponentsWithStats` (SIMD-optimized, supports 4/8-connectivity)
     would likely be faster; it is a larger refactor because the per-blob pixel
     lists still have to be collected afterwards.
-  - **Integral images for deflickering.** `asDeflickering::deflicker` (in
-    `deflickering.hpp`) recomputes the mean of a
-    `deflickerMatrixSize`×`deflickerMatrixSize` window for every pixel and every
-    frame, giving roughly O(W·H·T·k²). Precomputing one integral image per frame
-    (`cv::integral`) would make each window mean O(1), bringing the whole pass down
-    to about O(W·H·T). This is the heaviest bottleneck on real video.

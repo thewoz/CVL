@@ -94,8 +94,8 @@ int main() {
 - The optional `mask` of the `threshold::*` functions must be a `CV_8UC1` image of
   the same size as the input (validated, fail-fast); the mask is applied to the
   *output* only and does not affect the computed threshold.
-- `asDeflickering::deflicker()` must be called with exactly `deflickerWindows`
-  images (validated, fail-fast).
+- `asDeflickering::deflicker()` needs at least `deflickerTime` images and one
+  `getLocalMean()` per image, in the same order (validated, fail-fast).
 - `corners_t` rejects frame indices outside `[0, corners_t::MAX_FRAME_INDEX]`
   (10000) as corrupted input files.
 - All the color palette values (`cvl::red`, `colors::get`, ...) are **BGR**;
