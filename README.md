@@ -71,7 +71,7 @@ int main() {
 | `deflickering` | global | `asDeflickering` temporal deflickering helper |
 | `denoising` | `cvl::denoising` | Denoising filters (gaussian, median, morphology, bilateral, starflag, …) |
 | `draw` | `cvl::draw` | Drawing primitives (dashed circle, cross) |
-| `enhance` | `cvl::enhance` | Contrast / CLAHE / unsharp / histogram equalization |
+| `enhance` | `cvl::enhance` | Contrast / gamma / CLAHE / unsharp / histogram equalization |
 | `labeling` | `cvl::labeling` | Connected-components labeling into blobs |
 | `opencv` | `cvl` | OpenCV helpers (I/O, resize, histograms, text/markers, operators) |
 | `pose` | `cvl::pose` | Pose / stereo utilities |

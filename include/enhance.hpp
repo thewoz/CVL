@@ -26,6 +26,7 @@
 
 #include <cstdlib>
 #include <cstdio>
+#include <cmath>
 
 #include <vector>
 #include <string>
@@ -150,6 +151,44 @@ namespace cvl::enhance {
     
     for(size_t i=0; i<images.size(); ++i)
       contrast(images[i], alpha, beta);
+    
+  }
+
+  //****************************************************************************
+  // gamma
+  //****************************************************************************
+  // I(x,y) = 255 * (I(x,y) / 255) ^ (1 / gamma)
+  // Apply a gamma correction with the same convention as the Levels midtone slider of
+  // Photoshop/GIMP: gamma > 1 brightens the image, gamma < 1 darkens the dark tones.
+  inline void gamma(cv::Mat & image, double gamma) {
+    
+    if(image.type() != CV_8UC1) {
+      cvl::log::error("cvl::enhance::gamma() error: works only with CV_8UC1 images\n");
+    }
+    
+    if(gamma <= 0) {
+      cvl::log::error("cvl::enhance::gamma() error: gamma must be positive\n");
+    }
+    
+    if(gamma == 1) return;
+    
+    cv::Mat lut(1, 256, CV_8U);
+    
+    for(int i=0; i<256; ++i)
+      lut.at<uchar>(i) = cv::saturate_cast<uchar>(255.0 * std::pow(i / 255.0, 1.0 / gamma));
+    
+    cv::LUT(image, lut, image);
+    
+  }
+
+  //****************************************************************************
+  // gamma
+  //****************************************************************************
+  // Apply a gamma correction to multiple images.
+  inline void gamma(std::vector<cv::Mat> & images, double gamma) {
+    
+    for(size_t i=0; i<images.size(); ++i)
+      enhance::gamma(images[i], gamma);
     
   }
 
