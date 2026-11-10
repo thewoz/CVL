@@ -371,11 +371,22 @@ namespace cvl {
     // save
     //*****************************************************************************
     // Save blob barycenters and optional frame summary to streams.
-    // The intensity column is the blob peak: iMin for dark objects, iMax otherwise.
-    void save(FILE * outputPoints, int camera, int frame, FILE * outputFrame = NULL, bool darkObjects = false) const {
+    // The intensity column is the blob "MAX", "MIN" or "MEAN" intensity.
+    void save(FILE * outputPoints, int camera, int frame, FILE * outputFrame = NULL, const std::string & intensity = "MAX") const {
 
-      for(size_t i=0; i<blobs.size(); ++i)
-        fprintf(outputPoints, "%d %04d %04d %.4f %.4f %.1f\n", camera, frame, blobs[i].label, blobs[i].baricenter.x, blobs[i].baricenter.y, (double)(darkObjects ? blobs[i].iMin : blobs[i].iMax));
+      if(intensity != "MAX" && intensity != "MIN" && intensity != "MEAN")
+        cvl::log::error("cvl::blobs_t::save() error: the intensity must be MAX, MIN or MEAN\n");
+
+      for(size_t i=0; i<blobs.size(); ++i) {
+
+        double value = blobs[i].avgIntensity;
+
+        if(intensity == "MAX") value = blobs[i].iMax;
+        if(intensity == "MIN") value = blobs[i].iMin;
+
+        fprintf(outputPoints, "%d %04d %04d %.4f %.4f %.1f\n", camera, frame, blobs[i].label, blobs[i].baricenter.x, blobs[i].baricenter.y, value);
+
+      }
       
       if(outputFrame != NULL) {
         fprintf(outputFrame, "%04d %04zu\n", frame, blobs.size());
