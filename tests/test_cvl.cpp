@@ -207,18 +207,35 @@ static void test_subpixel() {
 }
 
 //****************************************************************************/
-// deflickering: does not blow up the intensity range
+// deflickering: constant frames come out as the temporal mean of their window
 //****************************************************************************/
 static void test_deflickering() {
   std::vector<cv::Mat> frames;
   int vals[5] = {100, 110, 90, 105, 95};
   for(int v : vals) frames.push_back(cv::Mat(16, 16, CV_8UC1, cv::Scalar(v)));
-  asDeflickering defl;
-  defl.init(frames, 5, 3, 3, "", false);
-  defl.deflicker(frames);
-  double lo = 255, hi = 0;
-  for(auto & f : frames) { double mn, mx; cv::minMaxLoc(f, &mn, &mx); lo = std::min(lo, mn); hi = std::max(hi, mx); }
-  CHECK(hi - lo <= 20);
+  // on a constant frame the local mean equals the frame, so both modes give
+  // the mean of the 3-frame window (shifted inside the sequence at the ends)
+  int expected[5] = {100, 100, 102, 97, 97};
+  auto allEqual = [&expected](const std::vector<cv::Mat> & out) {
+    for(int j=0; j<5; ++j) {
+      double mn, mx; cv::minMaxLoc(out[j], &mn, &mx);
+      if(mn != expected[j] || mx != expected[j]) return false;
+    }
+    return true;
+  };
+  asDeflickering additive;
+  additive.init(3, 3);
+  std::vector<cv::Mat> means, out;
+  for(auto & f : frames) means.push_back(additive.getLocalMean(f));
+  additive.deflicker(frames, means, out);
+  CHECK(out.size() == 5 && allEqual(out));
+  asDeflickering multiplicative;
+  multiplicative.init(3, 3, "MULTIPLICATIVE");
+  multiplicative.deflicker(frames, means, out);
+  CHECK(allEqual(out));
+  // the output vector may be the input one
+  additive.deflicker(frames, means, frames);
+  CHECK(allEqual(frames));
 }
 
 //****************************************************************************/
@@ -355,6 +372,11 @@ static void test_enhance() {
   t = r.clone(); cvl::enhance::get(t, "CONTRAST", 1.2, 10);
   t = r.clone(); cvl::enhance::get(t, "AUTO_CONTRAST", 1);
   t = r.clone(); cvl::enhance::get(t, "EQUALIZE_HISTOGRAM", 0);
+  // gamma: Levels-midtone convention, 255*(v/255)^(1/gamma)
+  cv::Mat g(1, 3, CV_8UC1);
+  g.at<uchar>(0) = 0; g.at<uchar>(1) = 64; g.at<uchar>(2) = 255;
+  cvl::enhance::get(g, "GAMMA", 2.0);
+  CHECK(g.at<uchar>(0) == 0 && g.at<uchar>(1) == 128 && g.at<uchar>(2) == 255);
   t = r.clone(); cvl::enhance::get(t, "CLAHE", 2, 8, 8);
   CHECK(t.size() == r.size() && t.type() == CV_8UC1);
 }
@@ -391,6 +413,26 @@ static void test_blob_draw() {
   std::vector<cv::Point2f> bc;
   blobs.getBaricenters(bc); // renamed API
   CHECK(bc.size() == 1);
+
+  // blobs_t::save: the last column is the blob MAX (default), MIN or MEAN intensity
+  cv::Mat two = cv::Mat::zeros(10, 10, CV_8UC1);
+  two.at<uchar>(2,2) = 10; two.at<uchar>(2,3) = 30;
+  cvl::labeling::get(two, cvl::labeling::NEXT_NEAREST_NEIGHBOURS, 1, blobs, two);
+  auto savedLine = [&blobs](const char * mode) {
+    FILE * f = fopen(tmpPath("save.txt").c_str(), "w");
+    if(mode == nullptr) blobs.save(f, 1, 7);
+    else                blobs.save(f, 1, 7, NULL, mode);
+    fclose(f);
+    char line[256] = "";
+    f = fopen(tmpPath("save.txt").c_str(), "r");
+    if(fgets(line, sizeof(line), f) == nullptr) line[0] = '\0';
+    fclose(f);
+    return std::string(line);
+  };
+  CHECK(savedLine(nullptr) == "1 0007 0000 3.0000 2.5000 30.0\n");
+  CHECK(savedLine("MAX")   == "1 0007 0000 3.0000 2.5000 30.0\n");
+  CHECK(savedLine("MIN")   == "1 0007 0000 3.0000 2.5000 10.0\n");
+  CHECK(savedLine("MEAN")  == "1 0007 0000 3.0000 2.5000 20.0\n");
 }
 
 //****************************************************************************/

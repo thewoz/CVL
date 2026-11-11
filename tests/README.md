@@ -45,8 +45,10 @@ ground-truth data later.
 | `blobsplitting::get` (TO_WHITE, watershed, FIXED) | Property | a bridged double-square splits into 2 non-empty blobs |
 | `subpixel::get` ("old") | Property | refined corner lands within 1 px of the true saddle of a synthetic checkerboard |
 | `subpixel::get` ("new") | Smoke | runs without crashing, keeps the corner count |
-| `deflickering` | Property | flickering constant frames → intensity spread stays bounded (≤ 20) |
-| `enhance::get` (all algos) | Smoke | single-channel input, no throw, size/type preserved |
+| `deflickering` (ADDITIVE, MULTIPLICATIVE) | Oracle | constant frames `{100,110,90,105,95}`, window 3 → exactly `{100,100,102,97,97}` in both modes, also with output == input |
+| `enhance::get` ("GAMMA") | Oracle | `gamma 2.0` maps `0/64/255` to `0/128/255` |
+| `blobs_t::save` | Oracle | exact output line for the default, `MAX`, `MIN` and `MEAN` intensity column |
+| `enhance::get` (other algos) | Smoke | single-channel input, no throw, size/type preserved |
 | `denoising::get` (all algos) | Smoke | no throw, size/type preserved |
 | `drawParabola`, `drawString`, `drawNumber`, `drawRotatedText`, `drawDistanceMarker`, `draw::dashedCircle`, `draw::cross` | Smoke | run on a real canvas without crashing; `drawParabola` is fed huge coefficients to guard the out-of-range cast fix |
 
@@ -72,7 +74,7 @@ synthesize in-process:
   so bad-argument / empty-input branches cannot be exercised from inside the same
   process without forking. The validation checks (empty blob collections,
   non-CV_8UC1 inputs, empty loader column lists, and the 2026-07-16 additions:
-  deflicker window mismatch, `threshold::*` mask validation, `starflag` type
+  deflicker time/local means mismatch, `threshold::*` mask validation, `starflag` type
   check, `corners_t` frame bound, `contours::get` mode validation) are
   therefore unverified by the suite. They were each exercised manually with
   standalone programs during the review (clear message + abort confirmed).

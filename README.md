@@ -96,6 +96,8 @@ int main() {
   *output* only and does not affect the computed threshold.
 - `asDeflickering::deflicker()` needs at least `deflickerTime` images and one
   `getLocalMean()` per image, in the same order (validated, fail-fast).
+- `blobs_t::save()` writes the blob **maximum** intensity in the last column by
+  default; pass `"MIN"` or `"MEAN"` as the last argument for the other two.
 - `corners_t` rejects frame indices outside `[0, corners_t::MAX_FRAME_INDEX]`
   (10000) as corrupted input files.
 - All the color palette values (`cvl::red`, `colors::get`, ...) are **BGR**;

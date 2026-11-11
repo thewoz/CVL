@@ -162,8 +162,8 @@ namespace cvl::enhance {
   // Photoshop/GIMP: gamma > 1 brightens the image, gamma < 1 darkens the dark tones.
   inline void gamma(cv::Mat & image, double gamma) {
     
-    if(image.type() != CV_8UC1) {
-      cvl::log::error("cvl::enhance::gamma() error: works only with CV_8UC1 images\n");
+    if(image.empty() || image.type() != CV_8UC1) {
+      cvl::log::error("cvl::enhance::gamma() error: works only with non-empty CV_8UC1 images\n");
     }
     
     if(gamma <= 0) {
@@ -259,7 +259,7 @@ namespace cvl::enhance {
   // unsharpMask
   //****************************************************************************
   // Apply unsharp masking to multiple images.
-  inline void unsharpMask(std::vector<cv::Mat> & images, double size = 3, double sigma = 1, double threshold = 5, double amount = 1) {
+  inline void unsharpMask(std::vector<cv::Mat> & images, int size = 3, double sigma = 1, double threshold = 5, double amount = 3) {
     
     for(unsigned int i=0; i<images.size(); ++i)
       unsharpMask(images[i], size, sigma, threshold, amount);
@@ -338,6 +338,10 @@ namespace cvl::enhance {
       return contrast(src, param1, param2);
     }
     
+    if(algo.compare("GAMMA") == 0) {
+      return enhance::gamma(src, param1);
+    }
+
     if(algo.compare("AUTO_CONTRAST") == 0) {
       return autoContrast(src, param1);
     }
@@ -352,7 +356,7 @@ namespace cvl::enhance {
     
     cvl::log::error("cvl::enhance::get() error: unknown enhance type '%s'\n"
                     "You can choose between:\n"
-                    "      LAPLACIAN, UNSHARPMASK, CONTRAST, AUTO_CONTRAST, CLAHE or EQUALIZE_HISTOGRAM\n", algo.c_str());
+                    "      LAPLACIAN, UNSHARPMASK, CONTRAST, GAMMA, AUTO_CONTRAST, CLAHE or EQUALIZE_HISTOGRAM\n", algo.c_str());
 
   }
 
@@ -374,6 +378,10 @@ namespace cvl::enhance {
       return contrast(src, param1, param2);
     }
     
+    if(algo.compare("GAMMA") == 0) {
+      return enhance::gamma(src, param1);
+    }
+
     if(algo.compare("AUTO_CONTRAST") == 0) {
       return autoContrast(src, param1);
     }
@@ -388,7 +396,7 @@ namespace cvl::enhance {
     
     cvl::log::error("cvl::enhance::get() error: unknown enhance type '%s'\n"
                     "You can choose between:\n"
-                    "      LAPLACIAN, UNSHARPMASK, CONTRAST, AUTO_CONTRAST, CLAHE or EQUALIZE_HISTOGRAM\n", algo.c_str());
+                    "      LAPLACIAN, UNSHARPMASK, CONTRAST, GAMMA, AUTO_CONTRAST, CLAHE or EQUALIZE_HISTOGRAM\n", algo.c_str());
     
   }
   
