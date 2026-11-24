@@ -30,189 +30,188 @@
 #include <vector>
 #include <string>
 
-//****************************************************************************
-// namespace
-//****************************************************************************
+//*****************************************************************************
+// namespace cvl::baricenter
+//*****************************************************************************
 namespace cvl::baricenter {
 
-  //****************************************************************************
-	// geometric
-  //****************************************************************************
+  //*****************************************************************************
+  // geometric
+  //*****************************************************************************
   // Compute the geometric barycenter of a set of pixel coordinates.
   template <class T>
-	inline cv::Point2d geometric(const std::vector<T> & pixels) {
+  inline cv::Point2d geometric(const std::vector<T> & pixels) {
 
-		if(pixels.empty()) return cv::Point2d(-1.0, -1.0);
+    if(pixels.empty()) return cv::Point2d(-1.0, -1.0);
 
-		cv::Point2d baricenter(0.0, 0.0);
+    cv::Point2d baricenter(0.0, 0.0);
 
-		for(size_t i=0; i<pixels.size(); ++i) {
-		      
-		  baricenter.x += pixels[i].x;
-		  baricenter.y += pixels[i].y;
-		  
-		}
-		
-		baricenter.x /= (double) pixels.size();
-		baricenter.y /= (double) pixels.size();
-		
-		baricenter.x += 0.5;
-		baricenter.y += 0.5;
+    for(size_t i=0; i<pixels.size(); ++i) {
 
-		return baricenter;
+      baricenter.x += pixels[i].x;
+      baricenter.y += pixels[i].y;
 
-	}
+    }
 
-	//****************************************************************************
-	// maxIntensity
-	//****************************************************************************
+    baricenter.x /= (double) pixels.size();
+    baricenter.y /= (double) pixels.size();
+
+    baricenter.x += 0.5;
+    baricenter.y += 0.5;
+
+    return baricenter;
+
+  }
+
+  //*****************************************************************************
+  // maxIntensity
+  //*****************************************************************************
   // Return the coordinates of the pixel with the maximum intensity.
-	inline cv::Point2d maxIntensity(const std::vector<cv::Point3i> & pixels) {
+  inline cv::Point2d maxIntensity(const std::vector<cv::Point3i> & pixels) {
 
-		if(pixels.empty()) return cv::Point2d(-1.0, -1.0);
-		    
+    if(pixels.empty()) return cv::Point2d(-1.0, -1.0);
+
     size_t maxPixelIntensity = 0;
-		
-		for(size_t i=0; i<pixels.size(); ++i) {
 
-		  if(pixels[i].z > pixels[maxPixelIntensity].z )
-				maxPixelIntensity = i;
-			
-		}
-		
-		cv::Point2d baricenter(0.0, 0.0);
-		  
-		baricenter.x = pixels[maxPixelIntensity].x + 0.5;
-		baricenter.y = pixels[maxPixelIntensity].y + 0.5;
-	 
-		return baricenter;
-			
-	}
+    for(size_t i=0; i<pixels.size(); ++i) {
 
-	//****************************************************************************
-	// lowIntensity
-	//****************************************************************************
+      if(pixels[i].z > pixels[maxPixelIntensity].z )
+        maxPixelIntensity = i;
+
+    }
+
+    cv::Point2d baricenter(0.0, 0.0);
+
+    baricenter.x = pixels[maxPixelIntensity].x + 0.5;
+    baricenter.y = pixels[maxPixelIntensity].y + 0.5;
+
+    return baricenter;
+
+  }
+
+  //*****************************************************************************
+  // lowIntensity
+  //*****************************************************************************
   // Return the coordinates of the pixel with the minimum intensity.
-	inline cv::Point2d lowIntensity(const std::vector<cv::Point3i> & pixels) {
+  inline cv::Point2d lowIntensity(const std::vector<cv::Point3i> & pixels) {
 
-		if(pixels.empty()) return cv::Point2d(-1.0, -1.0);
-		
-		size_t lowPixelIntensity = pixels.size() - 1;
-		
-		for(size_t i=0; i<pixels.size(); ++i) {
+    if(pixels.empty()) return cv::Point2d(-1.0, -1.0);
 
-		  if(pixels[i].z < pixels[lowPixelIntensity].z )
-				lowPixelIntensity = i;
-			
-		}
-		
-		cv::Point2d baricenter(0.0, 0.0);
-		  
-		baricenter.x = pixels[lowPixelIntensity].x + 0.5;
-		baricenter.y = pixels[lowPixelIntensity].y + 0.5;
-	 
-		return baricenter;
-			
-	}
+    size_t lowPixelIntensity = pixels.size() - 1;
 
-	//****************************************************************************
-	// maxIntensityWeighted
-	//****************************************************************************
+    for(size_t i=0; i<pixels.size(); ++i) {
+
+      if(pixels[i].z < pixels[lowPixelIntensity].z )
+        lowPixelIntensity = i;
+
+    }
+
+    cv::Point2d baricenter(0.0, 0.0);
+
+    baricenter.x = pixels[lowPixelIntensity].x + 0.5;
+    baricenter.y = pixels[lowPixelIntensity].y + 0.5;
+
+    return baricenter;
+
+  }
+
+  //*****************************************************************************
+  // maxIntensityWeighted
+  //*****************************************************************************
   // Compute a weighted barycenter using intensity as weight.
-	inline cv::Point2d maxIntensityWeighted(const std::vector<cv::Point3i> & pixels) {
-		
+  inline cv::Point2d maxIntensityWeighted(const std::vector<cv::Point3i> & pixels) {
+
     size_t totalPixelsIntensity = 0;
-		
-		cv::Point2d baricenter(0.0, 0.0);
-		
-		for(size_t i=0; i<pixels.size(); ++i) {
-		  
-		  totalPixelsIntensity += pixels[i].z;
-		  
-		  baricenter.x += (pixels[i].z * pixels[i].x);
-		  baricenter.y += (pixels[i].z * pixels[i].y);
-		  
-		}
-		
-		/* if is a complet back blob in order to avoid the division */
-		/* by zero we compute the no-weighted baricentery  */
-		if(totalPixelsIntensity == 0)
-		  return geometric(pixels);
 
-		baricenter.x /= (double)totalPixelsIntensity;
-		baricenter.y /= (double)totalPixelsIntensity;
-		  
-		baricenter.x += 0.5;
-		baricenter.y += 0.5;
+    cv::Point2d baricenter(0.0, 0.0);
 
-		return baricenter;
+    for(size_t i=0; i<pixels.size(); ++i) {
 
-	}
+      totalPixelsIntensity += pixels[i].z;
 
-	//*****************************************************************************
-	// lowIntensityWeighted
-	//*****************************************************************************
+      baricenter.x += (pixels[i].z * pixels[i].x);
+      baricenter.y += (pixels[i].z * pixels[i].y);
+
+    }
+
+    // blob completamente nero: la somma dei pesi è zero, quindi per evitare la
+    // divisione per zero ripiego sul baricentro geometrico
+    if(totalPixelsIntensity == 0)
+      return geometric(pixels);
+
+    baricenter.x /= (double)totalPixelsIntensity;
+    baricenter.y /= (double)totalPixelsIntensity;
+
+    baricenter.x += 0.5;
+    baricenter.y += 0.5;
+
+    return baricenter;
+
+  }
+
+  //*****************************************************************************
+  // lowIntensityWeighted
+  //*****************************************************************************
   // Compute a weighted barycenter using inverted intensity (255 - value) as weight.
-	inline cv::Point2d lowIntensityWeighted(const std::vector<cv::Point3i> & pixels) {
+  inline cv::Point2d lowIntensityWeighted(const std::vector<cv::Point3i> & pixels) {
 
     size_t totalPixelsIntensity = 0;
-		
-		cv::Point2d baricenter(0.0, 0.0);
-		
-		for(size_t i=0; i<pixels.size(); ++i) {
-		  
-		  totalPixelsIntensity += 255 - pixels[i].z;
-		  
-		  baricenter.x += ((255 - pixels[i].z) * pixels[i].x);
-		  baricenter.y += ((255 - pixels[i].z) * pixels[i].y);
-		  
-		}
-		
-		/* if is a complet back blob in order to avoid the division */
-		/* by zero we compute the no-weighted baricentery  */
-		if(totalPixelsIntensity == 0)
-		  return geometric(pixels);
 
-		baricenter.x /= (double)totalPixelsIntensity;
-		baricenter.y /= (double)totalPixelsIntensity;
-		  
-		baricenter.x += 0.5;
-		baricenter.y += 0.5;
+    cv::Point2d baricenter(0.0, 0.0);
 
-		return baricenter;
-	
-	}
+    for(size_t i=0; i<pixels.size(); ++i) {
 
-	//*****************************************************************************
-	// get
-	//*****************************************************************************
+      totalPixelsIntensity += 255 - pixels[i].z;
+
+      baricenter.x += ((255 - pixels[i].z) * pixels[i].x);
+      baricenter.y += ((255 - pixels[i].z) * pixels[i].y);
+
+    }
+
+    // blob completamente bianco: la somma dei pesi è zero, quindi per evitare la
+    // divisione per zero ripiego sul baricentro geometrico
+    if(totalPixelsIntensity == 0)
+      return geometric(pixels);
+
+    baricenter.x /= (double)totalPixelsIntensity;
+    baricenter.y /= (double)totalPixelsIntensity;
+
+    baricenter.x += 0.5;
+    baricenter.y += 0.5;
+
+    return baricenter;
+
+  }
+
+  //*****************************************************************************
+  // get
+  //*****************************************************************************
   // Dispatch barycenter evaluation by name.
   inline cv::Point2d get(const std::vector<cv::Point3i> & pixels, const std::string & algo) {
 
-		if(algo.compare("MAX_INTENSITY") == 0)
-		  return maxIntensity(pixels);
-		  
-		if(algo.compare("MAX_INTENSITY_WEIGHTED") == 0)
-		  return maxIntensityWeighted(pixels);
-		  
-		if(algo.compare("LOW_INTENSITY") == 0)
-		 return lowIntensity(pixels);
-		  
-		if(algo.compare("LOW_INTENSITY_WEIGHTED") == 0)
-		  return lowIntensityWeighted(pixels);
-		  
-	  if(algo.compare("GEOMETRIC") == 0)
-		  return geometric(pixels);	  
-		
+    if(algo.compare("MAX_INTENSITY") == 0)
+      return maxIntensity(pixels);
+
+    if(algo.compare("MAX_INTENSITY_WEIGHTED") == 0)
+      return maxIntensityWeighted(pixels);
+
+    if(algo.compare("LOW_INTENSITY") == 0)
+      return lowIntensity(pixels);
+
+    if(algo.compare("LOW_INTENSITY_WEIGHTED") == 0)
+      return lowIntensityWeighted(pixels);
+
+    if(algo.compare("GEOMETRIC") == 0)
+      return geometric(pixels);
+
     cvl::log::error("cvl::baricenter::get() error: unknown baricenter type '%s'\n"
                     "You can choose between:\n"
                     "      MAX_INTENSITY, MAX_INTENSITY_WEIGHTED, LOW_INTENSITY, LOW_INTENSITY_WEIGHTED or GEOMETRIC\n", algo.c_str());
 
-		return cv::Point2d(-1,-1);
-		
-	}
+    return cv::Point2d(-1,-1);
 
-} /* namespace */
+  }
+
+} /* namespace cvl::baricenter */
 
 #endif /* _H_CVL_BARICENTER_H_ */
-

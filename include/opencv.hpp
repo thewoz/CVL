@@ -82,6 +82,9 @@ inline cv::Point2d operator-(const cv::Point& lhs, const cv::Point2d& rhs)
     );
 }
 
+//*****************************************************************************
+// namespace cvl
+//*****************************************************************************
 namespace cvl {
 
 
@@ -97,7 +100,7 @@ namespace cvl {
 #define CV_KEY_DELETE        8
 
 #else
-  
+
 #define CV_KEY_ARROW_UP    82
 #define CV_KEY_ARROW_RIGHT 83
 #define CV_KEY_ARROW_DOWN  84
@@ -108,7 +111,7 @@ namespace cvl {
 #define CV_KEY_DELETE       8
 
 #endif
-  
+
 #define CV_KEY_MINUS       45
 #define CV_KEY_PLUS        43
 
@@ -150,13 +153,13 @@ namespace cvl {
 #define CV_KEY_Y          121
 #define CV_KEY_Z          122
 
-  //*****************************************************************************/
-  // util
-  //*****************************************************************************/
-  namespace util {
-    
+  //*****************************************************************************
+  // namespace utils
+  //*****************************************************************************
+  namespace utils {
+
     typedef int digit_t[5][3];
-    
+
     const digit_t zero = {
       {1, 1, 1},
       {1, 0, 1},
@@ -164,7 +167,7 @@ namespace cvl {
       {1, 0, 1},
       {1, 1, 1}
     };
-    
+
     const digit_t uno = {
       {0, 1, 0},
       {0, 1, 0},
@@ -172,7 +175,7 @@ namespace cvl {
       {0, 1, 0},
       {0, 1, 0}
     };
-    
+
     const digit_t due = {
       {1, 1, 1},
       {0, 0, 1},
@@ -180,7 +183,7 @@ namespace cvl {
       {1, 0, 0},
       {1, 1, 1}
     };
-    
+
     const digit_t tre = {
       {1, 1, 1},
       {0, 0, 1},
@@ -188,7 +191,7 @@ namespace cvl {
       {0, 0, 1},
       {1, 1, 1}
     };
-    
+
     const digit_t quattro = {
       {1, 0, 0},
       {1, 0, 0},
@@ -196,7 +199,7 @@ namespace cvl {
       {1, 1, 1},
       {0, 0, 1}
     };
-    
+
     const digit_t cinque = {
       {1, 1, 1},
       {1, 0, 0},
@@ -204,7 +207,7 @@ namespace cvl {
       {0, 0, 1},
       {1, 1, 1}
     };
-    
+
     const digit_t sei = {
       {1, 0, 0},
       {1, 0, 0},
@@ -212,7 +215,7 @@ namespace cvl {
       {1, 0, 1},
       {1, 1, 1}
     };
-    
+
     const digit_t sette = {
       {1, 1, 1},
       {0, 0, 1},
@@ -220,7 +223,7 @@ namespace cvl {
       {0, 0, 1},
       {0, 0, 1}
     };
-    
+
     const digit_t otto = {
       {1, 1, 1},
       {1, 0, 1},
@@ -228,7 +231,7 @@ namespace cvl {
       {1, 0, 1},
       {1, 1, 1}
     };
-    
+
     const digit_t nove = {
       {1, 1, 1},
       {1, 0, 1},
@@ -236,12 +239,12 @@ namespace cvl {
       {0, 0, 1},
       {0, 0, 1}
     };
-    
+
     inline const digit_t * const digits[10] = { &zero, &uno, &due, &tre, &quattro, &cinque, &sei, &sette, &otto, &nove };
-    
-    //*****************************************************************************/
+
+    //*****************************************************************************
     // drawDigit
-    //*****************************************************************************/
+    //*****************************************************************************
     // Draw a 5x3 digit glyph at the given position.
     inline void drawDigit(cv::Mat & dst, int number, const cv::Point & pos, const cv::Vec3b & color) {
 
@@ -261,280 +264,278 @@ namespace cvl {
       if(wTo >= dst.cols) wTo = dst.cols;
 
       for(int h=hTo, i=i0; h<hFrom; ++h, ++i) {
-        
+
         for(int w=pos.x, j=0; w<wTo; ++w, ++j) {
-          
+
           if(h < 0 || h >= dst.rows) continue;
           if(w < 0 || w >= dst.cols) continue;
 
           if(digit[i][j] == 1) dst.at<cv::Vec3b>(h, w) = color;
-          
+
         }
-        
+
       }
-      
+
     }
-    
-  } // namespace util
-  
-  
-//*****************************************************************************
-// drawRotatedText()
-//*****************************************************************************
-// Draw alpha-blended text rotated by angleDeg and centered at a point.
-inline void drawRotatedText(cv::Mat & image, const std::string & text, const cv::Point & center, double angleDeg, double fontScale, const cv::Scalar & color, int thickness = 2) {
-    
-  int baseline = 0;
-    
-  cv::Size textSize = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, fontScale, thickness, &baseline);
 
-  int margin = 20;
-  int w = textSize.width + 2 * margin;
-  int h = textSize.height + baseline + 2 * margin;
+  } /* namespace utils */
 
-  // Canvas BGRA completamente trasparente
-  cv::Mat textImg(h, w, CV_8UC4, cv::Scalar(0, 0, 0, 0));
-  cv::Mat alpha(h, w, CV_8UC1, cv::Scalar(0));
 
-  cv::Point org(margin, margin + textSize.height);
+  //*****************************************************************************
+  // drawRotatedText
+  //*****************************************************************************
+  // Draw alpha-blended text rotated by angleDeg and centered at a point.
+  inline void drawRotatedText(cv::Mat & image, const std::string & text, const cv::Point & center, double angleDeg, double fontScale, const cv::Scalar & color, int thickness = 2) {
 
-  // Disegno il testo nella maschera alpha
-  cv::putText(alpha, text, org, cv::FONT_HERSHEY_SIMPLEX, fontScale, cv::Scalar(255), thickness, cv::LINE_AA);
+    int baseline = 0;
 
-  // Copio il colore del testo e il suo alpha nel canvas BGRA
-  for(int y = 0; y < h; ++y) {
-    
-    for(int x = 0; x < w; ++x) {
-      
-      uchar a = alpha.at<uchar>(y, x);
-      
-      cv::Vec4b& px = textImg.at<cv::Vec4b>(y, x);
+    cv::Size textSize = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, fontScale, thickness, &baseline);
 
-      px[0] = (uchar)(color[0]); // B
-      px[1] = (uchar)(color[1]); // G
-      px[2] = (uchar)(color[2]); // R
-      px[3] = a;                            // A
-      
+    int margin = 20;
+    int w = textSize.width + 2 * margin;
+    int h = textSize.height + baseline + 2 * margin;
+
+    // Canvas BGRA completamente trasparente
+    cv::Mat textImg(h, w, CV_8UC4, cv::Scalar(0, 0, 0, 0));
+    cv::Mat alpha(h, w, CV_8UC1, cv::Scalar(0));
+
+    cv::Point org(margin, margin + textSize.height);
+
+    // Disegno il testo nella maschera alpha
+    cv::putText(alpha, text, org, cv::FONT_HERSHEY_SIMPLEX, fontScale, cv::Scalar(255), thickness, cv::LINE_AA);
+
+    // Copio il colore del testo e il suo alpha nel canvas BGRA
+    for(int y = 0; y < h; ++y) {
+
+      for(int x = 0; x < w; ++x) {
+
+        uchar a = alpha.at<uchar>(y, x);
+
+        cv::Vec4b& px = textImg.at<cv::Vec4b>(y, x);
+
+        px[0] = (uchar)(color[0]); // B
+        px[1] = (uchar)(color[1]); // G
+        px[2] = (uchar)(color[2]); // R
+        px[3] = a;                            // A
+
+      }
+
     }
-    
-  }
 
-  // Inverto il segno per avere l'inclinazione visiva corretta in coordinate immagine
-  double correctedAngle = -angleDeg;
+    // Inverto il segno per avere l'inclinazione visiva corretta in coordinate immagine
+    double correctedAngle = -angleDeg;
 
-  cv::Point2f rotCenter(textImg.cols / 2.0f, textImg.rows / 2.0f);
-  cv::Mat rotMat = cv::getRotationMatrix2D(rotCenter, correctedAngle, 1.0);
+    cv::Point2f rotCenter(textImg.cols / 2.0f, textImg.rows / 2.0f);
+    cv::Mat rotMat = cv::getRotationMatrix2D(rotCenter, correctedAngle, 1.0);
 
-  cv::Rect2f bbox = cv::RotatedRect(cv::Point2f(), textImg.size(), correctedAngle).boundingRect2f();
+    cv::Rect2f bbox = cv::RotatedRect(cv::Point2f(), textImg.size(), correctedAngle).boundingRect2f();
 
-  rotMat.at<double>(0, 2) += bbox.width / 2.0 - textImg.cols / 2.0;
-  rotMat.at<double>(1, 2) += bbox.height / 2.0 - textImg.rows / 2.0;
+    rotMat.at<double>(0, 2) += bbox.width / 2.0 - textImg.cols / 2.0;
+    rotMat.at<double>(1, 2) += bbox.height / 2.0 - textImg.rows / 2.0;
 
-  cv::Mat rotated;
-  cv::warpAffine(textImg, rotated, rotMat,  bbox.size(), cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar(0,0,0,0));
+    cv::Mat rotated;
+    cv::warpAffine(textImg, rotated, rotMat,  bbox.size(), cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar(0,0,0,0));
 
-  int x0 = center.x - rotated.cols / 2;
-  int y0 = center.y - rotated.rows / 2;
+    int x0 = center.x - rotated.cols / 2;
+    int y0 = center.y - rotated.rows / 2;
 
-  // Alpha blending sul target BGR
-  for(int y=0; y<rotated.rows; ++y) {
-    
-    int dstY = y0 + y;
-    
-    if(dstY < 0 || dstY >= image.rows)
-      continue;
+    // Alpha blending sul target BGR
+    for(int y=0; y<rotated.rows; ++y) {
 
-    for(int x = 0; x < rotated.cols; ++x) {
-      
-      int dstX = x0 + x;
-      if(dstX < 0 || dstX >= image.cols)
+      int dstY = y0 + y;
+
+      if(dstY < 0 || dstY >= image.rows)
         continue;
 
-      const cv::Vec4b& src = rotated.at<cv::Vec4b>(y, x);
-      uchar alphaVal = src[3];
-      if(alphaVal == 0)
-        continue;
+      for(int x = 0; x < rotated.cols; ++x) {
 
-      double a = alphaVal / 255.0;
-      cv::Vec3b& dst = image.at<cv::Vec3b>(dstY, dstX);
+        int dstX = x0 + x;
+        if(dstX < 0 || dstX >= image.cols)
+          continue;
 
-      dst[0] = cv::saturate_cast<uchar>(src[0] * a + dst[0] * (1.0 - a));
-      dst[1] = cv::saturate_cast<uchar>(src[1] * a + dst[1] * (1.0 - a));
-      dst[2] = cv::saturate_cast<uchar>(src[2] * a + dst[2] * (1.0 - a));
-      
+        const cv::Vec4b& src = rotated.at<cv::Vec4b>(y, x);
+        uchar alphaVal = src[3];
+        if(alphaVal == 0)
+          continue;
+
+        double a = alphaVal / 255.0;
+        cv::Vec3b& dst = image.at<cv::Vec3b>(dstY, dstX);
+
+        dst[0] = cv::saturate_cast<uchar>(src[0] * a + dst[0] * (1.0 - a));
+        dst[1] = cv::saturate_cast<uchar>(src[1] * a + dst[1] * (1.0 - a));
+        dst[2] = cv::saturate_cast<uchar>(src[2] * a + dst[2] * (1.0 - a));
+
+      }
+
     }
-    
-  }
-  
-}
 
-//*****************************************************************************
-// shrinkLine()
-//*****************************************************************************
-// Shorten a segment by cutting cutFromP1 / cutFromP2 pixels off each endpoint.
-inline void shrinkLine(cv::Point & p1, cv::Point & p2, int cutFromP1, int cutFromP2, bool verbose = false) {
-    
-  cv::Point2d dir = p2 - p1;
-
-  double length = std::sqrt(dir.x * dir.x + dir.y * dir.y);
-
-  if(length <= 1e-9) {
-    cvl::log::warning("cvl::shrinkLine() warning: line too short\n");
-    return;
-  }
-  
-  dir.x /= length;
-  dir.y /= length;
-
-  // Evita di accorciare più della lunghezza totale
-  double totalCut = cutFromP1 + cutFromP2;
-
-  if(totalCut >= length) {
-    if(verbose) cvl::log::warning("cvl::shrinkLine() warning: cut too big\n");
-    return;
   }
 
-  p1.x = p1.x + dir.x * cutFromP1;
-  p1.y = p1.y + dir.y * cutFromP1;
+  //*****************************************************************************
+  // shrinkLine
+  //*****************************************************************************
+  // Shorten a segment by cutting cutFromP1 / cutFromP2 pixels off each endpoint.
+  inline void shrinkLine(cv::Point & p1, cv::Point & p2, int cutFromP1, int cutFromP2, bool verbose = false) {
 
-  p2.x = p2.x - dir.x * cutFromP2;
-  p2.y = p2.y - dir.y * cutFromP2;
+    cv::Point2d dir = p2 - p1;
 
-}
+    double length = std::sqrt(dir.x * dir.x + dir.y * dir.y);
 
-//*****************************************************************************
-// shrinkLine()
-//*****************************************************************************
-// Shorten a segment by cutting the same amount off both endpoints.
-inline void shrinkLine(cv::Point & p1, cv::Point & p2, int cut) {
-  shrinkLine(p1, p2, cut, cut);
-}
+    if(length <= 1e-9) {
+      cvl::log::warning("cvl::shrinkLine() warning: line too short\n");
+      return;
+    }
 
-//*****************************************************************************
-// scaleLine()
-//*****************************************************************************
-// Scale a segment about its midpoint.
-inline void scaleLine(cv::Point & p1, cv::Point & p2, double scale) {
-  // il punto medio va calcolato in double: (p1+p2)*0.5 è un cv::Point e
-  // arrotonderebbe il centro a coordinate intere (scaling asimmetrico)
-  cv::Point2d center = (cv::Point2d(p1) + cv::Point2d(p2)) * 0.5;
-  p1.x = center.x + (p1.x - center.x) * scale;
-  p1.y = center.y + (p1.y - center.y) * scale;
-  p2.x = center.x + (p2.x - center.x) * scale;
-  p2.y = center.y + (p2.y - center.y) * scale;
-}
+    dir.x /= length;
+    dir.y /= length;
 
-//*****************************************************************************
-// scaleRect()
-//*****************************************************************************
-// Scale a rectangle about its center.
-inline cv::Rect scaleRect(const cv::Rect & r, double factor) {
-    int newW = cvRound(r.width  * factor);
-    int newH = cvRound(r.height * factor);
-    int newX = r.x + (r.width  - newW) / 2;
-    int newY = r.y + (r.height - newH) / 2;
-    return cv::Rect(newX, newY, newW, newH);
-}
+    // Evita di accorciare più della lunghezza totale
+    double totalCut = cutFromP1 + cutFromP2;
 
+    if(totalCut >= length) {
+      if(verbose) cvl::log::warning("cvl::shrinkLine() warning: cut too big\n");
+      return;
+    }
 
-//*****************************************************************************
-// drawDistanceMarker()
-//*****************************************************************************
-// Draw a dimension line between two points with end ticks and a rotated label.
-inline void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::string & label, const cv::Scalar & color, int thickness = 2, int textOffset = 20, double fontScale = 0.8, int shrink = 0, int endMarkSize = 10) {
-  
-  if(shrink != 0) shrinkLine(p1, p2, shrink);
-      
-  // Linea principale
-  cv::line(image, p1, p2, color, thickness, cv::LINE_AA);
+    p1.x = p1.x + dir.x * cutFromP1;
+    p1.y = p1.y + dir.y * cutFromP1;
 
-  // Direzione della linea
-  cv::Point2f dir((p2.x - p1.x), (p2.y - p1.y));
+    p2.x = p2.x - dir.x * cutFromP2;
+    p2.y = p2.y - dir.y * cutFromP2;
 
-  float len = std::sqrt(dir.x * dir.x + dir.y * dir.y);
-  if(len < 1.0f) return;
+  }
 
-  dir.x /= len;
-  dir.y /= len;
+  //*****************************************************************************
+  // shrinkLine
+  //*****************************************************************************
+  // Shorten a segment by cutting the same amount off both endpoints.
+  inline void shrinkLine(cv::Point & p1, cv::Point & p2, int cut) {
+    shrinkLine(p1, p2, cut, cut);
+  }
 
-  // Perpendicolare
-  cv::Point2f perp(-dir.y, dir.x);
+  //*****************************************************************************
+  // scaleLine
+  //*****************************************************************************
+  // Scale a segment about its midpoint.
+  inline void scaleLine(cv::Point & p1, cv::Point & p2, double scale) {
+    // il punto medio va calcolato in double: (p1+p2)*0.5 è un cv::Point e
+    // arrotonderebbe il centro a coordinate intere (scaling asimmetrico)
+    cv::Point2d center = (cv::Point2d(p1) + cv::Point2d(p2)) * 0.5;
+    p1.x = center.x + (p1.x - center.x) * scale;
+    p1.y = center.y + (p1.y - center.y) * scale;
+    p2.x = center.x + (p2.x - center.x) * scale;
+    p2.y = center.y + (p2.y - center.y) * scale;
+  }
 
-   // Tacche alle estremità
-  cv::Point p1a(cvRound(p1.x + perp.x * endMarkSize), cvRound(p1.y + perp.y * endMarkSize));
-  cv::Point p1b(cvRound(p1.x - perp.x * endMarkSize), cvRound(p1.y - perp.y * endMarkSize));
-
-  cv::Point p2a(cvRound(p2.x + perp.x * endMarkSize), cvRound(p2.y + perp.y * endMarkSize));
-  cv::Point p2b(cvRound(p2.x - perp.x * endMarkSize), cvRound(p2.y - perp.y * endMarkSize));
-
-  cv::line(image, p1a, p1b, color, thickness, cv::LINE_AA);
-  cv::line(image, p2a, p2b, color, thickness, cv::LINE_AA);
-
-  // Punto medio
-  cv::Point mid((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
-
-  // Posizione del testo, spostata in direzione perpendicolare
-  cv::Point textCenter(cvRound(mid.x + perp.x * textOffset), cvRound(mid.y + perp.y * textOffset));
-
-  // Angolo della linea
-  double angleRad = std::atan2((p2.y - p1.y), (p2.x - p1.x));
-  
-  double angleDeg = angleRad * 180.0 / CV_PI;
-
-  // Mantiene il testo leggibile
-       if(angleDeg >  90.0) angleDeg -= 180.0;
-  else if(angleDeg < -90.0) angleDeg += 180.0;
-
-  drawRotatedText(image, label, textCenter, angleDeg, fontScale, color, thickness);
-  
-}
+  //*****************************************************************************
+  // scaleRect
+  //*****************************************************************************
+  // Scale a rectangle about its center.
+  inline cv::Rect scaleRect(const cv::Rect & r, double factor) {
+      int newW = cvRound(r.width  * factor);
+      int newH = cvRound(r.height * factor);
+      int newX = r.x + (r.width  - newW) / 2;
+      int newY = r.y + (r.height - newH) / 2;
+      return cv::Rect(newX, newY, newW, newH);
+  }
 
 
+  //*****************************************************************************
+  // drawDistanceMarker
+  //*****************************************************************************
+  // Draw a dimension line between two points with end ticks and a rotated label.
+  inline void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, const std::string & label, const cv::Scalar & color, int thickness = 2, int textOffset = 20, double fontScale = 0.8, int shrink = 0, int endMarkSize = 10) {
 
-  //*****************************************************************************/
+    if(shrink != 0) shrinkLine(p1, p2, shrink);
+
+    // Linea principale
+    cv::line(image, p1, p2, color, thickness, cv::LINE_AA);
+
+    // Direzione della linea
+    cv::Point2f dir((p2.x - p1.x), (p2.y - p1.y));
+
+    float len = std::sqrt(dir.x * dir.x + dir.y * dir.y);
+    if(len < 1.0f) return;
+
+    dir.x /= len;
+    dir.y /= len;
+
+    // Perpendicolare
+    cv::Point2f perp(-dir.y, dir.x);
+
+     // Tacche alle estremità
+    cv::Point p1a(cvRound(p1.x + perp.x * endMarkSize), cvRound(p1.y + perp.y * endMarkSize));
+    cv::Point p1b(cvRound(p1.x - perp.x * endMarkSize), cvRound(p1.y - perp.y * endMarkSize));
+
+    cv::Point p2a(cvRound(p2.x + perp.x * endMarkSize), cvRound(p2.y + perp.y * endMarkSize));
+    cv::Point p2b(cvRound(p2.x - perp.x * endMarkSize), cvRound(p2.y - perp.y * endMarkSize));
+
+    cv::line(image, p1a, p1b, color, thickness, cv::LINE_AA);
+    cv::line(image, p2a, p2b, color, thickness, cv::LINE_AA);
+
+    // Punto medio
+    cv::Point mid((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
+
+    // Posizione del testo, spostata in direzione perpendicolare
+    cv::Point textCenter(cvRound(mid.x + perp.x * textOffset), cvRound(mid.y + perp.y * textOffset));
+
+    // Angolo della linea
+    double angleRad = std::atan2((p2.y - p1.y), (p2.x - p1.x));
+
+    double angleDeg = angleRad * 180.0 / CV_PI;
+
+    // Mantiene il testo leggibile
+         if(angleDeg >  90.0) angleDeg -= 180.0;
+    else if(angleDeg < -90.0) angleDeg += 180.0;
+
+    drawRotatedText(image, label, textCenter, angleDeg, fontScale, color, thickness);
+
+  }
+
+
+
+  //*****************************************************************************
   // drawString
-  //*****************************************************************************/
+  //*****************************************************************************
   // Draw a numeric string using the built-in 5x3 glyphs.
   inline void drawString(cv::Mat & dst, const char * str, cv::Point pos, const cv::Vec3b & color){
-    
+
     if(dst.channels() != 3){
       cvl::log::error("cvl::drawString() error: the destination image must be a three channel image\n");
     }
-    
+
     size_t size = (size_t)strlen(str);
-    
-    //printf("DDDD %s (%d,%d)\n", str, pos.x, pos.y);
-    
+
     for(size_t i=0; i<size; ++i){
-      
-      util::drawDigit(dst, str[i]-48, pos, color);
-      
+
+      utils::drawDigit(dst, str[i]-48, pos, color);
+
       pos.x += 4;
-      
+
     }
-    
-  }
-  
-  //*****************************************************************************/
-  // drawNumber
-  //*****************************************************************************/
-  // Draw an integer number using built-in digit glyphs.
-  inline void drawNumber(cv::Mat & dst, int number, const cv::Point & pos, const cv::Vec3b & color){
-    
-    char str[PATH_MAX];
-    
-    cvl::utils::itoa(number, str);
-    
-    drawString(dst, str, pos, color);
-    
+
   }
 
-  //*****************************************************************************/
+  //*****************************************************************************
+  // drawNumber
+  //*****************************************************************************
+  // Draw an integer number using built-in digit glyphs.
+  inline void drawNumber(cv::Mat & dst, int number, const cv::Point & pos, const cv::Vec3b & color){
+
+    char str[PATH_MAX];
+
+    cvl::utils::itoa(number, str);
+
+    drawString(dst, str, pos, color);
+
+  }
+
+  //*****************************************************************************
   // drawParabola
-  //*****************************************************************************/
+  //*****************************************************************************
   // Draw a parabola defined by quadratic coefficients.
   inline void drawParabola(cv::Mat & dst, const cv::Vec3d & coeffs, const cv::Vec3b & color) {
-    
+
      for(int x=0; x<dst.cols; ++x) {
 
        double y = coeffs[0] * x * x + coeffs[1] * x + coeffs[2];
@@ -548,25 +549,25 @@ inline void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, cons
        }
 
      }
-    
+
   }
 
-  //*****************************************************************************/
+  //*****************************************************************************
   // cross
-  //*****************************************************************************/
-  // Draw a small cross marker.
+  //*****************************************************************************
+  // Draw a minimal marker (a circle of radius 1) at the given position.
   inline void cross(cv::Mat & dst, const cv::Point & pos, const cv::Vec3b & color) {
     cv::circle(dst, pos, 1, color);
   }
 
-  //*****************************************************************************/
+  //*****************************************************************************
   // minEnclosureRoi
-  //*****************************************************************************/
+  //*****************************************************************************
   // Compute the minimal ROI enclosing two rectangles.
   inline cv::Rect minEnclosureRoi(const cv::Rect & roi1, const cv::Rect & roi2) {
-    
+
     cv::Rect roi;
-    
+
     roi.x = (roi1.x < roi2.x) ? roi1.x : roi2.x;
     roi.y = (roi1.y < roi2.y) ? roi1.y : roi2.y;
 
@@ -577,12 +578,12 @@ inline void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, cons
     roi.height = (p1.y > p2.y) ? p1.y : p2.y;
 
     return roi;
-    
+
   }
 
-  //*****************************************************************************/
+  //*****************************************************************************
   // getRandomColor
-  //*****************************************************************************/
+  //*****************************************************************************
   // Generate a random BGR color optionally above a brightness threshold.
   inline cv::Vec3b getRandomColor(double minBright = -1) {
 
@@ -607,16 +608,16 @@ inline void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, cons
       double Y = 0.114 * color.val[0] + 0.587 * color.val[1] + 0.299 * color.val[2];
 
       if(Y >= minBright) break;
-      
+
     }
-      
+
     return color;
-        
+
   }
- 
-  //*****************************************************************************/
+
+  //*****************************************************************************
   // save
-  //*****************************************************************************/
+  //*****************************************************************************
   // Save an image to disk, expanding paths and validating the write.
   inline bool save(const cv::Mat & image, std::string str) {
 
@@ -638,17 +639,18 @@ inline void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, cons
     return true;
 
   }
-  
-  //*****************************************************************************/
-  // resize()
-  //*****************************************************************************/
+
+  //*****************************************************************************
+  // resize
+  //*****************************************************************************
+  // Resize an image to a percent of its size; interp = -1 picks the interpolation automatically.
   // INTER_AREA  downscale  meno aliasing, default per <100%
   // INTER_LINEAR  upscale veloce  buon compromesso qualità/velocità
   // INTER_CUBIC  upscale qualità  più nitido, 4× più lento di LINEAR
   // INTER_LANCZOS4  upscale max qualità  il migliore, usalo per immagini scientifiche
   // INTER_NEAREST  pixel art / debug  velocissimo, nessun blending
   inline cv::Mat resize(const cv::Mat & src, double percent, int interp = -1) {
-    
+
     if(src.empty())
       cvl::log::error("cvl::resize() error: empty image\n");
     if(percent <= 0.0)
@@ -656,7 +658,7 @@ inline void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, cons
 
     double scale = percent / 100.0;
 
-    // Scelta automatic interpolazione se non specificata
+    // Scelta automatica dell'interpolazione se non specificata
     if(interp == -1) {
       interp = (scale < 1.0)
               ? cv::INTER_AREA    // downscale: riduce aliasing
@@ -665,72 +667,72 @@ inline void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, cons
 
     cv::Mat dst;
     cv::resize(src, dst, cv::Size(), scale, scale, interp);
-    
+
     return dst;
-    
+
   }
 
-  //*****************************************************************************/
+  //*****************************************************************************
   // open
-  //*****************************************************************************/
+  //*****************************************************************************
   // Open an image from disk with the requested imread mode.
   inline cv::Mat open(std::string str, int mode = cv::IMREAD_UNCHANGED) {
-    
+
     cvl::io::expandPath(str);
-    
+
     cv::Mat image = cv::imread(str, mode);
-    
+
     if(image.data==NULL){
       cvl::log::error("cvl::open() error: cannot open the image '%s'\n", str.c_str());
     }
-    
+
     return image;
-    
+
   }
 
-  //*****************************************************************************/
+  //*****************************************************************************
   // open
-  //*****************************************************************************/
-  // Open an image from disk with the requested imread mode.
-  inline cv::Mat open(std::string str, double percent, int mode = cv::IMREAD_UNCHANGED, int interp = -1) {
-    
+  //*****************************************************************************
+  // Open an image from disk and resize it to the given percent of its size.
+  inline cv::Mat open(const std::string & str, double percent, int mode = cv::IMREAD_UNCHANGED, int interp = -1) {
+
     cv::Mat image = open(str, mode);
-    
+
     return resize(image, percent, interp);
-    
+
   }
 
-  //*****************************************************************************/
-  // open
-  //*****************************************************************************/
+  //*****************************************************************************
+  // open16bitC1
+  //*****************************************************************************
   // Open a 16-bit single-channel image from disk.
   inline cv::Mat open16bitC1(std::string str){
-    
+
     cvl::io::expandPath(str);
-    
+
     cv::Mat image = cv::imread(str, cv::IMREAD_UNCHANGED);
-    
-    // controllo che l'immagine sia buona
+
+    // controllo che l'immagine sia stata letta
     if(image.empty()) {
       cvl::log::error("cvl::open16bitC1() error: cannot open the image '%s'\n", str.c_str());
     }
-    
-    // controllo che l'immagine sia buona
+
+    // controllo che sia davvero a 16 bit e un solo canale
     if(image.type() != CV_16UC1) {
       cvl::log::warning("cvl::open16bitC1() warning: '%s' is not a CV_16UC1 image\n", str.c_str());
     }
-    
+
     return image;
-    
+
   }
 
-  //****************************************************************************//
-  // getTopRightPoint()
-  //****************************************************************************//
+  //*****************************************************************************
+  // getTopRightPoint
+  //*****************************************************************************
   // Return the top-right-most point of a set (smallest y, then largest x).
   template <class T>
   inline T getTopRightPoint(const std::vector<T> & points) {
-    
+
     if(points.empty()) cvl::log::error("cvl::getTopRightPoint() error: the point list is empty\n");
 
     T best = points[0];
@@ -741,12 +743,12 @@ inline void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, cons
     }
 
     return best;
-    
+
   }
 
-  //****************************************************************************/
+  //*****************************************************************************
   // histogram8bit
-  //****************************************************************************/
+  //*****************************************************************************
   // Compute the 256-bin histogram of a CV_8UC1 image, optionally masking pixels
   // and skipping a given intensity value.
   inline void histogram8bit(const cv::Mat & src, cv::Mat & histo, cv::Mat & mask, int valueToSkip = -1) {
@@ -764,58 +766,58 @@ inline void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, cons
     const float * histRange = { range };
 
     if(valueToSkip != -1) {
-      
+
       if(mask.empty()) mask = cv::Mat::ones(src.size(), CV_8UC1);
-      
+
       for(int i=0; i<src.rows; ++i)
         for(int j=0; j<src.cols; ++j)
           if(src.at<uchar>(i,j) == valueToSkip) mask.at<uchar>(i,j) = 0;
-      
+
     }
-    
+
     cv::calcHist(&src, 1, 0, mask, histo, 1, &histSize, &histRange);
-    
+
   }
 
-  //****************************************************************************/
+  //*****************************************************************************
   // histogram8bit
-  //****************************************************************************/
+  //*****************************************************************************
   // Overload without an explicit mask.
   inline void histogram8bit(const cv::Mat & src, cv::Mat & histo, int valueToSkip = -1) {
-    
+
     cv::Mat mask = cv::Mat();
-    
+
     histogram8bit(src, histo, mask, valueToSkip);
-    
+
   }
 
-  //****************************************************************************/
+  //*****************************************************************************
   // histogram16bit
-  //****************************************************************************/
+  //*****************************************************************************
   // Compute the 65536-bin histogram of a CV_16UC1 image.
   inline void histogram16bit(const cv::Mat & src, cv::Mat & histogram) {
-    
+
     if(src.empty() || src.type() != CV_16UC1) {
       cvl::log::error("cvl::histogram16bit() error: the input image must be a non-empty CV_16UC1 image\n");
     }
-      
+
     int histSize = 65536;
     float range[] = { 0, 65536 };
     const float * histRange = { range };
-    
+
     cv::calcHist(&src, 1, 0, cv::Mat(), histogram, 1, &histSize, &histRange);
 
   }
 
-  //****************************************************************************/
+  //*****************************************************************************
   // histogram16bit
-  //****************************************************************************/
+  //*****************************************************************************
   // 16-bit histogram variant that also returns the occupied [min, max] range.
   template <typename T>
   inline void histogram16bit(const cv::Mat & src, cv::Mat & histogram, T & min, T & max) {
 
     histogram16bit(src, histogram);
-    
+
     min = 0;
     max = 65535;
 
@@ -828,7 +830,7 @@ inline void drawDistanceMarker(cv::Mat & image, cv::Point p1, cv::Point p2, cons
       max = i;
       if(histogram.at<float>(i) != 0) break;
     }
-    
+
   }
 
 } /* namespace cvl */

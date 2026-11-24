@@ -28,44 +28,43 @@
 #include <cstdio>
 
 #include <vector>
-#include <map>
 #include <string>
 #include <utility>
 #include <climits>
 
-#define MERGE_MASS_LABEL(a,b) do { labelMass[b] += labelMass[a]; labelMass[a] = -b; } while(0)
+#define MERGE_MASS_LABEL(a,b) do { labelMass[(b)] += labelMass[(a)]; labelMass[(a)] = -(b); } while(0)
 
-//*****************************************************************************/
+//*****************************************************************************
 // namespace cvl::labeling
-//*****************************************************************************/
+//*****************************************************************************
 namespace cvl::labeling {
 
-  //*****************************************************************************/
+  //*****************************************************************************
   // namespace utils
-  //*****************************************************************************/
+  //*****************************************************************************
   namespace utils {
 
-    //*****************************************************************************/
+    //*****************************************************************************
     // findRoot
-    //*****************************************************************************/
+    //*****************************************************************************
     // Find the root label in the union-find structure.
     inline int findRoot(int startLabel, const std::vector<int> & labelMass) {
-      
+
       while(labelMass[startLabel] < 0)
         startLabel = -labelMass[startLabel];
-      
+
       return startLabel;
-      
+
     }
-    
-    
+
+
   } /* namespace utils */
-  
+
   enum { NEAREST_NEIGHBOURS, NEXT_NEAREST_NEIGHBOURS };
-  
-  //*****************************************************************************/
+
+  //*****************************************************************************
   // get
-  //*****************************************************************************/
+  //*****************************************************************************
   // Label connected components and return them as blobs.
   inline void get(const cv::Mat & src, int neighboursType, size_t minClusterMass, cvl::blobs_t & blobs, const cv::Mat & original, const cv::Point & offset = cv::Point(0,0)) {
 
@@ -182,7 +181,7 @@ namespace cvl::labeling {
     }
 
     // the labels are dense integers in [1, labelMass.size()-1], so a vector
-    // indexed by root label replaces the std::map (O(1) instead of O(log n) per pixel)
+    // indexed by root label is enough to collect the pixels (O(1) per pixel)
     std::vector<std::vector<cv::Point>> foundBlobs(labelMass.size());
 
     for(int y=1; y<workImageSize.height-1; ++y) {
@@ -228,4 +227,3 @@ namespace cvl::labeling {
 
 
 #endif /* _H_CVL_LABELING_H_ */
-

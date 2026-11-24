@@ -33,42 +33,33 @@
 #include <iostream>
 #include <algorithm>
 
-//****************************************************************************/
-// cvl::subpixel
-//****************************************************************************/
+//*****************************************************************************
+// namespace cvl::subpixel
+//*****************************************************************************
 namespace cvl::subpixel {
 
-  //****************************************************************************/
-  // cvl::subpixel::detail
-  //****************************************************************************/
+  //*****************************************************************************
+  // namespace utils
+  //*****************************************************************************
   // Implementazione interna del detector di angoli a precisione subpixel
   // (algoritmo "nuovo", di tipo ROCHADE). Usato solo da get().
-  namespace detail {
+  namespace utils {
 
     static const int MAX_SYMMETRY_ERRORS = 5;
 
-    //**************************************************************************/
-    // Parameters - parametri del feature detector
-    //**************************************************************************/
+    //*****************************************************************************
+    // struct Parameters
+    //*****************************************************************************
+    // Parametri del feature detector.
     struct Parameters {
 
-      float strength;        //!< intensità minima di una giunzione valida in dB
-      float resolution;      //!< risoluzione angolare in radianti
-      int branches;          //!< numero di rami
-      int min_scale;         //!< livello di scala [0..8]
-      int max_scale;         //!< livello di scala [0..8]
-      bool filter;           //!< filtra la feature map per migliorare la risposta impulsiva
-      bool super_resolution; //!< up-sample
-
-      Parameters() {
-        strength = 40;
-        resolution = float(CV_PI*0.25);
-        branches = 2;
-        min_scale = 2;
-        max_scale = 5;
-        super_resolution = true;
-        filter = true;
-      }
+      float strength = 40;                     //!< intensità minima di una giunzione valida in dB
+      float resolution = float(CV_PI*0.25);    //!< risoluzione angolare in radianti
+      int branches = 2;                        //!< numero di rami
+      int min_scale = 2;                       //!< livello di scala [0..8]
+      int max_scale = 5;                       //!< livello di scala [0..8]
+      bool filter = true;                      //!< filtra la feature map per migliorare la risposta impulsiva
+      bool super_resolution = true;            //!< up-sample
 
     };
 
@@ -76,45 +67,32 @@ namespace cvl::subpixel {
     // (con static ogni translation unit avrebbe la propria copia)
     inline Parameters parameters;
 
-    //**************************************************************************/
-    // ChessBoardParameters - parametri di rilevamento della scacchiera
-    //**************************************************************************/
+    //*****************************************************************************
+    // struct ChessBoardParameters
+    //*****************************************************************************
+    // Parametri di rilevamento della scacchiera.
     struct ChessBoardParameters {
 
-      cv::Size chessboard_size; //!< dimensione della scacchiera
-      int min_scale;            //!< livello di scala [0..8]
-      int max_scale;            //!< livello di scala [0..8]
-      int max_points;           //!< numero massimo di punti considerati
-      int max_tests;            //!< numero massimo di ipotesi testate
-      bool super_resolution;    //!< usa la super-resolution per il rilevamento
-      bool larger;              //!< indica se restituire scacchiere più grandi
-      bool marker;              //!< le scacchiere valide devono avere un marker bianco e nero per l'orientamento
+      cv::Size chessboard_size = cv::Size(9,6); //!< dimensione della scacchiera
+      int min_scale = 3;                        //!< livello di scala [0..8]
+      int max_scale = 4;                        //!< livello di scala [0..8]
+      int max_points = 200;                     //!< numero massimo di punti considerati
+      int max_tests = 50;                       //!< numero massimo di ipotesi testate
+      bool super_resolution = true;             //!< usa la super-resolution per il rilevamento
+      bool larger = false;                      //!< indica se restituire scacchiere più grandi
+      bool marker = false;                      //!< le scacchiere valide devono avere un marker bianco e nero per l'orientamento
 
-      ChessBoardParameters() {
-        chessboard_size = cv::Size(9,6);
-        min_scale = 3;
-        max_scale = 4;
-        super_resolution = true;
-        max_points = 200;
-        max_tests = 50;
-        larger = false;
-        marker = false;
-      }
+      ChessBoardParameters() = default;
 
-      ChessBoardParameters(int scale, int _max_points):
-        min_scale(scale),
-        max_scale(scale),
-        max_points(_max_points) {
-          chessboard_size = cv::Size(9,6);
-      }
+      ChessBoardParameters(int scale, int _max_points) : min_scale(scale), max_scale(scale), max_points(_max_points) { }
 
     };
 
     inline ChessBoardParameters CBparameters;
 
-    //**************************************************************************/
-    // rotate() -
-    //**************************************************************************/
+    //*****************************************************************************
+    // rotate
+    //*****************************************************************************
     // Ruota un'immagine di un angolo (in radianti) attorno al suo centro.
     inline void rotate(float angle, cv::InputArray img, cv::Size size, cv::OutputArray out) {
 
@@ -130,9 +108,9 @@ namespace cvl::subpixel {
 
     }
 
-    //**************************************************************************/
-    // calcFeatureMap() -
-    //**************************************************************************/
+    //*****************************************************************************
+    // calcFeatureMap
+    //*****************************************************************************
     // Calcola la feature map usata per il rilevamento degli angoli della scacchiera.
     inline void calcFeatureMap(const cv::Mat &images, cv::Mat& out) {
 
@@ -155,7 +133,7 @@ namespace cvl::subpixel {
         CV_Error(cv::Error::StsBadArg,"images must have at least four channels");
 
       // for each pixel
-      out = cv::Mat::zeros(images.rows,images.cols,CV_32FC1); // istogramma (?)
+      out = cv::Mat::zeros(images.rows,images.cols,CV_32FC1); // feature map, un valore per pixel
       const float *pout_end = reinterpret_cast<const float*>(out.dataend);
       for(float *pout=out.ptr<float>(0,0);pout != pout_end;++pout) {
         //reset values (rating viene assegnato solo nel ramo che lo usa)
@@ -205,9 +183,9 @@ namespace cvl::subpixel {
 
     }
 
-    //**************************************************************************/
-    // detectImpl() -
-    //**************************************************************************/
+    //*****************************************************************************
+    // detectImpl
+    //*****************************************************************************
     // Costruisce le immagini ruotate e le feature map alle varie scale.
     inline void detectImpl(const cv::Mat& _gray_image,
             std::vector<cv::Mat> &rotated_images,
@@ -243,7 +221,7 @@ namespace cvl::subpixel {
           int scale_size = int(pow(2.0,scale+1+super_res));
           int scale_size2 = int((scale_size/7)*2+1);
           std::vector<cv::UMat> images;
-          images.resize(2*num);
+          images.resize(2*(size_t)num);
           cv::UMat rotated,filtered_h,filtered_v;
           // il vettore images è composto per la prima metà di immagini convolute orizzontalmente, e la seconda metà verticalmente
           cv::boxFilter(gray_image,images[0],-1,cv::Size(scale_size,scale_size2)); // m*n box filter (orizzontale)
@@ -280,9 +258,9 @@ namespace cvl::subpixel {
 
     }
 
-    //**************************************************************************/
-    // calcSubpixel() -
-    //**************************************************************************/
+    //*****************************************************************************
+    // calcSubpixel
+    //*****************************************************************************
     // Calcola la posizione subpixel a partire da tre campioni.
     inline float calcSubpixel(const float &x_l, const float &x, const float &x_r) {
 
@@ -304,9 +282,9 @@ namespace cvl::subpixel {
 
     }
 
-    //**************************************************************************/
-    // findKeyPoints() -
-    //**************************************************************************/
+    //*****************************************************************************
+    // findKeyPoints
+    //*****************************************************************************
     // Estrae i keypoint dalla piramide di feature map.
     inline void findKeyPoints(const std::vector<cv::Mat> &feature_maps, std::vector<cv::KeyPoint>& keypoints, const cv::Mat& _mask) {
 
@@ -399,9 +377,9 @@ namespace cvl::subpixel {
 
     }
 
-    //**************************************************************************/
-    // calcSubPos() -
-    //**************************************************************************/
+    //*****************************************************************************
+    // calcSubPos
+    //*****************************************************************************
     // Calcola l'offset subpixel tramite interpolazione quadratica.
     inline float calcSubPos(const float &x_l, const float &x, const float &x_r) {
 
@@ -419,9 +397,9 @@ namespace cvl::subpixel {
 
     static const float RAD2DEG = float(180.0/CV_PI);
 
-    //**************************************************************************/
-    // calcAngles() -
-    //**************************************************************************/
+    //*****************************************************************************
+    // calcAngles
+    //*****************************************************************************
     // Calcola gli angoli dominanti di ogni keypoint usando le immagini ruotate.
     inline std::vector<std::vector<float> > calcAngles(const std::vector<cv::Mat> &rotated_images, std::vector<cv::KeyPoint> &keypoints) {
 
@@ -526,18 +504,18 @@ namespace cvl::subpixel {
 
     }
 
-    //**************************************************************************/
-    // sortKeyPoint() -
-    //**************************************************************************/
+    //*****************************************************************************
+    // sortKeyPoint
+    //*****************************************************************************
     // Ordina i keypoint per response (decrescente). I keypoint con lo score
     // migliore vengono per primi.
-    static bool sortKeyPoint(const cv::KeyPoint &pt1, const cv::KeyPoint &pt2) {
+    inline bool sortKeyPoint(const cv::KeyPoint &pt1, const cv::KeyPoint &pt2) {
       return pt1.response > pt2.response;
     }
 
-    //**************************************************************************/
-    // testPointSymmetry() -
-    //**************************************************************************/
+    //*****************************************************************************
+    // testPointSymmetry
+    //*****************************************************************************
     // Conta i fallimenti del test di simmetria attorno a un punto (su 10).
     inline int testPointSymmetry(const cv::Mat &mat, cv::Point2f pt, float dist, float max_error) {
 
@@ -566,9 +544,9 @@ namespace cvl::subpixel {
 
     }
 
-    //**************************************************************************/
-    // filterKeyPoints() -
-    //**************************************************************************/
+    //*****************************************************************************
+    // filterKeyPoints
+    //*****************************************************************************
     // Filtra i keypoint usando feature map, simmetria e controllo degli angoli.
     inline void filterKeyPoints(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, std::vector<cv::Mat> &feature_maps,
             std::vector<std::vector<float> > &angles, const cv::Mat& mask) {
@@ -579,7 +557,7 @@ namespace cvl::subpixel {
 
       // Imposto i parametri specifici per le scacchiere direttamente sulla
       // "parameters" globale, letta da detectImpl/findKeyPoints/calcAngles.
-      parameters.branches = 2;                     // this is always the case for checssboard corners
+      parameters.branches = 2;                     // this is always the case for chessboard corners
       // NOTA: valore incerto. In origine veniva impostato strength = 150 (ma su una
       //       struct locale mai usata, quindi di fatto valeva il 40 di default).
       //       Per preservare il comportamento storico uso 40; è possibile che
@@ -623,11 +601,11 @@ namespace cvl::subpixel {
 
     }
 
-    //**************************************************************************/
-    // cornerSubPixNewImpl() -
-    //**************************************************************************/
+    //*****************************************************************************
+    // cornerSubPixNewImpl
+    //*****************************************************************************
     // Calcola un singolo angolo raffinato a partire da una ROI.
-    inline cv::Point2d cornerSubPixNewImpl(const cv::Mat image) {
+    inline cv::Point2d cornerSubPixNewImpl(const cv::Mat & image) {
 
       std::vector<cv::Mat> rotated_images;
       std::vector<cv::Mat> feature_maps;
@@ -648,9 +626,9 @@ namespace cvl::subpixel {
 
     }
 
-    //**************************************************************************/
-    // fitRectangleInImage() -
-    //**************************************************************************/
+    //*****************************************************************************
+    // fitRectangleInImage
+    //*****************************************************************************
     // Limita la ROI alle coordinate valide dell'immagine.
     inline void fitRectangleInImage(const cv::Mat& image, cv::Rect &roi) {
 
@@ -668,16 +646,19 @@ namespace cvl::subpixel {
 
     }
 
-    //**************************************************************************/
-    // cornerSubPixNew() -
-    //**************************************************************************/
+    //*****************************************************************************
+    // cornerSubPixNew
+    //*****************************************************************************
     // Raffina le posizioni degli angoli usando il nuovo detector della scacchiera.
-    inline void cornerSubPixNew(const cv::Mat image, std::vector<cv::Point2f> & corners, int roiSize = 60) {
+    inline void cornerSubPixNew(const cv::Mat & image, std::vector<cv::Point2f> & corners, int roiSize = 60) {
 
       for(auto & corner : corners) {
 
-        int x = corner.x - roiSize/2;  // Centro della maschera
-        int y = corner.y - roiSize/2;
+        // angolo in alto a sinistra della ROI centrata sul corner
+        int halfRoi = roiSize / 2;
+
+        int x = corner.x - halfRoi;
+        int y = corner.y - halfRoi;
 
         cv::Rect roi(x, y, roiSize, roiSize);
         fitRectangleInImage(image, roi);
@@ -696,11 +677,11 @@ namespace cvl::subpixel {
 
     }
 
-  } /* namespace detail */
+  } /* namespace utils */
 
-  //*****************************************************************************/
-  // get() -
-  //*****************************************************************************/
+  //*****************************************************************************
+  // get
+  //*****************************************************************************
   // Refine corner positions to subpixel accuracy.
   inline void get(const cv::Mat & image, std::vector<cv::Point2f> & corners, int roiSize = 15, const std::string & algorithm = "old") {
 
@@ -712,7 +693,7 @@ namespace cvl::subpixel {
 
     if(corners.size() > 0) {
 
-      // Talpa vecchio
+      // Criteri usati in passato dal programma talpa
       //cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.1);
 
       // Criteri di stop
@@ -726,7 +707,7 @@ namespace cvl::subpixel {
       // Cerco i subpixel con l'algoritmo nuovo
       // (il detector multiscala lavora sull'intera ROI, quindi non dimezzo)
       if(!algorithm.compare("new"))
-        detail::cornerSubPixNew(image, corners, roiSize);
+        utils::cornerSubPixNew(image, corners, roiSize);
 
     }
 

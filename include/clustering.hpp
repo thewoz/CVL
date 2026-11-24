@@ -31,16 +31,16 @@
 #include <algorithm>
 #include <cfloat>
 
-//*****************************************************************************/
+//*****************************************************************************
 // namespace cvl::clustering
-//*****************************************************************************/
+//*****************************************************************************
 namespace cvl::clustering {
-   
+
   constexpr auto distanceOp = [](const blob_t & a, const blob_t & b) { return cv::norm(a.baricenter - b.baricenter); };
 
-  //*****************************************************************************/
+  //*****************************************************************************
   // NN
-  //*****************************************************************************/
+  //*****************************************************************************
   // Cluster blobs using nearest-neighbor distances (median-based threshold).
   inline void NN(const cvl::blobs_t & blobs, std::vector<cvl::blobs_t> & clusters, double factor = 1) {
 
@@ -54,27 +54,27 @@ namespace cvl::clustering {
     cvl::utils::connectedComponentsMedianFirstNN(blobs, clustersIndex, factor, /*minClusterSize=*/0, distanceOp);
 
     clusters.resize(clustersIndex.size());
-    
+
     // per ogni cluster trovato
     for(size_t i=0; i<clustersIndex.size(); ++i) {
-      
+
       // aggiungo al cluster il blob
       for(size_t j=0; j<clustersIndex[i].size(); ++j)
         clusters[i].add(blobs[clustersIndex[i][j]]);
-      
-      // Mi calcolo in baricentro del cluster e rinomino i balob dentro il cluster
+
+      // Mi calcolo il baricentro del cluster e rinomino i blob dentro il cluster
       clusters[i].finalize();
 
     }
-    
+
   }
 
-  //*****************************************************************************/
+  //*****************************************************************************
   // follow
-  //*****************************************************************************/
+  //*****************************************************************************
   // Re-cluster and return the barycenter of the cluster closest to coords.
   inline cv::Point2d follow(cvl::blobs_t & blobs, const cv::Point2d & coords, std::vector<cvl::blobs_t> & clusters, double factor = 1) {
-    
+
     // Clusterizzo
     cvl::clustering::NN(blobs, clusters, factor);
 
@@ -86,29 +86,29 @@ namespace cvl::clustering {
 
     size_t nearIndex = 0;
     double nearDist  = DBL_MAX;
-    
+
     // ciclo su tutti i cluster trovati
     for(size_t i=0; i<clusters.size(); ++i) {
-      
+
       // mi calcolo la distanza tra il cluster vecchio e quelli nuovi
       double dist = cv::norm(coords - clusters[i].baricenter);
-      
-      // mi prendo il piu vicino a quelo vecchio
+
+      // mi prendo il più vicino a quello vecchio
       if(dist < nearDist) {
         nearDist  = dist;
         nearIndex = i;
       }
-      
+
     }
-    
+
     blobs = clusters[nearIndex];
-    
+
     blobs.finalize();
-        
+
     return clusters[nearIndex].baricenter;
-    
+
   }
-  
+
 } /* namespace cvl::clustering */
 
 

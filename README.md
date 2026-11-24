@@ -68,7 +68,7 @@ int main() {
 | `contours` | `cvl::contours` | Internal / external contour extraction, contour scaling |
 | `convert` | `cvl::convert` | 16-bit → 8-bit conversions (several modes) |
 | `corners` | `cvl` | `corners_t` loader for tracked corners |
-| `deflickering` | global | `asDeflickering` temporal deflickering helper |
+| `deflickering` | `cvl` | `deflickering_t`, temporal deflickering helper |
 | `denoising` | `cvl::denoising` | Denoising filters (gaussian, median, morphology, bilateral, starflag, …) |
 | `draw` | `cvl::draw` | Drawing primitives (dashed circle, cross) |
 | `enhance` | `cvl::enhance` | Contrast / gamma / CLAHE / unsharp / histogram equalization |
@@ -77,7 +77,7 @@ int main() {
 | `pose` | `cvl::pose` | Pose / stereo utilities |
 | `subpixel` | `cvl::subpixel` | Sub-pixel corner refinement (old `cv::cornerSubPix` + new ROCHADE-like detector) |
 | `threshold` | `cvl::threshold` | Thresholding utilities (otsu, adaptive, global, median, mode, percentile) |
-| `utils` | `cvl::io`, `cvl::log`, `cvl::utils`, `cvl` | Self-contained helpers: path/file I/O, logging, `loader`, clustering primitives, `itoa`/`decToHex` |
+| `utils` | `cvl::io`, `cvl::log`, `cvl::utils`, `cvl` | Self-contained helpers: path/file I/O, logging, `loader_t`, clustering primitives, `itoa`/`decToHex` |
 | `window` | `cvl` | `window_t`, an OpenCV window wrapper with event hooks |
 
 ## Caveats
@@ -94,7 +94,7 @@ int main() {
 - The optional `mask` of the `threshold::*` functions must be a `CV_8UC1` image of
   the same size as the input (validated, fail-fast); the mask is applied to the
   *output* only and does not affect the computed threshold.
-- `asDeflickering::deflicker()` needs at least `deflickerTime` images and one
+- `deflickering_t::deflicker()` needs at least `deflickerTime` images and one
   `getLocalMean()` per image, in the same order (validated, fail-fast).
 - `blobs_t::save()` writes the blob **maximum** intensity in the last column by
   default; pass `"MIN"` or `"MEAN"` as the last argument for the other two.
@@ -116,6 +116,16 @@ It builds against the working-tree headers (no install needed) and prints
 `ALL <n> CHECKS PASSED` on success, or the failing file/line and aborts with a
 non-zero exit code on a regression. Requires `pkg-config` with an `opencv4`
 package.
+
+Two more targets complete the checks:
+
+```sh
+make test_asan   # same suite under AddressSanitizer + UndefinedBehaviorSanitizer
+make lint        # cppcheck on every header, then clang-tidy (checks in .clang-tidy)
+```
+
+`make lint` needs `cppcheck` and `clang-tidy` (`brew install cppcheck llvm`) and
+treats any finding as an error.
 
 ## Open items
 

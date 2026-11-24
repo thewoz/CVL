@@ -1,0 +1,30 @@
+# clang-tidy configuration for CVL, used by `make lint`.
+#
+# Bug and performance checks only, no style. The checks switched off are the
+# ones that only produce noise on this code base:
+#   reserved-identifier            the header guards (_H_CVL_*) and the _name
+#                                  parameters are the style of the library
+#   narrowing-conversions          double -> int on coordinates and int -> uchar
+#                                  on intensities are intentional (see the
+#                                  -Wconversion policy in TODO.md)
+#   signed-bitwise                 OpenCV flags and bit masks
+#   easily-swappable-parameters    (x, y), (width, height), (alpha, beta), ...
+#   exception-escape,
+#   throwing-static-initialization the library reports errors with abort(), and
+#                                  only an allocation failure can throw
+#   enum-size, no-int-to-ptr       micro-optimizations that do not apply here
+Checks: >
+  -*,
+  clang-analyzer-*,
+  bugprone-*,
+  performance-*,
+  -bugprone-reserved-identifier,
+  -bugprone-narrowing-conversions,
+  -bugprone-signed-bitwise,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-exception-escape,
+  -bugprone-throwing-static-initialization,
+  -performance-enum-size,
+  -performance-no-int-to-ptr
+# the CVL headers only, not the OpenCV ones
+HeaderFilterRegex: '(^|/)include/[A-Za-z]+\.hpp$'

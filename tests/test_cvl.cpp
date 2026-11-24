@@ -19,6 +19,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <filesystem>
 #include <string>
 
 static int checks = 0;
@@ -35,6 +36,13 @@ static std::string g_tmpDir;
 
 static std::string tmpPath(const char * name) {
   return g_tmpDir + "/" + name;
+}
+
+// fopen that stops the suite instead of returning NULL
+static FILE * openFile(const std::string & path, const char * mode) {
+  FILE * f = fopen(path.c_str(), mode);
+  if(f == nullptr) { fprintf(stderr, "FAIL cannot open %s\n", path.c_str()); exit(1); }
+  return f;
 }
 
 //****************************************************************************/
@@ -163,6 +171,12 @@ static void test_convert() {
   auto ab = cvl::convert::from16to8(s16, d8, cvl::convert::UPPER);
   CHECK(std::isinf(ab.first));
   cvl::convert::from16to8(s16, d8, cvl::convert::LOWER);
+  // UPPER / LOWER sono il byte alto / basso esatto (0x01FF = 511 -> 1 e 255, senza arrotondare)
+  cv::Mat one(1, 1, CV_16UC1, cv::Scalar(0x01FF));
+  cvl::convert::from16to8(one, d8, cvl::convert::UPPER);
+  CHECK(d8.type() == CV_8UC1 && d8.at<uchar>(0,0) == 1);
+  cvl::convert::from16to8(one, d8, cvl::convert::LOWER);
+  CHECK(d8.type() == CV_8UC1 && d8.at<uchar>(0,0) == 255);
 }
 
 //****************************************************************************/
@@ -223,13 +237,13 @@ static void test_deflickering() {
     }
     return true;
   };
-  asDeflickering additive;
+  cvl::deflickering_t additive;
   additive.init(3, 3);
   std::vector<cv::Mat> means, out;
   for(auto & f : frames) means.push_back(additive.getLocalMean(f));
   additive.deflicker(frames, means, out);
   CHECK(out.size() == 5 && allEqual(out));
-  asDeflickering multiplicative;
+  cvl::deflickering_t multiplicative;
   multiplicative.init(3, 3, "MULTIPLICATIVE");
   multiplicative.deflicker(frames, means, out);
   CHECK(allEqual(out));
@@ -243,18 +257,18 @@ static void test_deflickering() {
 //****************************************************************************/
 static void test_loaders() {
   {
-    FILE * f = fopen(tmpPath("loader.txt").c_str(), "w");
+    FILE * f = openFile(tmpPath("loader.txt"), "w");
     fprintf(f, "1 2 3\n# comment\n4 5 6\n");
     fclose(f);
     std::vector<std::pair<int,int>> rows;
-    cvl::loader ld;
-    ld(tmpPath("loader.txt"), "1 3", [&rows](const cvl::loader::data & d){ rows.push_back({ d.get<int>(0), d.get<int>(1) }); });
+    cvl::loader_t ld;
+    ld(tmpPath("loader.txt"), "1 3", [&rows](const cvl::loader_t::data_t & d){ rows.push_back({ d.get<int>(0), d.get<int>(1) }); });
     CHECK(rows.size() == 2);
     CHECK(rows[0].first == 1 && rows[0].second == 3);
     CHECK(rows[1].first == 4 && rows[1].second == 6);
   }
   {
-    FILE * f = fopen(tmpPath("corners.txt").c_str(), "w");
+    FILE * f = openFile(tmpPath("corners.txt"), "w");
     fprintf(f, "id 0 z 1.5 2.5\nid 1 z 3.5 4.5\n");
     fclose(f);
     cvl::corners_t crn;
@@ -264,7 +278,7 @@ static void test_loaders() {
     CHECK(crn[1][0] == cv::Point2d(3.5, 4.5));
   }
   {
-    FILE * f = fopen(tmpPath("chess.txt").c_str(), "w");
+    FILE * f = openFile(tmpPath("chess.txt"), "w");
     fprintf(f, "f1 0 0 0 10.0 20.0\nf1 1 0 0 30.0 40.0\nf2 0 0 0 50.0 60.0\n");
     fclose(f);
     cvl::chessboard_t cbt;
@@ -306,7 +320,7 @@ static void test_io() {
   CHECK(cvl::io::subdirName("/c.png") == "");
   // expandPath (FIX-013): normalizza // e /./ e il file resta raggiungibile
   std::string messy = g_tmpDir + "//./expand.txt";
-  FILE * f = fopen((g_tmpDir + "/expand.txt").c_str(), "w");
+  FILE * f = openFile((g_tmpDir + "/expand.txt"), "w");
   fprintf(f, "x\n");
   fclose(f);
   cvl::io::expandPath(messy);
@@ -419,12 +433,12 @@ static void test_blob_draw() {
   two.at<uchar>(2,2) = 10; two.at<uchar>(2,3) = 30;
   cvl::labeling::get(two, cvl::labeling::NEXT_NEAREST_NEIGHBOURS, 1, blobs, two);
   auto savedLine = [&blobs](const char * mode) {
-    FILE * f = fopen(tmpPath("save.txt").c_str(), "w");
+    FILE * f = openFile(tmpPath("save.txt"), "w");
     if(mode == nullptr) blobs.save(f, 1, 7);
     else                blobs.save(f, 1, 7, NULL, mode);
     fclose(f);
     char line[256] = "";
-    f = fopen(tmpPath("save.txt").c_str(), "r");
+    f = openFile(tmpPath("save.txt"), "r");
     if(fgets(line, sizeof(line), f) == nullptr) line[0] = '\0';
     fclose(f);
     return std::string(line);
@@ -472,8 +486,9 @@ int main() {
   test_blob_draw();
 
   // best-effort cleanup of the temp files
-  std::string rm = "rm -rf " + g_tmpDir;
-  if(system(rm.c_str()) != 0) fprintf(stderr, "warning: could not remove %s\n", g_tmpDir.c_str());
+  std::error_code ec;
+  std::filesystem::remove_all(g_tmpDir, ec);
+  if(ec) fprintf(stderr, "warning: could not remove %s\n", g_tmpDir.c_str());
 
   printf("ALL %d CHECKS PASSED\n", checks);
   return 0;

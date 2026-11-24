@@ -29,20 +29,18 @@
 
 #include <vector>
 
-//*****************************************************************************/
-// namespace
-//*****************************************************************************/
+//*****************************************************************************
+// namespace cvl::contours
+//*****************************************************************************
 namespace cvl::contours {
-  
+
   enum { EXTERNAL, INTERNAL };
-  
-  //*****************************************************************************/
+
+  //*****************************************************************************
   // scale
-  //*****************************************************************************/
+  //*****************************************************************************
   // Scale a contour about its centroid by scaleFactor.
   inline void scale(std::vector<cv::Point> & contour, double scaleFactor) {
-    
-    std::vector<cv::Point> scaledContour;
 
     if(contour.empty()) return;
 
@@ -56,12 +54,12 @@ namespace cvl::contours {
       p.x = cvRound(center.x + scaleFactor * (p.x - center.x));
       p.y = cvRound(center.y + scaleFactor * (p.y - center.y));
     }
-    
+
   }
 
- 	//*****************************************************************************/
+  //*****************************************************************************
   // get
-  //*****************************************************************************/
+  //*****************************************************************************
   // Extract external or internal contour pixels from a binary image.
   inline void get(const cv::Mat & image, int mode, std::vector<cv::Point> & contours) {
 
@@ -76,7 +74,7 @@ namespace cvl::contours {
                       "      EXTERNAL, INTERNAL\n");
 
     contours.clear();
-    
+
     if(mode == EXTERNAL){
 
       for(int y=0; y<image.rows; ++y) {
@@ -87,7 +85,7 @@ namespace cvl::contours {
 
         for(int x=0; x<image.cols; ++x) {
 
-          // con !0 faccio l'esterno con ==0 l'interno
+          // EXTERNAL: tengo i pixel di sfondo (== 0) con almeno un vicino del blob
           if(cur[x] != 0) continue;
 
           if(up && up[x] != 0){
@@ -126,7 +124,7 @@ namespace cvl::contours {
 
         for(int x=0; x<image.cols; ++x) {
 
-          // con !0 faccio l'esterno con ==0 l'interno
+          // INTERNAL: tengo i pixel del blob (!= 0) con almeno un vicino di sfondo
           if(cur[x] == 0) continue;
 
           if(up && up[x] == 0){
@@ -154,15 +152,14 @@ namespace cvl::contours {
       }
 
     }
-    
+
 //    for(uint32_t i=0; i<contours.size(); ++i){
 //      contours[i].x -= 1;
 //      contours[i].y -= 1;
 //    }
-    
+
   }
-  
-} /* namespace */
+
+} /* namespace cvl::contours */
 
 #endif /* _H_CVL_CONTOURS_H_ */
-

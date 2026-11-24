@@ -32,14 +32,14 @@ ground-truth data later.
 | `background` (MEDIAN/MODA/AVG/LIGHTEST/DARKEST/NONE/FIXED) | Oracle | per-pixel result of constant frames `{10,20,30,40,50}` |
 | `baricenter::get` (GEOMETRIC, MAX_INTENSITY) | Oracle | single pixel `(5,7)` → `(5.5,7.5)` (+0.5 convention) |
 | `contours::get` | Oracle | filled 3×3 square → 8 internal / 12 external boundary pixels |
-| `convert::from16to8` (LINEAR_MINMAX) | Oracle | min→0, max→255; UPPER returns `(INF,INF)` |
+| `convert::from16to8` (LINEAR_MINMAX, UPPER, LOWER) | Oracle | min→0, max→255; UPPER returns `(INF,INF)`; `0x01FF` → exact high byte `1` (UPPER) and low byte `255` (LOWER) |
 | `clustering::NN` | Oracle | 4 points in two far-apart pairs → 2 clusters of 2 |
 | `colors` (`RGBtoHex`, `BGRtoHex`, `getRGBHex`, `get`), `utils::decToHex` | Oracle | `RGBtoHex(255,0,0)=="#FF0000"`, `get("red")==(0,0,255)` BGR, `decToHex(0)=="00"`; **regression: `getRGBHex("red")=="#FF0000"`** (before the fix the BGR palette went through `RGBtoHex` and came out with R/B swapped) |
 | `utils::median` | Oracle | `{3,1,2}→2`, `{4,1,3,2}→2.5` |
 | `io::basename/subdirName/isToSkip` | Oracle | exact string / bool results; **regression: `subdirName("a/b.png")=="a"`** (top-level relative dirs used to return `""`) |
 | `io::expandPath` | Property | a path with `//` and `/./` inside the temp dir is normalized and the file stays reachable via `fopen` |
 | `opencv`: `minEnclosureRoi`, `shrinkLine`, `scaleLine`, `getTopRightPoint`, `histogram8bit/16bit` | Oracle | union rect; endpoint math; **`scaleLine` guards the int-midpoint fix**; exact histogram bins and 16-bit min/max |
-| `loader`, `corners_t`, `chessboard_t` | Oracle | text files with known columns → exact parsed values, frame grouping |
+| `loader_t`, `corners_t`, `chessboard_t` | Oracle | text files with known columns → exact parsed values, frame grouping |
 | `blob_t::draw*` | Oracle (property) | `drawMask` sets exactly `size()` pixels; `blobs_t::getBaricenters` returns one point |
 | `threshold::get` (all 6 algos) | Property | output has size/type of input and is strictly binary (0/255) |
 | `blobsplitting::get` (TO_WHITE, watershed, FIXED) | Property | a bridged double-square splits into 2 non-empty blobs |
@@ -89,10 +89,14 @@ synthesize in-process:
 The suite runs clean under AddressSanitizer + UndefinedBehaviorSanitizer:
 
 ```sh
-c++ -std=c++17 -g -O1 -fno-omit-frame-pointer -fsanitize=address,undefined \
-    -D_DEBUG_CVL_LIBS_ $(pkg-config --cflags opencv4) -Iinclude \
-    tests/test_cvl.cpp -o tests/test_cvl_san $(pkg-config --libs opencv4)
-OPENCV_OPENCL_RUNTIME=disabled ASAN_OPTIONS=detect_leaks=0 ./tests/test_cvl_san
+make test_asan
+```
+
+Static analysis (cppcheck on every header, then clang-tidy with the checks of
+`.clang-tidy`) also runs clean, and any finding is an error:
+
+```sh
+make lint
 ```
 
 Note on OpenCL: on macOS the Apple Intel GPU OpenCL driver crashes

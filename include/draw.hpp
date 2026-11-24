@@ -29,50 +29,51 @@
 
 #include <vector>
 
-//****************************************************************************/
-// namespace
-//****************************************************************************/
+//*****************************************************************************
+// namespace cvl::draw
+//*****************************************************************************
 namespace cvl::draw {
 
-  //****************************************************************************/
-  // dashedCircle() - ChatGPT
-  //****************************************************************************/
-  // Draw a dashed circle on a 3-channel image.
+  //*****************************************************************************
+  // dashedCircle
+  //*****************************************************************************
+  // Draw a dashed circle on a 3-channel image
+  // (codice di partenza generato con ChatGPT).
   inline void dashedCircle(cv::Mat & image, cv::Point center, int radius, int dashWidth, int dashSpacing, const cv::Scalar & color, int thickness = 1) {
-    
+
     if(image.type() != CV_8UC3) {
       cvl::log::error("cvl::draw::dashedCircle() error: the destination image must be CV_8UC3\n");
     }
-    
+
     if(radius <= 0 || (dashWidth + dashSpacing) <= 0) return;
-    
+
     const double PI = 3.14159265358979323846;
     double circumference = 2 * PI * radius;
     int numSegments = (int)(circumference / (dashWidth + dashSpacing));
-    
+
     if(numSegments < 1) return;
-    
+
     double angleStep = 2 * PI / numSegments;
     double dashAngle = angleStep * dashWidth / (dashWidth + dashSpacing);
-    
+
     for (int i = 0; i < numSegments; ++i) {
-      
+
       double theta1 = i * angleStep;
       double theta2 = theta1 + dashAngle;
-      
+
       cv::Point pt1(center.x + radius * cos(theta1), center.y + radius * sin(theta1));
       cv::Point pt2(center.x + radius * cos(theta2), center.y + radius * sin(theta2));
-      
+
       cv::line(image, pt1, pt2, color, thickness, cv::LINE_AA);
-      
+
     }
-    
+
   }
-    
-    
-  //****************************************************************************/
-  // cross()
-  //****************************************************************************/
+
+
+  //*****************************************************************************
+  // cross
+  //*****************************************************************************
   // Draw a diagonal cross centered at the provided point.
   template <class T>
   inline void cross(cv::Mat & image, const cv::Point_<T> & center, int length, const cv::Scalar & color, int thickness = 1) {
@@ -85,7 +86,7 @@ namespace cvl::draw {
     cv::line(image, cv::Point(center.x+length, center.y-length), cv::Point(center.x-length, center.y+length), color, thickness);
 
   }
-  
-} /* namespace */
+
+} /* namespace cvl::draw */
 
 #endif /* _H_CVL_DRAW_H_ */

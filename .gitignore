@@ -47,3 +47,5 @@ Vallado/C++/Vallado.xcodeproj/xcuserdata/*
 
 # Test binary
 /tests/test_cvl
+/tests/test_cvl_asan
+/tests/test_cvl_asan.dSYM

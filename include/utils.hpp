@@ -56,14 +56,16 @@
 // external MPL library, so that CVL has no dependency on it.
 namespace cvl {
 
-  //***************************************************************************
-  // namespace log - minimal logging used across CVL
-  //***************************************************************************
+  //*****************************************************************************
+  // namespace log
+  //*****************************************************************************
+  // Minimal logging used across CVL.
   namespace log {
 
-    //*************************************************************************
-    // warning - print a message to stderr
-    //*************************************************************************
+    //*****************************************************************************
+    // warning
+    //*****************************************************************************
+    // Print a message to stderr.
     inline void warning(const char * format, ...) {
 
       va_list ap;
@@ -75,9 +77,10 @@ namespace cvl {
 
     }
 
-    //*************************************************************************
-    // error - print a message to stderr and abort the program
-    //*************************************************************************
+    //*****************************************************************************
+    // error
+    //*****************************************************************************
+    // Print a message to stderr and abort the program.
     inline void error(const char * format, ...) {
 
       va_list ap;
@@ -91,19 +94,24 @@ namespace cvl {
 
     }
 
-  } // namespace log
+  } /* namespace log */
 
 
-  //***************************************************************************
-  // namespace io - path and file helpers
-  //***************************************************************************
+  //*****************************************************************************
+  // namespace io
+  //*****************************************************************************
+  // Path and file helpers.
   namespace io {
 
-    namespace util {
+    //*****************************************************************************
+    // namespace utils
+    //*****************************************************************************
+    namespace utils {
 
-      //***********************************************************************
-      // resolveBasicPath - expand ~, relative and absolute paths
-      //***********************************************************************
+      //*****************************************************************************
+      // resolveBasicPath
+      //*****************************************************************************
+      // Expand ~, relative and absolute paths.
       inline std::string resolveBasicPath(const char * srcPath) {
 
         // absolute path
@@ -138,9 +146,10 @@ namespace cvl {
 
       }
 
-      //***********************************************************************
-      // skipWhite - first non-whitespace char, or nullptr if none
-      //***********************************************************************
+      //*****************************************************************************
+      // skipWhite
+      //*****************************************************************************
+      // First non-whitespace char, or nullptr if none.
       inline const char * skipWhite(const std::string & line) {
 
         for(size_t i=0; i<line.length(); ++i)
@@ -150,16 +159,17 @@ namespace cvl {
 
       }
 
-    } // namespace util
+    } /* namespace utils */
 
-    //*************************************************************************
-    // expandPath - in place
-    //*************************************************************************
+    //*****************************************************************************
+    // expandPath
+    //*****************************************************************************
+    // Expand and normalize a path in place.
     inline void expandPath(std::string & path) {
 
       namespace fs = std::filesystem;
 
-      std::string resolved = util::resolveBasicPath(path.c_str());
+      std::string resolved = utils::resolveBasicPath(path.c_str());
 
       // canonicalizza risolvendo i symlink sul prefisso esistente; se fallisce
       // (es. permessi) ripiega sulla normalizzazione puramente lessicale
@@ -174,9 +184,10 @@ namespace cvl {
 
     }
 
-    //*************************************************************************
+    //*****************************************************************************
     // expandPath
-    //*************************************************************************
+    //*****************************************************************************
+    // Expand a path into a caller buffer of at least PATH_MAX bytes.
     inline void expandPath(const char * srcPath, char * destPath) {
 
       // destPath è un buffer del chiamante grande almeno PATH_MAX:
@@ -188,13 +199,14 @@ namespace cvl {
       if(path.size() >= PATH_MAX)
         cvl::log::error("cvl::io::expandPath() error: the path is longer than PATH_MAX (%d)\n", PATH_MAX);
 
-      strcpy(destPath, path.c_str());
+      memcpy(destPath, path.c_str(), path.size() + 1);
 
     }
 
-    //*************************************************************************
+    //*****************************************************************************
     // basename
-    //*************************************************************************
+    //*****************************************************************************
+    // Return the file name without the directory part.
     inline std::string basename(const std::string & filename) {
 
       const char * p = strrchr(filename.c_str(), '/');
@@ -204,9 +216,10 @@ namespace cvl {
 
     }
 
-    //*************************************************************************
-    // subdirName - name of the directory containing the file
-    //*************************************************************************
+    //*****************************************************************************
+    // subdirName
+    //*****************************************************************************
+    // Name of the directory containing the file.
     inline std::string subdirName(const std::string & filePath) {
 
       size_t slash = filePath.find_last_of('/');
@@ -224,12 +237,13 @@ namespace cvl {
 
     }
 
-    //*************************************************************************
-    // isToSkip - true for empty, whitespace-only or comment (#) lines
-    //*************************************************************************
+    //*****************************************************************************
+    // isToSkip
+    //*****************************************************************************
+    // True for empty, whitespace-only or comment (#) lines.
     inline bool isToSkip(const std::string & line) {
 
-      const char * ptr = util::skipWhite(line);
+      const char * ptr = utils::skipWhite(line);
 
       // empty or whitespace-only line
       if(ptr == nullptr) return true;
@@ -241,9 +255,10 @@ namespace cvl {
 
     }
 
-    //*************************************************************************
+    //*****************************************************************************
     // open
-    //*************************************************************************
+    //*****************************************************************************
+    // Open a file after expanding its path, aborting on failure.
     inline FILE * open(const char * filepath, const char * mode) {
 
       char absolutePath[PATH_MAX];
@@ -260,63 +275,66 @@ namespace cvl {
 
     }
 
-    //*************************************************************************
+    //*****************************************************************************
     // open
-    //*************************************************************************
+    //*****************************************************************************
+    // Overload taking std::string arguments.
     inline FILE * open(const std::string & filepath, const std::string & mode) {
       return open(filepath.c_str(), mode.c_str());
     }
 
-    //*************************************************************************
+    //*****************************************************************************
     // close
-    //*************************************************************************
+    //*****************************************************************************
+    // Close a file opened with open(), ignoring NULL.
     inline void close(FILE * file) {
       if(file != NULL) fclose(file);
     }
 
-  } // namespace io
+  } /* namespace io */
 
 
 
 
-  //***************************************************************************
-  // class loader - read selected columns from a text file
-  //***************************************************************************
-  class loader {
+  //*****************************************************************************
+  // class loader_t
+  //*****************************************************************************
+  // Read selected columns from a text file.
+  class loader_t {
 
   public:
 
-    //*************************************************************************
-    // data - the values read from a single line
-    //*************************************************************************
-    class data {
-
-    private:
-
-      std::vector<std::string> arguments;
+    //*****************************************************************************
+    // class data_t
+    //*****************************************************************************
+    // The values read from a single line.
+    class data_t {
 
     public:
 
       std::string line;
 
-      //***********************************************************************
+      //*****************************************************************************
       // add
-      //***********************************************************************
-      void add(std::string argument) { arguments.push_back(argument); }
+      //*****************************************************************************
+      // Append a value.
+      void add(const std::string & argument) { arguments.push_back(argument); }
 
-      //***********************************************************************
+      //*****************************************************************************
       // size
-      //***********************************************************************
+      //*****************************************************************************
+      // Return the number of values.
       size_t size() const { return arguments.size(); }
 
-      //***********************************************************************
+      //*****************************************************************************
       // get
-      //***********************************************************************
+      //*****************************************************************************
+      // Return the value at index converted to T.
       template <typename T>
       T get(size_t index) const {
 
         if(index >= arguments.size()) {
-          cvl::log::error("cvl::loader::data::get() error: argument %zu does not exist\n", index);
+          cvl::log::error("cvl::loader_t::data_t::get() error: argument %zu does not exist\n", index);
         }
 
         std::stringstream iss(arguments[index]);
@@ -329,38 +347,19 @@ namespace cvl {
 
       }
 
-    }; /* class data */
+    private:
 
-  private:
+      std::vector<std::string> arguments;
 
-    //*************************************************************************
-    // getColsToRead
-    //*************************************************************************
-    void getColsToRead(const std::string & colsFormat, std::vector<int> & columns) {
+    }; /* class data_t */
 
-      std::stringstream iss(colsFormat);
-
-      int value;
-
-      while(iss >> value) {
-        columns.push_back(value-1);
-      }
-
-    }
-
-  public:
-
-    //*************************************************************************
-    // loader
-    //*************************************************************************
-    loader() {};
-
-    //*************************************************************************
+    //*****************************************************************************
     // operator ()
-    //*************************************************************************
-    void operator () (const std::string & inputFile, const std::string & columnsToRead, std::function<void(const loader::data & arguments)> fillerFun = nullptr) {
+    //*****************************************************************************
+    // Read the file and call fillerFun on every data line.
+    void operator () (const std::string & inputFile, const std::string & columnsToRead, std::function<void(const loader_t::data_t & arguments)> fillerFun = nullptr) {
 
-      if(!fillerFun) fillerFun = [this](const loader::data & arguments) { filler(arguments); };
+      if(!fillerFun) fillerFun = [this](const loader_t::data_t & arguments) { filler(arguments); };
 
       std::vector<int> columns;
 
@@ -368,18 +367,18 @@ namespace cvl {
 
       // senza questo check una lista vuota manda columns[colIndex] out-of-bounds
       if(columns.empty()) {
-        cvl::log::error("cvl::loader error: no columns to read in '%s'\n", columnsToRead.c_str());
+        cvl::log::error("cvl::loader_t::operator() error: no columns to read in '%s'\n", columnsToRead.c_str());
       }
 
       // il parser legge i token in un solo passaggio: le colonne devono
       // essere valide (>= 1) e in ordine strettamente crescente
       if(columns[0] < 0) {
-        cvl::log::error("cvl::loader error: column indices must be >= 1 ('%s')\n", columnsToRead.c_str());
+        cvl::log::error("cvl::loader_t::operator() error: column indices must be >= 1 ('%s')\n", columnsToRead.c_str());
       }
 
       for(size_t i=1; i<columns.size(); ++i) {
         if(columns[i] <= columns[i-1]) {
-          cvl::log::error("cvl::loader error: the column list must be strictly increasing ('%s')\n", columnsToRead.c_str());
+          cvl::log::error("cvl::loader_t::operator() error: the column list must be strictly increasing ('%s')\n", columnsToRead.c_str());
         }
       }
 
@@ -396,7 +395,7 @@ namespace cvl {
         int read     = 0;
         int colIndex = 0;
 
-        loader::data arguments;
+        loader_t::data_t arguments;
 
         arguments.line = line;
 
@@ -407,6 +406,8 @@ namespace cvl {
 
         do {
 
+          // arg è grande quanto line (LINE_MAX): un token non può superarlo
+          // cppcheck-suppress invalidscanf
           status = sscanf(data, "%s%n", arg, &offset);
 
           // no more tokens on this line: stop without touching stale data
@@ -426,7 +427,7 @@ namespace cvl {
         } while(status != EOF);
 
         // ogni colonna richiesta deve essere stata letta davvero
-        if(arguments.size() != columns.size()) { cvl::log::error("cvl::loader error: wrong number of columns in '%s'\n", inputFile.c_str()); }
+        if(arguments.size() != columns.size()) { cvl::log::error("cvl::loader_t::operator() error: wrong number of columns in '%s'\n", inputFile.c_str()); }
 
         fillerFun(arguments);
 
@@ -436,39 +437,61 @@ namespace cvl {
 
     }
 
-    //*************************************************************************
-    // operator () - bind a member function of a container by reference
-    //*************************************************************************
+    //*****************************************************************************
+    // operator ()
+    //*****************************************************************************
+    // Bind a member function of a container by reference.
     template <typename T>
-    inline void operator () (const std::string & inputFile, const std::string & columnsToRead, T & container, void(T::*fillerFun)(const loader::data & arguments)) {
-      (*this)(inputFile, columnsToRead, [&container, fillerFun](const loader::data & arguments) { (container.*fillerFun)(arguments); });
+    void operator () (const std::string & inputFile, const std::string & columnsToRead, T & container, void(T::*fillerFun)(const loader_t::data_t & arguments)) {
+      (*this)(inputFile, columnsToRead, [&container, fillerFun](const loader_t::data_t & arguments) { (container.*fillerFun)(arguments); });
     }
 
-    //*************************************************************************
-    // operator () - bind a member function of a container by pointer
-    //*************************************************************************
+    //*****************************************************************************
+    // operator ()
+    //*****************************************************************************
+    // Bind a member function of a container by pointer.
     template <typename T>
-    inline void operator () (const std::string & inputFile, const std::string & columnsToRead, T * container, void(T::*fillerFun)(const loader::data & arguments)) {
-      (*this)(inputFile, columnsToRead, [container, fillerFun](const loader::data & arguments) { (container->*fillerFun)(arguments); });
+    void operator () (const std::string & inputFile, const std::string & columnsToRead, T * container, void(T::*fillerFun)(const loader_t::data_t & arguments)) {
+      (*this)(inputFile, columnsToRead, [container, fillerFun](const loader_t::data_t & arguments) { (container->*fillerFun)(arguments); });
     }
 
   protected:
 
-    //*************************************************************************
+    //*****************************************************************************
     // filler
-    //*************************************************************************
-    virtual void filler(const loader::data & /* arguments */) { };
+    //*****************************************************************************
+    // Default callback, does nothing: override it in derived classes.
+    virtual void filler(const loader_t::data_t & /* arguments */) { }
 
-  }; /* class loader */
+  private:
 
-  //*************************************************************************
-  // data::get - specialization returning the raw string
-  //*************************************************************************
+    //*****************************************************************************
+    // getColsToRead
+    //*****************************************************************************
+    // Parse the 1-based column list into 0-based indices.
+    static void getColsToRead(const std::string & colsFormat, std::vector<int> & columns) {
+
+      std::stringstream iss(colsFormat);
+
+      int value;
+
+      while(iss >> value) {
+        columns.push_back(value-1);
+      }
+
+    }
+
+  }; /* class loader_t */
+
+  //*****************************************************************************
+  // data_t::get
+  //*****************************************************************************
+  // Specialization returning the raw string.
   template <>
-  inline std::string loader::data::get(size_t index) const {
+  inline std::string loader_t::data_t::get(size_t index) const {
 
     if(index >= arguments.size()) {
-      cvl::log::error("cvl::loader::data::get() error: argument %zu does not exist\n", index);
+      cvl::log::error("cvl::loader_t::data_t::get() error: argument %zu does not exist\n", index);
     }
 
     return arguments[index];
@@ -476,14 +499,16 @@ namespace cvl {
   }
 
 
-  //***************************************************************************
-  // namespace utils - numeric / string / clustering helpers
-  //***************************************************************************
+  //*****************************************************************************
+  // namespace utils
+  //*****************************************************************************
+  // Numeric / string / clustering helpers.
   namespace utils {
 
-    //*************************************************************************
-    // rng - shared, seeded pseudo-random generator
-    //*************************************************************************
+    //*****************************************************************************
+    // rng
+    //*****************************************************************************
+    // Shared, seeded pseudo-random generator.
     // Single Mersenne-Twister engine seeded once from std::random_device,
     // shared by every random helper in the library (colors::getRandom,
     // getRandomColor, ...) so there is one generator instead of several
@@ -493,9 +518,10 @@ namespace cvl {
       return engine;
     }
 
-    //*************************************************************************
+    //*****************************************************************************
     // median
-    //*************************************************************************
+    //*****************************************************************************
+    // Median of a container, optionally with the standard deviation around it.
     template <typename T>
     double median(const T & _set, double * stddev = NULL) {
 
@@ -545,14 +571,16 @@ namespace cvl {
 
     }
 
-    //*************************************************************************
+    //*****************************************************************************
     // defaultDistanceOp
-    //*************************************************************************
+    //*****************************************************************************
+    // Euclidean norm of the difference.
     constexpr auto defaultDistanceOp = [](auto const & a, auto const & b) { return cv::norm(a - b); };
 
-    //*************************************************************************
-    // medianFirstNNDistance - median of the first nearest-neighbor distances
-    //*************************************************************************
+    //*****************************************************************************
+    // medianFirstNNDistance
+    //*****************************************************************************
+    // Median of the first nearest-neighbor distances.
     template <typename T, typename Op = decltype(defaultDistanceOp)>
     double medianFirstNNDistance(const T & data, Op op = defaultDistanceOp) {
 
@@ -575,9 +603,10 @@ namespace cvl {
 
     }
 
-    //*************************************************************************
-    // connectedComponents - cluster by distance threshold
-    //*************************************************************************
+    //*****************************************************************************
+    // connectedComponents
+    //*****************************************************************************
+    // Cluster by distance threshold.
     template <typename T, typename Op = decltype(defaultDistanceOp)>
     void connectedComponents(const T & data, double maxDist, std::vector<std::vector<std::size_t>> & clusters, int minClusterSize = 0, Op op = defaultDistanceOp) {
 
@@ -626,10 +655,10 @@ namespace cvl {
 
     }
 
-    //*************************************************************************
+    //*****************************************************************************
     // connectedComponentsMedianFirstNN
-    //   cluster using the median first nearest-neighbor distance as threshold
-    //*************************************************************************
+    //*****************************************************************************
+    // Cluster using the median first nearest-neighbor distance as threshold.
     template <typename T, typename Op = decltype(defaultDistanceOp)>
     void connectedComponentsMedianFirstNN(const T & data, std::vector<std::vector<std::size_t>> & clusters, double factor = 1.0, int minClusterSize = 0, Op op = defaultDistanceOp) {
 
@@ -641,9 +670,10 @@ namespace cvl {
 
     }
 
-    //*************************************************************************
-    // itoa - integer to ascii
-    //*************************************************************************
+    //*****************************************************************************
+    // itoa
+    //*****************************************************************************
+    // Integer to ascii.
     inline char * itoa(int value, char * result, int base = 10) {
 
       // check that the base is valid
@@ -676,9 +706,10 @@ namespace cvl {
 
     }
 
-    //*************************************************************************
-    // decToHex - convert a decimal value (0-255) to a two-digit hex string
-    //*************************************************************************
+    //*****************************************************************************
+    // decToHex
+    //*****************************************************************************
+    // Convert a decimal value (0-255) to a two-digit hex string.
     inline std::string decToHex(int n) {
 
       if(n < 0 || n > 255) {
@@ -720,7 +751,7 @@ namespace cvl {
 
     }
 
-  } // namespace utils
+  } /* namespace utils */
 
 } /* namespace cvl */
 
