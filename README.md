@@ -20,6 +20,10 @@ in grayscale frames:
 Everything lives in the `cvl` namespace and is reached through one header,
 `<cvl/cvl.hpp>`.
 
+Unless stated otherwise, the functions work on single-channel 8-bit (`CV_8UC1`)
+images; color or 16-bit inputs are accepted only where documented (`convert`,
+`histogram16bit`, `open16bitC1`, `background::lightest/darkest/avg`, …).
+
 ---
 
 ## Install
@@ -33,11 +37,8 @@ make install
 `make install` links `include/` to `/usr/local/include/cvl`, so that the headers
 can be included as `<cvl/...>`. Nothing is compiled: CVL is header-only.
 
-| Dependency | Used for |
-|:-----------|:---------|
-| C++17 compiler with `std::filesystem` | the library itself |
-| [OpenCV 4](https://opencv.org) | images and every algorithm (`brew install opencv` / `sudo apt install libopencv-dev`) |
-| `pkg-config` | lets the Makefile find OpenCV |
+The only dependency is [OpenCV 4](https://opencv.org)
+(`brew install opencv` / `sudo apt install libopencv-dev`).
 
 To use CVL in your own program, add the OpenCV flags to your build:
 
@@ -148,31 +149,6 @@ make example
 Most modules have a `get()` function that picks the algorithm by name
 (`"OTSU"`, `"GAUSSIAN"`, `"MEDIAN"`, …) and lists the valid names when the one
 given is unknown.
-
----
-
-## Good to know
-
-- Unless stated otherwise, functions assume single-channel 8-bit (`CV_8UC1`) images;
-  color or 16-bit inputs are only supported where explicitly documented
-  (`convert`, `histogram16bit`, `open16bitC1`, `background::lightest/darkest/avg`, …).
-- Error handling is fail-fast: `cvl::log::error()` prints to `stderr` and calls
-  `abort()`. The library does not throw recoverable exceptions.
-- The library is **not thread-safe** (lazy-initialized color palette, global
-  detector parameters in `subpixel`, shared window registry in `window_t`).
-- Barycenters follow a pixel-center convention: the `baricenter::*` functions add
-  **+0.5** to the averaged integer pixel coordinates.
-- The optional `mask` of the `threshold::*` functions must be a `CV_8UC1` image of
-  the same size as the input (validated, fail-fast); the mask is applied to the
-  *output* only and does not affect the computed threshold.
-- `deflickering_t::deflicker()` needs at least `deflickerTime` images and one
-  `getLocalMean()` per image, in the same order (validated, fail-fast).
-- `blobs_t::save()` writes the blob **maximum** intensity in the last column by
-  default; pass `"MIN"` or `"MEAN"` as the last argument for the other two.
-- `corners_t` rejects frame indices outside `[0, corners_t::MAX_FRAME_INDEX]`
-  (10000) as corrupted input files.
-- All the color palette values (`cvl::red`, `colors::get`, ...) are **BGR**;
-  `colors::getRGBHex()` converts them to `#RRGGBB` hex strings.
 
 ---
 

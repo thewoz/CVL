@@ -27,6 +27,10 @@ tenuti di proposito fuori dal README.
     controllo del tipo in `starflag`, limite sul frame in `corners_t`,
     validazione del modo in `contours::get`.
 
+- **Rendere la libreria thread-safe.** Oggi non lo è per tre stati condivisi:
+  la palette dei colori inizializzata al primo uso (`colors`), i parametri
+  globali del detector in `subpixel` e il registro delle finestre di `window_t`.
+
 ## Bassa
 
 - **Policy `-Wconversion` (decisione presa, da non riaprire senza motivo).**
