@@ -24,6 +24,9 @@ Unless stated otherwise, the functions work on single-channel 8-bit (`CV_8UC1`)
 images; color or 16-bit inputs are accepted only where documented (`convert`,
 `histogram16bit`, `open16bitC1`, `background::lightest/darkest/avg`, …).
 
+Errors are fail-fast: on a wrong argument or an unreadable file the library
+prints a message to `stderr` and calls `abort()`. It does not throw exceptions.
+
 ---
 
 ## Install
@@ -152,9 +155,10 @@ given is unknown.
 
 ---
 
-## TODO, known issues and license
+## TODO, changelog and license
 
-Open work and pending decisions are in [TODO.md](TODO.md) (in Italian).
+Open work and pending decisions are in [TODO.md](TODO.md) (in Italian); the
+changes of each release are in [CHANGELOG.md](CHANGELOG.md).
 
 CVL is licensed under the **GNU General Public License v3.0**, see
 [LICENSE](LICENSE).
