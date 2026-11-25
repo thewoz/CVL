@@ -26,5 +26,6 @@ Checks: >
   -bugprone-throwing-static-initialization,
   -performance-enum-size,
   -performance-no-int-to-ptr
-# the CVL headers only, not the OpenCV ones
-HeaderFilterRegex: '(^|/)include/[A-Za-z]+\.hpp$'
+# the CVL headers only (reached locally or through the installed cvl/ link),
+# not the OpenCV ones
+HeaderFilterRegex: '(^|/)(include|cvl)/[A-Za-z]+\.hpp$'

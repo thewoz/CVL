@@ -1,65 +1,130 @@
 # CVL
 
-CVL is a header-only **C**omputer **V**ision **L**ibrary built on top of OpenCV.
-It provides convenience wrappers and small algorithms for common CV tasks such as
-background modeling, thresholding, connected-component labeling, blob processing
-and splitting, denoising, image enhancement, sub-pixel corner refinement and
-drawing utilities.
+**CVL** is a header-only C++17 **C**omputer **V**ision **L**ibrary built on top
+of OpenCV 4, for macOS and Linux.
 
-## Requirements
+It collects the small algorithms and convenience wrappers that image-analysis
+programs keep rewriting, mostly for finding and measuring bright or dark objects
+in grayscale frames:
 
-A **C++17** compiler with `std::filesystem` support and the library **OpenCV 4**
+- background estimation over a window of frames, and temporal deflickering
+- denoising and contrast / gamma / CLAHE enhancement
+- thresholding (Otsu, adaptive, global, median, mode, percentile)
+- connected-component labeling into blobs, with per-blob statistics
+- splitting of touching blobs (iterative thresholding, erosion, watershed)
+- barycenters, contours and nearest-neighbor clustering of blobs
+- 16-bit to 8-bit conversion
+- chessboard detection, sub-pixel corner refinement and stereo pose helpers
+- drawing helpers, a named color palette and an OpenCV window wrapper
 
+Everything lives in the `cvl` namespace and is reached through one header,
+`<cvl/cvl.hpp>`.
 
-## Installation
+---
 
-CVL is header-only. Either add the `include/` directory to your include path, or use
-the provided `Makefile`, which symlinks `include/` to `/usr/local/include/cvl`:
+## Install
 
-```sh
-make install     # creates /usr/local/include/cvl -> ./include
-make uninstall   # removes the symlink
+```bash
+git clone https://github.com/thewoz/CVL.git
+cd CVL
+make install
 ```
 
-## Usage
+`make install` links `include/` to `/usr/local/include/cvl`, so that the headers
+can be included as `<cvl/...>`. Nothing is compiled: CVL is header-only.
 
-Include the umbrella header to access all modules (everything lives under the `cvl` namespace):
+| Dependency | Used for |
+|:-----------|:---------|
+| C++17 compiler with `std::filesystem` | the library itself |
+| [OpenCV 4](https://opencv.org) | images and every algorithm (`brew install opencv` / `sudo apt install libopencv-dev`) |
+| `pkg-config` | lets the Makefile find OpenCV |
 
-```cpp
-#include <cvl/cvl.hpp>
+To use CVL in your own program, add the OpenCV flags to your build:
+
+```bash
+c++ -std=c++17 my_program.cpp -o my_program $(pkg-config --cflags --libs opencv4)
 ```
 
-By default the headers are included as `<cvl/...>`. 
-If you define `_DEBUG_CVL_LIBS_` before including `cvl.hpp`, they are included with local quotes (`"..."`) instead, which is handy when working on the library itself.
+> Without `make install`, add `include/` to your include path and define
+> `_DEBUG_CVL_LIBS_` before including `cvl.hpp`: the headers then include each
+> other with local quotes (`"..."`) instead of `<cvl/...>`.
 
-### Minimal example
+---
+
+## Build and test
+
+| Command | What it does |
+|:--------|:-------------|
+| `make install` / `make uninstall` | create / remove the `/usr/local/include/cvl` link |
+| `make example` | build the example to `~/bin/cvl` |
+| `make test` | build and run the test suite |
+| `make test_asan` | the same suite under AddressSanitizer + UBSan |
+| `make lint` | static analysis with `cppcheck` and `clang-tidy` (`brew install cppcheck llvm`) |
+
+The test suite ([tests/test_cvl.cpp](tests/test_cvl.cpp)) builds against the
+working-tree headers, creates its own synthetic inputs and prints
+`ALL <n> CHECKS PASSED` on success. What each check covers, and what is not
+tested, is described in [tests/README.md](tests/README.md).
+
+---
+
+## Example
+
+A minimal program: find the bright objects of an image and outline them.
 
 ```cpp
 #include <cvl/cvl.hpp>
 
 int main() {
+
   cv::Mat image = cvl::open("image.png", cv::IMREAD_GRAYSCALE);
 
-  cv::Mat thresholded;
-  cvl::threshold::get(image, thresholded, "OTSU", 0, 0, 0);
+  // The filters work in place: keep the original image for the measurements.
+  cv::Mat work = image.clone();
+  cvl::denoising::get(work, "GAUSSIAN", 5);
 
+  // Otsu picks the threshold by itself.
+  cv::Mat binary;
+  cvl::threshold::get(work, binary, "OTSU", 0, 0, 0);
+
+  // Connected components of at least 20 pixels become blobs.
   cvl::blobs_t blobs;
-  cvl::labeling::get(thresholded, cvl::labeling::NEXT_NEAREST_NEIGHBOURS, /*minClusterMass=*/5, blobs, image);
+  cvl::labeling::get(binary, cvl::labeling::NEXT_NEAREST_NEIGHBOURS, 20, blobs, image);
 
-  cv::Mat out(image.size(), CV_8UC1, cv::Scalar::all(0));
-  blobs.drawMask(out);
+  for(size_t i=0; i<blobs.size(); ++i)
+    printf("%d %.2f %.2f %zu\n", blobs[i].label, blobs[i].baricenter.x, blobs[i].baricenter.y, blobs[i].size());
 
-  cvl::save(out, "out.png");
+  cv::Mat result;
+  cv::cvtColor(image, result, cv::COLOR_GRAY2BGR);
+  blobs.drawContours(result, cvl::lime);
+
+  cvl::save(result, "result.png");
+
   return 0;
+
 }
 ```
+
+The full example, [`src/main.cpp`](src/main.cpp), needs no input data: it draws
+a synthetic frame, runs the same pipeline, splits the spots that touch and
+labels every object. Its output, with the frame on the left and the result on
+the right:
+
+![The output of the full example](docs/example.png)
+
+```bash
+make example
+~/bin/cvl result.png
+```
+
+---
 
 ## Modules
 
 | Header | Namespace | Purpose |
-| --- | --- | --- |
+|:-------|:----------|:--------|
 | `background` | `cvl::background` | Background estimation (lightest, darkest, median, mode, average, bucket, fixed) |
-| `baricenter` | `cvl::baricenter` | Baricenter computations (geometric / intensity weighted) |
+| `baricenter` | `cvl::baricenter` | Barycenter computations (geometric / intensity weighted) |
 | `blob` / `blobs` | `cvl` | `blob_t` / `blobs_t` data structures and drawing helpers |
 | `blobSplitting` | `cvl::blobsplitting` | Blob splitting via iterative thresholding + watershed |
 | `chessboard` | `cvl::chessboard`, `cvl` | Checkerboard / circle-grid detection and `chessboard_t` |
@@ -80,7 +145,13 @@ int main() {
 | `utils` | `cvl::io`, `cvl::log`, `cvl::utils`, `cvl` | Self-contained helpers: path/file I/O, logging, `loader_t`, clustering primitives, `itoa`/`decToHex` |
 | `window` | `cvl` | `window_t`, an OpenCV window wrapper with event hooks |
 
-## Caveats
+Most modules have a `get()` function that picks the algorithm by name
+(`"OTSU"`, `"GAUSSIAN"`, `"MEDIAN"`, …) and lists the valid names when the one
+given is unknown.
+
+---
+
+## Good to know
 
 - Unless stated otherwise, functions assume single-channel 8-bit (`CV_8UC1`) images;
   color or 16-bit inputs are only supported where explicitly documented
@@ -89,7 +160,7 @@ int main() {
   `abort()`. The library does not throw recoverable exceptions.
 - The library is **not thread-safe** (lazy-initialized color palette, global
   detector parameters in `subpixel`, shared window registry in `window_t`).
-- Baricenters follow a pixel-center convention: the `baricenter::*` functions add
+- Barycenters follow a pixel-center convention: the `baricenter::*` functions add
   **+0.5** to the averaged integer pixel coordinates.
 - The optional `mask` of the `threshold::*` functions must be a `CV_8UC1` image of
   the same size as the input (validated, fail-fast); the mask is applied to the
@@ -103,31 +174,11 @@ int main() {
 - All the color palette values (`cvl::red`, `colors::get`, ...) are **BGR**;
   `colors::getRGBHex()` converts them to `#RRGGBB` hex strings.
 
-## Testing
+---
 
-A smoke-test suite lives in `tests/test_cvl.cpp` and exercises every module
-against known inputs. Run it from the repository root:
+## TODO, known issues and license
 
-```sh
-make test
-```
+Open work and pending decisions are in [TODO.md](TODO.md) (in Italian).
 
-It builds against the working-tree headers (no install needed) and prints
-`ALL <n> CHECKS PASSED` on success, or the failing file/line and aborts with a
-non-zero exit code on a regression. Requires `pkg-config` with an `opencv4`
-package.
-
-Two more targets complete the checks:
-
-```sh
-make test_asan   # same suite under AddressSanitizer + UndefinedBehaviorSanitizer
-make lint        # cppcheck on every header, then clang-tidy (checks in .clang-tidy)
-```
-
-`make lint` needs `cppcheck` and `clang-tidy` (`brew install cppcheck llvm`) and
-treats any finding as an error.
-
-## Open items
-
-Pending design decisions and deferred optimizations live in [TODO.md](TODO.md).
-
+CVL is licensed under the **GNU General Public License v3.0**, see
+[LICENSE](LICENSE).
